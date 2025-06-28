@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Sign-Out System - Login</title>
+    <link rel="stylesheet" href="css/main-complete.css?v=20240628">
+    <link rel="stylesheet" href="css/login-styles.css?v=20240628">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="login-body">
+    <!-- Simple Animated Background -->
+    <div class="animated-bg" id="animatedBg"></div>
+
+    <div class="login-container" id="loginContainer">
+        <!-- Logo Section -->
+        <div class="logo-section" id="logoSection">
+            <div class="logo-content" id="logoContent">
+                <img src="assets/CcoLogo.png" alt="CCO Logo" class="main-logo">
+                <div class="logo-text">
+                    <h1>C Co, 401st Cyber Battalion</h1>
+                    <p>Lethal Precision, Dominate the Spectrum</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Forms Section -->
+        <div class="forms-section" id="formsSection">
+            <div class="login-card" id="loginCard">
+                <div class="login-header">
+                    <h1 class="login-title">Soldier Sign-Out System</h1>
+                    <p class="login-subtitle" id="loginSubtitle">NCO Access Required</p>
+                </div>
+                
+                <!-- System Password Form -->
+                <form id="systemPasswordForm" class="login-form">
+                    <div class="form-group">
+                        <label for="systemPassword">System Password</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="systemPassword" name="systemPassword" required autofocus>
+                            <button type="button" class="password-toggle" data-target="systemPassword">
+                                <span class="icon">👁</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="systemErrorMessage" class="error-message" style="display: none;"></div>
+                    
+                    <button type="button" class="btn btn-primary btn-full" id="systemLoginBtn">
+                        <span class="btn-text">Access System</span>
+                        <div class="btn-loader" style="display: none;"></div>
+                    </button>
+                </form>
+
+                <!-- User Selection Form -->
+                <form id="userSelectionForm" class="login-form" style="display: none;">
+                    <div class="form-group">
+                        <label for="userSelect">Select NCO</label>
+                        <select id="userSelect" name="userSelect" required>
+                            <option value="">Choose an NCO...</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="userPin">PIN</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="userPin" name="userPin" required maxlength="10" placeholder="Enter your PIN">
+                            <button type="button" class="password-toggle" data-target="userPin">
+                                <span class="icon">👁</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="userErrorMessage" class="error-message" style="display: none;"></div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-primary btn-full" id="userLoginBtn">
+                            <span class="btn-text">Sign In</span>
+                            <div class="btn-loader" style="display: none;"></div>
+                        </button>
+                        
+                        <button type="button" class="btn btn-secondary btn-full" id="logoutBtn">
+                            Logout
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/login.js"></script>
+</body>
+</html>

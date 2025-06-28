@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Soldier Sign-Out System</title>
+    <link rel="stylesheet" href="css/main-complete.css?v=20240628">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Notification Chips Area -->
+        <div id="notificationChips" class="notification-chips-container"></div>
+        
+        <header class="header">
+            <div class="title">
+                <div class="title-logos">
+                    <img src="assets/CcoLogo.png" alt="CCO Logo" class="title-logo">
+                </div>
+                <div class="title-text">
+                    <div class="title-main">Soldier Sign-Out System</div>
+                    <div class="title-sub">EWOs Lead the Way</div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <span id="userInfo" class="user-info"></span>
+                <button id="newSignOutBtn" class="btn btn-primary">
+                    <span class="icon">+</span> New Sign-Out
+                </button>
+                
+                <!-- Hamburger Menu -->
+                <div class="hamburger-menu">
+                    <button id="hamburgerBtn" class="hamburger-btn" aria-label="Menu">
+                        <div class="hamburger-icon">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </button>
+                    
+                    <div id="hamburgerDropdown" class="hamburger-dropdown">
+                        <button id="changeUserBtn" class="dropdown-item">
+                            <span class="icon">⚪</span> Change User
+                        </button>
+                        <button id="refreshBtn" class="dropdown-item">
+                            <span class="icon">↻</span> Refresh
+                        </button>
+                        <button id="logsBtn" class="dropdown-item">
+                            <span class="icon">▦</span> Logs
+                        </button>
+                        <button id="settingsBtn" class="dropdown-item">
+                            <span class="icon">⚙</span> Settings
+                        </button>
+                        <div class="dropdown-divider"></div>
+                        <button id="logoutBtn" class="dropdown-item logout-item">
+                            <span class="icon">→</span> Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="main">
+            <!-- Dashboard View -->
+            <div id="dashboardView" class="view">
+                <!-- Current Sign-Outs Table -->
+                <div class="section-header">
+                    <h2>Currently Signed Out</h2>
+                    <div class="search-section">
+                        <input type="text" id="searchInput" placeholder="Search by names or location..." class="search-input">
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="signouts-table">
+                        <thead>
+                            <tr>
+                                <th>Sign-Out ID</th>
+                                <th>Soldiers</th>
+                                <th>Location</th>
+                                <th>Time Out</th>
+                                <th>Duration</th>
+                                <th>Signed Out By</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="currentSignOutsTableBody">
+                            <!-- Data will be loaded here -->
+                        </tbody>
+                    </table>
+                    <div id="emptyState" class="empty-state" style="display: none;">
+                        <div class="empty-icon">✓</div>
+                        <h3>All Clear</h3>
+                        <p>No soldiers are currently signed out.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logs View -->
+            <div id="logsView" class="view" style="display: none;">
+                <div class="logs-container">
+                    <div class="section-header">
+                        <h2>Sign-Out Logs</h2>
+                        <button id="backToDashboard" class="btn btn-secondary">
+                            <span class="icon">←</span> Back to Dashboard
+                        </button>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="logs-filters">
+                        <div class="filter-grid">
+                            <div class="form-group">
+                                <label for="startDate">Start Date</label>
+                                <input type="date" id="startDate" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="endDate">End Date</label>
+                                <input type="date" id="endDate" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="soldierNameFilter">Soldier Name</label>
+                                <input type="text" id="soldierNameFilter" placeholder="Search names..." class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="locationFilter">Location</label>
+                                <input type="text" id="locationFilter" placeholder="Search location..." class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="statusFilter">Status</label>
+                                <select id="statusFilter" class="form-control">
+                                    <option value="">All Status</option>
+                                    <option value="OUT">Currently Out</option>
+                                    <option value="IN">Signed In</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="filter-actions">
+                            <button id="clearFiltersBtn" class="btn btn-secondary">Clear Filters</button>
+                            <button id="applyFiltersBtn" class="btn btn-primary">Apply Filters</button>
+                            <button id="exportCsvBtn" class="btn export-btn">
+                                <span class="icon">↓</span> Export CSV
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Logs Table -->
+                    <div class="table-container">
+                        <table class="signouts-table">
+                            <thead>
+                                <tr>
+                                    <th>Sign-Out ID</th>
+                                    <th>Soldiers</th>
+                                    <th>Location</th>
+                                    <th>Sign Out Time</th>
+                                    <th>Sign In Time</th>
+                                    <th>Duration</th>
+                                    <th>Signed Out By</th>
+                                    <th>Signed In By</th>
+                                    <th>Status</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logsTableBody">
+                                <!-- Data will be loaded here -->
+                            </tbody>
+                        </table>
+                        <div id="logsEmptyState" class="empty-state" style="display: none;">
+                            <div class="empty-icon">▢</div>
+                            <h3>No records found</h3>
+                            <p>No sign-out records match your current filters.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings View -->
+            <div id="settingsView" class="view" style="display: none;">
+                <div class="settings-header">
+                    <h2>System Settings</h2>
+                    <button id="backToMainBtn" class="btn btn-secondary">
+                        <span class="icon">←</span> Back to Dashboard
+                    </button>
+                </div>
+
+                <div class="settings-content">
+                    <div class="settings-section">
+                        <h3>User Management</h3>
+                        <div class="settings-grid">
+                            <div class="setting-item">
+                                <label>Current User</label>
+                                <div class="setting-value" id="currentUserDisplay">Loading...</div>
+                            </div>
+                            <div class="setting-item">
+                                <label>User Role</label>
+                                <div class="setting-value" id="userRoleDisplay">Admin</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>System Configuration</h3>
+                        <div class="settings-grid">
+                            <div class="setting-item">
+                                <label for="maxSignOutDuration">Max Sign-Out Duration (hours)</label>
+                                <div class="setting-input-group">
+                                    <input type="number" id="maxSignOutDuration" min="1" max="24" value="8" class="setting-input">
+                                    <button type="button" class="btn btn-sm btn-primary" id="updateDurationBtn">Update</button>
+                                </div>
+                            </div>
+                            <div class="setting-item">
+                                <label for="warningThreshold">Warning Threshold (hours)</label>
+                                <div class="setting-input-group">
+                                    <input type="number" id="warningThreshold" min="1" max="12" value="4" class="setting-input">
+                                    <button type="button" class="btn btn-sm btn-primary" id="updateWarningBtn">Update</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>Data Management</h3>
+                        <div class="settings-actions">
+                            <button type="button" class="btn btn-secondary" id="exportAllDataBtn">
+                                <span class="icon">↓</span> Export All Data
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="backupDataBtn">
+                                <span class="icon">⚬</span> Create Backup
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="settings-section danger-section">
+                        <h3>Danger Zone</h3>
+                        <div class="settings-actions">
+                            <button type="button" class="btn btn-danger" id="clearOldRecordsBtn">
+                                <span class="icon">⚠</span> Clear Old Records (30+ days)
+                            </button>
+                            <button type="button" class="btn btn-danger" id="resetSystemBtn">
+                                <span class="icon">⚠</span> Reset System
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for New Sign-Out -->
+    <div id="signOutModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>New Group Sign-Out</h2>
+                <button class="modal-close" id="closeModal">&times;</button>
+            </div>
+            <form id="signOutForm" class="form">
+                <!-- Barcode Scanning Section -->
+                <div class="form-section">
+                    <h3>Scan CAC Barcodes</h3>
+                    <div class="form-group">
+                        <label for="barcodeInput">Scan CAC Barcode</label>
+                        <textarea id="barcodeInput" rows="3" 
+                                  placeholder="Click here and scan a CAC barcode to add soldier..."></textarea>
+                        <div class="barcode-actions">
+                            <button type="button" id="parseBarcodeBtn" class="btn btn-parse">
+                                <i class="icon">▦</i>
+                                Parse Scanned Data
+                            </button>
+                            <button type="button" id="clearBarcodeBtn" class="btn btn-clear">
+                                <i class="icon">×</i>
+                                Clear
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Soldiers List as Chips -->
+                    <div class="form-group">
+                        <div class="soldiers-header">
+                            <label>Added Soldiers</label>
+                            <button type="button" id="clearAllSoldiersBtn" class="btn btn-secondary btn-small" style="display: none;">
+                                Clear All
+                            </button>
+                        </div>
+                        <div id="soldiersChips" class="soldiers-chips-container">
+                            <div class="empty-state-chips">No soldiers added yet. Scan CAC barcodes to add soldiers.</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="location">Location *</label>
+                    <input type="text" id="location" name="location" required 
+                           placeholder="e.g. Base Exchange, Medical Appointment, Training Area, etc.">
+                </div>
+                
+                <div class="form-group">
+                    <label for="notes">Notes</label>
+                    <textarea id="notes" name="notes" rows="2" 
+                              placeholder="Additional notes, special instructions, or contact information..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="pin">Your PIN *</label>
+                    <input type="password" id="pin" name="pin" required maxlength="10"
+                           placeholder="Enter your PIN to authorize this sign-out">
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" id="cancelBtn" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <span class="btn-text">Sign Out Group</span>
+                        <div class="btn-loader" style="display: none;"></div>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- PIN Verification Modal for Sign-In -->
+    <div id="pinModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="pinModalTitle">Sign In Confirmation</h2>
+                <button class="modal-close" id="closePinModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="pinModalMessage">Please enter your PIN to sign in this group:</p>
+                <div id="signInDetails" class="sign-in-details"></div>
+                <div class="form-group">
+                    <label for="pinInput">Your PIN *</label>
+                    <input type="password" id="pinInput" maxlength="10" required
+                           placeholder="Enter your PIN">
+                </div>
+                <div id="pinError" class="error-message" style="display: none;"></div>
+            </div>
+            <div class="form-actions">
+                <button type="button" id="pinCancel" class="btn btn-secondary">Cancel</button>
+                <button type="button" id="pinSubmit" class="btn btn-primary">
+                    <span class="btn-text">Sign In Group</span>
+                    <div class="btn-loader" style="display: none;"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sign-Out Info Modal -->
+    <div id="infoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Sign-Out Details</h2>
+                <button class="modal-close" id="closeInfoModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="infoModalContent">
+                    <!-- Content will be populated dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <script src="js/modules/barcode-parser.js"></script>
+    <script src="js/modules/notifications.js"></script>
+    <script src="js/modules/barcode-manager.js"></script>
+    <script src="js/modules/utils.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

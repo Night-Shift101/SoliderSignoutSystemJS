@@ -1,0 +1,464 @@
+const express = require('express');
+const { body, validationResult } = require('express-validator');
+const router = express.Router();
+
+// Middleware to check authentication
+const requireAuth = (req, res, next) => {
+    if (!req.session.user) {
+        return res.status(401).json({ error: 'Authentication required' });
+    }
+    next();
+};
+
+// Middleware to verify PIN
+const verifyPin = async (req, res, next) => {
+    const { pin } = req.body;
+    if (!pin) {
+        return res.status(400).json({ error: 'PIN required for this action' });
+    }
+
+    req.db.verifyUserPin(req.session.user.id, pin, (err, isValid) => {
+        if (err) {
+            console.error('PIN verification error:', err);
+            return res.status(500).json({ error: 'PIN verification failed' });
+        }
+        if (!isValid) {
+            return res.status(401).json({ error: 'Invalid PIN' });
+        }
+        next();
+    });
+};
+
+// Authentication routes
+
+// System authentication - verify system password
+router.post('/auth/system', [
+    body('password').isLength({ min: 1 }).withMessage('System password is required')
+], (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { password } = req.body;
+    
+    req.db.verifySystemPassword(password, (err, result) => {
+        if (err) {
+            console.error('System authentication error:', err);
+            return res.status(500).json({ error: 'System authentication failed' });
+        }
+        
+        if (!result.success) {
+            return res.status(401).json({ error: result.message });
+        }
+        
+        // Set system authentication flag
+        req.session.systemAuthenticated = true;
+        res.json({ success: true, message: 'System authenticated' });
+    });
+});
+
+// Get all users for selection
+router.get('/auth/users', (req, res) => {
+    // Check if system is authenticated
+    if (!req.session.systemAuthenticated) {
+        return res.status(401).json({ error: 'System authentication required' });
+    }
+
+    req.db.getAllUsers((err, users) => {
+        if (err) {
+            console.error('Error fetching users:', err);
+            return res.status(500).json({ error: 'Failed to fetch users' });
+        }
+        res.json(users);
+    });
+});
+
+// User PIN authentication
+router.post('/auth/user', [
+    body('userId').isInt().withMessage('Valid user ID is required'),
+    body('pin').isLength({ min: 1 }).withMessage('PIN is required')
+], (req, res) => {
+    // Check if system is authenticated
+    if (!req.session.systemAuthenticated) {
+        return res.status(401).json({ error: 'System authentication required first' });
+    }
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { userId, pin } = req.body;
+    
+    req.db.verifyUserPinById(userId, pin, (err, result) => {
+        if (err) {
+            console.error('User PIN verification error:', err);
+            return res.status(500).json({ error: 'PIN verification failed' });
+        }
+        
+        if (!result.success) {
+            return res.status(401).json({ error: result.message });
+        }
+        
+        // Set user session
+        req.session.user = {
+            id: userId,
+            rank: result.user.rank,
+            full_name: result.user.full_name,
+            username: `user_${userId}` // Generate a username for consistency
+        };
+        
+        res.json({ success: true, user: req.session.user });
+    });
+});
+
+router.post('/auth/login', [
+    body('username').trim().isLength({ min: 1 }).withMessage('Username is required'),
+    body('password').isLength({ min: 1 }).withMessage('Password is required')
+], (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { username, password } = req.body;
+    
+    req.db.authenticateUser(username, password, (err, result) => {
+        if (err) {
+            console.error('Authentication error:', err);
+            return res.status(500).json({ error: 'Authentication failed' });
+        }
+        
+        if (!result.success) {
+            return res.status(401).json({ error: result.message });
+        }
+        
+        req.session.user = result.user;
+        res.json({ success: true, user: result.user });
+    });
+});
+
+router.post('/auth/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            return res.status(500).json({ error: 'Logout failed' });
+        }
+        res.json({ success: true });
+    });
+});
+
+// Change user - clear user session but keep system authentication
+router.post('/auth/change-user', (req, res) => {
+    if (!req.session.systemAuthenticated) {
+        return res.status(401).json({ error: 'System authentication required' });
+    }
+    
+    // Clear user session but keep system authentication
+    delete req.session.user;
+    res.json({ success: true, message: 'User session cleared' });
+});
+
+router.get('/auth/check', (req, res) => {
+    if (req.session.user && req.session.systemAuthenticated) {
+        res.json({ authenticated: true, user: req.session.user });
+    } else if (req.session.systemAuthenticated) {
+        res.json({ authenticated: false, systemAuthenticated: true });
+    } else {
+        res.json({ authenticated: false, systemAuthenticated: false });
+    }
+});
+
+// Validation middleware for sign-outs
+const validateSignOut = [
+    body('soldiers').isArray({ min: 1 }).withMessage('At least one soldier is required'),
+    body('soldiers.*.rank').optional().trim(),
+    body('soldiers.*.firstName').trim().isLength({ min: 1 }).withMessage('First name is required for each soldier'),
+    body('soldiers.*.lastName').trim().isLength({ min: 1 }).withMessage('Last name is required for each soldier'),
+    body('soldiers.*.dodId').optional().trim(),
+    body('location').trim().isLength({ min: 1 }).withMessage('Location is required'),
+    body('notes').optional().trim(),
+    body('pin').isLength({ min: 1 }).withMessage('PIN is required')
+];
+
+// Get all sign-outs
+router.get('/', requireAuth, (req, res) => {
+    req.db.getAllSignOuts((err, signouts) => {
+        if (err) {
+            console.error('Error fetching sign-outs:', err);
+            return res.status(500).json({ error: 'Failed to fetch sign-outs' });
+        }
+        res.json(signouts);
+    });
+});
+
+// Get current sign-outs (currently out)
+router.get('/current', requireAuth, (req, res) => {
+    req.db.getCurrentSignOuts((err, signouts) => {
+        if (err) {
+            console.error('Error fetching current sign-outs:', err);
+            return res.status(500).json({ error: 'Failed to fetch current sign-outs' });
+        }
+        res.json(signouts);
+    });
+});
+
+// Get filtered sign-outs for logs
+router.get('/logs', requireAuth, (req, res) => {
+    const filters = {
+        startDate: req.query.startDate,
+        endDate: req.query.endDate,
+        soldierName: req.query.soldierName,
+        location: req.query.location,  
+        status: req.query.status
+    };
+
+    req.db.getFilteredSignOuts(filters, (err, signouts) => {
+        if (err) {
+            console.error('Error fetching filtered sign-outs:', err);
+            return res.status(500).json({ error: 'Failed to fetch sign-outs' });
+        }
+        res.json(signouts);
+    });
+});
+
+// Export logs as CSV
+router.get('/logs/export', requireAuth, (req, res) => {
+    const filters = {
+        startDate: req.query.startDate,
+        endDate: req.query.endDate,
+        soldierName: req.query.soldierName,
+        location: req.query.location,
+        status: req.query.status
+    };
+
+    // Get individual soldier records instead of grouped sign-outs
+    req.db.getIndividualSignOutRecords(filters, (err, records) => {
+        if (err) {
+            console.error('Error fetching individual sign-out records for export:', err);
+            return res.status(500).json({ error: 'Failed to export sign-outs' });
+        }
+
+        // Convert to CSV with individual soldier records and DOD IDs
+        const csvHeaders = 'SignOut ID,Soldier Rank,Soldier First Name,Soldier Last Name,DOD ID,Location,Sign Out Time,Sign In Time,Duration (Minutes),Signed Out By,Signed In By,Status,Notes\n';
+        const csvRows = records.map(record => {
+            const signOutTime = new Date(record.sign_out_time);
+            const signInTime = record.sign_in_time ? new Date(record.sign_in_time) : null;
+            const durationMinutes = signInTime 
+                ? Math.round((signInTime - signOutTime) / (1000 * 60)) // minutes
+                : Math.round((new Date() - signOutTime) / (1000 * 60)); // minutes
+
+            // Format soldier name components safely
+            const rank = (record.soldier_rank || '').replace(/"/g, '""');
+            const firstName = (record.soldier_first_name || '').replace(/"/g, '""');
+            const lastName = (record.soldier_last_name || '').replace(/"/g, '""');
+            const dodId = record.soldier_dod_id || '';
+            const location = (record.location || '').replace(/"/g, '""');
+            const signedOutBy = (record.signed_out_by_name || '').replace(/"/g, '""');
+            const signedInBy = (record.signed_in_by_name || '').replace(/"/g, '""');
+            const notes = (record.notes || '').replace(/"/g, '""');
+
+            return [
+                record.signout_id,
+                `"${rank}"`,
+                `"${firstName}"`,
+                `"${lastName}"`,
+                dodId,
+                `"${location}"`,
+                signOutTime.toISOString(),
+                signInTime ? signInTime.toISOString() : '',
+                durationMinutes,
+                `"${signedOutBy}"`,
+                signedInBy ? `"${signedInBy}"` : '',
+                record.status || 'OUT',
+                `"${notes}"`
+            ].join(',');
+        }).join('\n');
+
+        const csv = csvHeaders + csvRows;
+        
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename="individual-signout-records-${new Date().toISOString().split('T')[0]}.csv"`);
+        res.send(csv);
+    });
+});
+
+// Add new sign-out
+router.post('/', requireAuth, validateSignOut, verifyPin, (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const signOutData = {
+        soldiers: req.body.soldiers, // Array of soldier objects
+        location: req.body.location,
+        signed_out_by_id: req.session.user.id,
+        signed_out_by_name: `${req.session.user.rank} ${req.session.user.full_name}`,
+        notes: req.body.notes || ''
+    };
+
+    req.db.addSignOut(signOutData, (err, result) => {
+        if (err) {
+            console.error('Error adding sign-out:', err);
+            return res.status(500).json({ error: 'Failed to add sign-out' });
+        }
+        res.status(201).json({ 
+            message: 'Sign-out created successfully', 
+            signout_id: result.signout_id 
+        });
+    });
+});
+
+// Sign in soldiers
+router.patch('/:signoutId/signin', requireAuth, [
+    body('pin').isLength({ min: 1 }).withMessage('PIN is required')
+], verifyPin, (req, res) => {
+    const signoutId = req.params.signoutId;
+    const signedInById = req.session.user.id;
+    const signedInByName = `${req.session.user.rank} ${req.session.user.full_name}`;
+
+    req.db.signInSoldiers(signoutId, signedInById, signedInByName, function(err) {
+        if (err) {
+            console.error('Error signing in soldiers:', err);
+            return res.status(500).json({ error: 'Failed to sign in soldiers' });
+        }
+        if (this.changes === 0) {
+            return res.status(404).json({ error: 'Sign-out not found or already signed in' });
+        }
+        res.json({ message: 'Soldiers signed in successfully' });
+    });
+});
+
+// Get sign-out by ID
+router.get('/:signoutId', requireAuth, (req, res) => {
+    const signoutId = req.params.signoutId;
+
+    req.db.getSignOutById(signoutId, (err, signout) => {
+        if (err) {
+            console.error('Error fetching sign-out:', err);
+            return res.status(500).json({ error: 'Failed to fetch sign-out' });
+        }
+        if (!signout) {
+            return res.status(404).json({ error: 'Sign-out not found' });
+        }
+        res.json(signout);
+    });
+});
+
+// PIN validation for settings access
+router.post('/auth/validate-pin', requireAuth, [
+    body('pin').isLength({ min: 1 }).withMessage('PIN is required')
+], (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { pin } = req.body;
+    
+    req.db.verifyUserPin(req.session.user.id, pin, (err, isValid) => {
+        if (err) {
+            console.error('PIN verification error:', err);
+            return res.status(500).json({ error: 'PIN verification failed' });
+        }
+        res.json({ valid: isValid });
+    });
+});
+
+// Settings routes
+
+// Export all data
+router.get('/export/all', requireAuth, (req, res) => {
+    req.db.getAllSignOuts((err, signouts) => {
+        if (err) {
+            console.error('Error fetching all data for export:', err);
+            return res.status(500).json({ error: 'Failed to export all data' });
+        }
+        
+        // Convert to CSV format
+        const csvData = convertToCSV(signouts);
+        
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename="signouts_all_data.csv"');
+        res.send(csvData);
+    });
+});
+
+// Create backup
+router.post('/backup', requireAuth, (req, res) => {
+    const fs = require('fs');
+    const path = require('path');
+    
+    try {
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const backupPath = path.join(__dirname, '../../data', `backup_${timestamp}.db`);
+        const sourcePath = path.join(__dirname, '../../data/soldiers.db');
+        
+        fs.copyFileSync(sourcePath, backupPath);
+        
+        res.json({ 
+            success: true, 
+            message: 'Backup created successfully',
+            backupFile: `backup_${timestamp}.db`
+        });
+    } catch (error) {
+        console.error('Error creating backup:', error);
+        res.status(500).json({ error: 'Failed to create backup' });
+    }
+});
+
+// Clear old records (30+ days)
+router.delete('/clear-old', requireAuth, (req, res) => {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    req.db.clearOldRecords(thirtyDaysAgo, (err, deletedCount) => {
+        if (err) {
+            console.error('Error clearing old records:', err);
+            return res.status(500).json({ error: 'Failed to clear old records' });
+        }
+        res.json({ success: true, deletedCount });
+    });
+});
+
+// Reset system (delete all data)
+router.delete('/reset-system', requireAuth, (req, res) => {
+    req.db.resetSystem((err) => {
+        if (err) {
+            console.error('Error resetting system:', err);
+            return res.status(500).json({ error: 'Failed to reset system' });
+        }
+        
+        // Clear session
+        req.session.destroy();
+        
+        res.json({ success: true, message: 'System reset successfully' });
+    });
+});
+
+// Helper function to convert JSON to CSV
+function convertToCSV(data) {
+    if (!data || data.length === 0) {
+        return 'No data available';
+    }
+    
+    const headers = Object.keys(data[0]);
+    const csvContent = [
+        headers.join(','),
+        ...data.map(row => 
+            headers.map(header => {
+                const value = row[header];
+                // Escape commas and quotes in CSV
+                if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
+                    return `"${value.replace(/"/g, '""')}"`;
+                }
+                return value || '';
+            }).join(',')
+        )
+    ].join('\n');
+    
+    return csvContent;
+}
+
+module.exports = router;
