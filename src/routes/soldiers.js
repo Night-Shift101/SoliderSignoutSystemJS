@@ -318,12 +318,12 @@ router.patch('/:signoutId/signin', requireAuth, [
     const signedInById = req.session.user.id;
     const signedInByName = `${req.session.user.rank} ${req.session.user.full_name}`;
 
-    req.db.signInSoldiers(signoutId, signedInById, signedInByName, function(err) {
+    req.db.signInSoldiers(signoutId, signedInById, signedInByName, (err, result) => {
         if (err) {
             console.error('Error signing in soldiers:', err);
             return res.status(500).json({ error: 'Failed to sign in soldiers' });
         }
-        if (this.changes === 0) {
+        if (result.changes === 0) {
             return res.status(404).json({ error: 'Sign-out not found or already signed in' });
         }
         res.json({ message: 'Soldiers signed in successfully' });
@@ -434,6 +434,128 @@ router.delete('/reset-system', requireAuth, (req, res) => {
         req.session.destroy();
         
         res.json({ success: true, message: 'System reset successfully' });
+    });
+});
+
+// User Management Routes
+
+// Create new user
+router.post('/auth/users', requireAuth, [
+    body('username').trim().isLength({ min: 3 }).withMessage('Username must be at least 3 characters'),
+    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+    body('pin').matches(/^\d{4}$/).withMessage('PIN must be 4 digits'),
+    body('confirmPin').custom((value, { req }) => {
+        if (value !== req.body.pin) {
+            throw new Error('PIN confirmation does not match');
+        }
+        return true;
+    }),
+    body('rank').isLength({ min: 1 }).withMessage('Rank is required'),
+    body('firstName').trim().isLength({ min: 1 }).withMessage('First name is required'),
+    body('lastName').trim().isLength({ min: 1 }).withMessage('Last name is required')
+], (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const userData = {
+        username: req.body.username,
+        password: req.body.password,
+        pin: req.body.pin,
+        rank: req.body.rank,
+        firstName: req.body.firstName,
+        lastName: req.body.lastName
+    };
+
+    req.db.createUser(userData, (err, user) => {
+        if (err) {
+            console.error('Error creating user:', err);
+            if (err.message === 'Username already exists') {
+                return res.status(409).json({ error: 'Username already exists' });
+            }
+            return res.status(500).json({ error: 'Failed to create user' });
+        }
+        
+        res.status(201).json({ 
+            message: 'User created successfully', 
+            user: {
+                id: user.id,
+                username: user.username,
+                rank: user.rank,
+                full_name: user.full_name
+            }
+        });
+    });
+});
+
+// Change user PIN
+router.patch('/auth/users/:userId/pin', requireAuth, [
+    body('currentPin').matches(/^\d{4}$/).withMessage('Current PIN must be 4 digits'),
+    body('newPin').matches(/^\d{4}$/).withMessage('New PIN must be 4 digits'),
+    body('confirmNewPin').custom((value, { req }) => {
+        if (value !== req.body.newPin) {
+            throw new Error('New PIN confirmation does not match');
+        }
+        return true;
+    })
+], (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const userId = parseInt(req.params.userId);
+    const { currentPin, newPin } = req.body;
+
+    req.db.changeUserPin(userId, currentPin, newPin, (err, result) => {
+        if (err) {
+            console.error('Error changing user PIN:', err);
+            if (err.message === 'Current PIN is incorrect') {
+                return res.status(401).json({ error: 'Current PIN is incorrect' });
+            }
+            if (err.message === 'User not found') {
+                return res.status(404).json({ error: 'User not found' });
+            }
+            return res.status(500).json({ error: 'Failed to change PIN' });
+        }
+        
+        res.json({ message: 'PIN changed successfully' });
+    });
+});
+
+// Delete user
+router.delete('/auth/users/:userId', requireAuth, [
+    body('userPin').matches(/^\d{4}$/).withMessage('User PIN must be 4 digits'),
+    body('systemPassword').isLength({ min: 1 }).withMessage('System password is required')
+], (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const userId = parseInt(req.params.userId);
+    const { userPin, systemPassword } = req.body;
+
+    req.db.deleteUser(userId, userPin, systemPassword, (err, result) => {
+        if (err) {
+            console.error('Error deleting user:', err);
+            if (err.message === 'Invalid system password') {
+                return res.status(401).json({ error: 'Invalid system password' });
+            }
+            if (err.message === 'Invalid user PIN') {
+                return res.status(401).json({ error: 'Invalid user PIN' });
+            }
+            if (err.message === 'User not found') {
+                return res.status(404).json({ error: 'User not found' });
+            }
+            if (err.message === 'Cannot delete admin user') {
+                return res.status(403).json({ error: 'Cannot delete admin user' });
+            }
+            return res.status(500).json({ error: 'Failed to delete user' });
+        }
+        
+        res.json({ message: 'User deleted successfully' });
     });
 });
 

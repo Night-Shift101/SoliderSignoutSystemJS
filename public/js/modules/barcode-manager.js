@@ -26,6 +26,16 @@ class BarcodeManager {
             // Auto-parse after a short delay when data is pasted
             setTimeout(() => this.handleBarcodeParse(), 100);
         });
+        
+        // Event delegation for soldier chip removal buttons
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('soldier-chip-remove')) {
+                const index = parseInt(e.target.dataset.index);
+                if (!isNaN(index)) {
+                    this.removeSoldier(index);
+                }
+            }
+        });
     }
 
     handleBarcodeParse() {
@@ -91,7 +101,7 @@ class BarcodeManager {
         this.soldiersChips.innerHTML = this.addedSoldiers.map((soldier, index) => `
             <div class="soldier-chip" data-index="${index}">
                 <span class="soldier-chip-name">${soldier.rank} ${soldier.lastName}, ${soldier.firstName}${soldier.middleInitial ? ' ' + soldier.middleInitial + '.' : ''}</span>
-                <button class="soldier-chip-remove" onclick="window.barcodeManager.removeSoldier(${index})" title="Remove soldier">×</button>
+                <button type="button" class="soldier-chip-remove" data-index="${index}" title="Remove soldier" tabindex="-1">×</button>
                 <div class="soldier-chip-tooltip">DOD ID: ${soldier.dodId || 'N/A'}</div>
             </div>
         `).join('');

@@ -5,6 +5,7 @@ A comprehensive Node.js web application for tracking military group sign-outs wi
 ## ✨ Features
 
 ### Core Functionality
+
 - **Group Sign-Outs**: Track groups of soldiers with their locations and purposes
 - **Real-Time Monitoring**: Live duration tracking with status indicators
 - **Secure Authentication**: Username/password login with PIN verification for actions
@@ -12,12 +13,14 @@ A comprehensive Node.js web application for tracking military group sign-outs wi
 - **Multi-User Support**: NCO/Admin user management with role-based access
 
 ### Dashboard Features
+
 - **Current Sign-Outs**: View all currently signed-out groups with live duration
 - **Status Indicators**: Visual alerts for overdue sign-outs (🟢 Normal, 🟡 4+ hours, 🔴 8+ hours)
 - **Quick Actions**: One-click sign-in with PIN verification
 - **Statistics**: Real-time counts of current, daily, and total sign-outs
 
 ### Logs & Reporting
+
 - **Advanced Filtering**: Filter by date range, soldier name, location, or status
 - **CSV Export**: Export filtered logs for external reporting
 - **Complete Audit Trail**: Track who signed out/in each group and when
@@ -26,34 +29,37 @@ A comprehensive Node.js web application for tracking military group sign-outs wi
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js 14+ and npm
 - Git (for cloning)
 
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone <repository-url>
    cd JS
    ```
-
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
-
 3. **Start the development server**
+
    ```bash
    npm run dev
    ```
-
 4. **Access the application**
+
    - Open your browser to `http://localhost:3000`
    - You'll be redirected to the login page
 
 ## 🔐 Authentication
 
 ### Default Admin Account
+
 - **Username**: `admin`
 - **Password**: `admin123`
 - **PIN**: `1234`
@@ -61,11 +67,13 @@ A comprehensive Node.js web application for tracking military group sign-outs wi
 ## 📚 User Guide
 
 ### Logging In
+
 1. Navigate to the application URL
 2. Enter your username and password
 3. Click "Sign In"
 
 ### Creating a Sign-Out
+
 1. Click "New Sign-Out" on the dashboard
 2. Enter soldier names (comma-separated)
 3. Specify the location/destination
@@ -74,12 +82,14 @@ A comprehensive Node.js web application for tracking military group sign-outs wi
 6. Click "Sign Out"
 
 ### Signing In Soldiers
+
 1. Find the group in the "Current Sign-Outs" table
 2. Click the "Sign In" button
 3. Enter your PIN to confirm
 4. Click "Confirm Sign In"
 
 ### Viewing Logs
+
 1. Click "View Logs" to switch to the logs view
 2. Use filters to narrow down results:
    - Date range
@@ -91,6 +101,7 @@ A comprehensive Node.js web application for tracking military group sign-outs wi
 ## 🛠 Technical Details
 
 ### Technology Stack
+
 - **Backend**: Node.js with Express.js framework
 - **Database**: SQLite3 for data persistence
 - **Frontend**: Vanilla JavaScript, HTML5, CSS3
@@ -100,6 +111,7 @@ A comprehensive Node.js web application for tracking military group sign-outs wi
 ### Database Schema
 
 #### Users Table
+
 - `id`: Primary key
 - `username`: Unique username
 - `password_hash`: Bcrypt hashed password
@@ -110,6 +122,7 @@ A comprehensive Node.js web application for tracking military group sign-outs wi
 - `created_at`, `last_login`: Timestamps
 
 #### SignOuts Table
+
 - `id`: Primary key
 - `signout_id`: Unique sign-out identifier (SO240627-1234 format)
 - `soldier_names`: Comma-separated list of soldiers
@@ -120,6 +133,7 @@ A comprehensive Node.js web application for tracking military group sign-outs wi
 - `notes`: Optional additional information
 
 ### Security Features
+
 - Password hashing with bcrypt
 - PIN verification for all actions
 - Session-based authentication
@@ -131,11 +145,13 @@ A comprehensive Node.js web application for tracking military group sign-outs wi
 ### API Endpoints
 
 #### Authentication
+
 - `POST /api/signouts/auth/login` - User login
 - `POST /api/signouts/auth/logout` - User logout
 - `GET /api/signouts/auth/check` - Check authentication status
 
 #### Sign-Outs
+
 - `GET /api/signouts/current` - Get currently signed-out groups
 - `GET /api/signouts/logs` - Get filtered sign-out logs
 - `GET /api/signouts/logs/export` - Export logs as CSV
@@ -145,6 +161,7 @@ A comprehensive Node.js web application for tracking military group sign-outs wi
 ## 🔧 Configuration
 
 ### Environment Variables
+
 Create a `.env` file in the project root:
 
 ```env
@@ -155,6 +172,7 @@ SQLITE_DB_PATH=./data/soldiers.db
 ```
 
 ### Production Considerations
+
 - Change default admin credentials
 - Use a strong session secret
 - Enable HTTPS
@@ -165,16 +183,19 @@ SQLITE_DB_PATH=./data/soldiers.db
 ## 🧪 Testing
 
 ### Run API Tests
+
 ```bash
 node test-api.js
 ```
 
 ### Add Test Data
+
 ```bash
 node test-data.js
 ```
 
 ### Manual Testing Workflow
+
 1. Login with admin credentials
 2. Create a few sign-outs with different soldiers and locations
 3. Test sign-in functionality with PIN verification
@@ -207,12 +228,14 @@ JS/
 ## 🚧 Development
 
 ### Adding New Features
+
 1. Database changes: Update `src/database/database.js`
 2. API endpoints: Add to `src/routes/soldiers.js`
 3. Frontend: Update `public/app.js` and `public/index.html`
 4. Styling: Modify `public/styles.css`
 
 ### Best Practices
+
 - Always use parameterized queries for database operations
 - Validate input on both client and server sides
 - Require PIN verification for all state-changing operations
@@ -237,6 +260,7 @@ For issues, questions, or feature requests, please create an issue in the reposi
 This starts the server with nodemon for auto-reloading on file changes.
 
 ### Building for Production
+
 ```bash
 npm start
 ```
@@ -264,7 +288,3 @@ ISC License
 ## Support
 
 For support or questions, please open an issue in the repository.
-
----
-
-Built with ❤️ for military personnel and their families.

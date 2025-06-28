@@ -72,6 +72,7 @@ class Database {
             } else {
                 console.log('Users table ready');
                 this.createDefaultAdmin();
+                this.createTestUsers(); // Add test users for development
             }
         });
 
@@ -134,6 +135,69 @@ class Database {
                     }
                 );
             }
+        });
+    }
+
+    // Create test NCO users for development
+    createTestUsers() {
+        const bcrypt = require('bcrypt');
+        
+        const testUsers = [
+            {
+                username: 'testnco',
+                password: 'test123',
+                pin: '1234',
+                rank: 'SGT',
+                full_name: 'Test NCO'
+            },
+            {
+                username: 'testsgt',
+                password: 'test123', 
+                pin: '5678',
+                rank: 'SSG',
+                full_name: 'Staff Sergeant Test'
+            }
+        ];
+
+        testUsers.forEach(user => {
+            // Check if user exists
+            this.db.get('SELECT id FROM users WHERE username = ?', [user.username], (err, row) => {
+                if (err) {
+                    console.error('Error checking for test user:', err.message);
+                    return;
+                }
+                
+                const passwordHash = bcrypt.hashSync(user.password, 10);
+                const pinHash = bcrypt.hashSync(user.pin, 10);
+                
+                if (!row) {
+                    // Create test user
+                    this.db.run(
+                        'INSERT INTO users (username, password_hash, pin_hash, rank, full_name) VALUES (?, ?, ?, ?, ?)',
+                        [user.username, passwordHash, pinHash, user.rank, user.full_name],
+                        function(err) {
+                            if (err) {
+                                console.error(`Error creating test user ${user.username}:`, err.message);
+                            } else {
+                                console.log(`Test user created: ${user.rank} ${user.full_name} (PIN: ${user.pin})`);
+                            }
+                        }
+                    );
+                } else {
+                    // Update existing user's PIN
+                    this.db.run(
+                        'UPDATE users SET pin_hash = ? WHERE username = ?',
+                        [pinHash, user.username],
+                        function(err) {
+                            if (err) {
+                                console.error(`Error updating PIN for ${user.username}:`, err.message);
+                            } else {
+                                console.log(`Updated PIN for ${user.rank} ${user.full_name} to: ${user.pin}`);
+                            }
+                        }
+                    );
+                }
+            });
         });
     }
 
@@ -410,13 +474,65 @@ class Database {
                 signed_in_by_id = ?, signed_in_by_name = ?
             WHERE signout_id = ? AND status = 'OUT'
         `;
-        this.db.run(query, [signedInById, signedInByName, signOutId], callback);
+        this.db.run(query, [signedInById, signedInByName, signOutId], function(err) {
+            if (err) {
+                return callback(err, null);
+            }
+            callback(null, { changes: this.changes });
+        });
     }
 
     // Get sign-out by ID
     getSignOutById(signOutId, callback) {
-        const query = 'SELECT * FROM signouts WHERE signout_id = ?';
-        this.db.get(query, [signOutId], callback);
+        const query = `
+            SELECT 
+                signout_id,
+                location,
+                sign_out_time,
+                sign_in_time,
+                signed_out_by_id,
+                signed_out_by_name,
+                signed_in_by_id,
+                signed_in_by_name,
+                status,
+                notes,
+                created_at,
+                updated_at,
+                GROUP_CONCAT(
+                    CASE 
+                        WHEN soldier_rank != '' THEN soldier_rank || ' ' || soldier_first_name || ' ' || soldier_last_name
+                        ELSE soldier_first_name || ' ' || soldier_last_name
+                    END, ', '
+                ) as soldier_names,
+                COUNT(*) as soldier_count,
+                '[' || GROUP_CONCAT(
+                    '{"rank":"' || COALESCE(soldier_rank, '') || 
+                    '","firstName":"' || soldier_first_name || 
+                    '","lastName":"' || soldier_last_name || 
+                    '","dodId":"' || COALESCE(soldier_dod_id, '') || '"}'
+                    , ',') || ']' as soldiers
+            FROM signouts 
+            WHERE signout_id = ?
+            GROUP BY signout_id, location, sign_out_time, sign_in_time, signed_out_by_id, signed_out_by_name, signed_in_by_id, signed_in_by_name, status, notes, created_at, updated_at
+        `;
+        this.db.get(query, [signOutId], (err, row) => {
+            if (err) {
+                return callback(err);
+            }
+            if (!row) {
+                return callback(null, null);
+            }
+            
+            // Parse the soldiers JSON string
+            try {
+                row.soldiers = JSON.parse(row.soldiers);
+            } catch (e) {
+                console.error('Error parsing soldiers JSON for signout:', signOutId, e);
+                row.soldiers = [];
+            }
+            
+            callback(null, row);
+        });
     }
 
     // Get filtered sign-outs for logs - Groups individual soldiers by signout_id
@@ -795,6 +911,172 @@ class Database {
                 }
                 console.log('System reset completed successfully');
                 callback(null);
+            });
+        });
+    }
+    
+    // User Management Methods
+    
+    createUser(userData, callback) {
+        const bcrypt = require('bcrypt');
+        const { username, password, pin, rank, firstName, lastName } = userData;
+        
+        // Check if username already exists
+        this.db.get('SELECT id FROM users WHERE username = ?', [username], (err, row) => {
+            if (err) {
+                return callback(err);
+            }
+            
+            if (row) {
+                return callback(new Error('Username already exists'));
+            }
+            
+            // Hash password and PIN
+            const passwordHash = bcrypt.hashSync(password, 10);
+            const pinHash = bcrypt.hashSync(pin, 10);
+            const fullName = `${firstName} ${lastName}`;
+            
+            // Insert new user
+            const insertQuery = `
+                INSERT INTO users (username, password_hash, pin_hash, rank, full_name) 
+                VALUES (?, ?, ?, ?, ?)
+            `;
+            
+            this.db.run(insertQuery, [username, passwordHash, pinHash, rank, fullName], function(err) {
+                if (err) {
+                    return callback(err);
+                }
+                
+                callback(null, {
+                    id: this.lastID,
+                    username,
+                    rank,
+                    full_name: fullName
+                });
+            });
+        });
+    }
+    
+    changeUserPin(userId, currentPin, newPin, callback) {
+        const bcrypt = require('bcrypt');
+        
+        // First verify current PIN
+        this.verifyUserPin(userId, currentPin, (err, isValid) => {
+            if (err) {
+                return callback(err);
+            }
+            
+            if (!isValid) {
+                return callback(new Error('Current PIN is incorrect'));
+            }
+            
+            // Hash new PIN and update
+            const newPinHash = bcrypt.hashSync(newPin, 10);
+            
+            this.db.run(
+                'UPDATE users SET pin_hash = ? WHERE id = ?',
+                [newPinHash, userId],
+                function(err) {
+                    if (err) {
+                        return callback(err);
+                    }
+                    
+                    if (this.changes === 0) {
+                        return callback(new Error('User not found'));
+                    }
+                    
+                    callback(null, { success: true });
+                }
+            );
+        });
+    }
+    
+    deleteUser(userId, userPin, systemPassword, callback) {
+        const bcrypt = require('bcrypt');
+        
+        // Verify system password first
+        this.verifySystemPassword(systemPassword, (err, systemResult) => {
+            if (err) {
+                return callback(err);
+            }
+            
+            if (!systemResult.success) {
+                return callback(new Error('Invalid system password'));
+            }
+            
+            // Verify user PIN
+            this.verifyUserPin(userId, userPin, (err, pinValid) => {
+                if (err) {
+                    return callback(err);
+                }
+                
+                if (!pinValid) {
+                    return callback(new Error('Invalid user PIN'));
+                }
+                
+                // Check if user exists and is not admin
+                this.db.get('SELECT username FROM users WHERE id = ?', [userId], (err, user) => {
+                    if (err) {
+                        return callback(err);
+                    }
+                    
+                    if (!user) {
+                        return callback(new Error('User not found'));
+                    }
+                    
+                    if (user.username === 'admin') {
+                        return callback(new Error('Cannot delete admin user'));
+                    }
+                    
+                    // Begin transaction to delete user and update their sign-out records
+                    this.db.serialize(() => {
+                        this.db.run('BEGIN TRANSACTION');
+                        
+                        // Update sign-out records to remove user references
+                        this.db.run(
+                            'UPDATE signouts SET signed_out_by_name = signed_out_by_name || " (deleted user)" WHERE signed_out_by_id = ?',
+                            [userId],
+                            (err) => {
+                                if (err) {
+                                    this.db.run('ROLLBACK');
+                                    return callback(err);
+                                }
+                                
+                                this.db.run(
+                                    'UPDATE signouts SET signed_in_by_name = signed_in_by_name || " (deleted user)" WHERE signed_in_by_id = ?',
+                                    [userId],
+                                    (err) => {
+                                        if (err) {
+                                            this.db.run('ROLLBACK');
+                                            return callback(err);
+                                        }
+                                        
+                                        // Delete the user
+                                        this.db.run(
+                                            'DELETE FROM users WHERE id = ?',
+                                            [userId],
+                                            function(err) {
+                                                if (err) {
+                                                    this.db.run('ROLLBACK');
+                                                    return callback(err);
+                                                }
+                                                
+                                                this.db.run('COMMIT', (err) => {
+                                                    if (err) {
+                                                        this.db.run('ROLLBACK');
+                                                        return callback(err);
+                                                    }
+                                                    
+                                                    callback(null, { success: true });
+                                                });
+                                            }
+                                        );
+                                    }
+                                );
+                            }
+                        );
+                    });
+                });
             });
         });
     }

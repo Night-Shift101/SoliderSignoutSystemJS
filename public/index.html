@@ -26,7 +26,21 @@
                 </div>
             </div>
             <div class="header-actions">
-                <span id="userInfo" class="user-info"></span>
+                <div class="user-selector-dropdown">
+                    <button id="userSelectorBtn" class="user-selector-btn">
+                        <div class="user-selector-content">
+                            <span class="user-selector-label">Signed in as</span>
+                            <span id="currentUserName" class="user-selector-name">Loading...</span>
+                        </div>
+                        <span class="user-selector-arrow">▼</span>
+                    </button>
+                    <div id="userSelectorDropdown" class="user-selector-menu">
+                        <div class="user-selector-header">Switch User</div>
+                        <div id="usersList" class="users-list">
+                            <div class="users-loading">Loading users...</div>
+                        </div>
+                    </div>
+                </div>
                 <button id="newSignOutBtn" class="btn btn-primary">
                     <span class="icon">+</span> New Sign-Out
                 </button>
@@ -198,6 +212,17 @@
                                 <div class="setting-value" id="userRoleDisplay">Admin</div>
                             </div>
                         </div>
+                        <div class="settings-actions">
+                            <button type="button" class="btn btn-primary" id="createUserBtn">
+                                <span class="icon">+</span> Create New User
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="changePinBtn">
+                                <span class="icon">🔑</span> Change PIN
+                            </button>
+                            <button type="button" class="btn btn-danger" id="deleteUserBtn">
+                                <span class="icon">🗑</span> Delete User
+                            </button>
+                        </div>
                     </div>
 
                     <div class="settings-section">
@@ -363,6 +388,157 @@
     <!-- Loading Overlay -->
     <div id="loadingOverlay" class="loading-overlay" style="display: none;">
         <div class="loading-spinner"></div>
+    </div>
+
+    <!-- User Management Modals -->
+    
+    <!-- Create User Modal -->
+    <div id="createUserModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create New User</h2>
+                <button class="modal-close" id="closeCreateUserModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="createUserForm" class="user-form">
+                    <div class="form-group">
+                        <label for="newUserRank">Rank</label>
+                        <select id="newUserRank" name="rank" required>
+                            <option value="">Select Rank</option>
+                            <option value="PVT">PVT</option>
+                            <option value="PV2">PV2</option>
+                            <option value="PFC">PFC</option>
+                            <option value="SPC">SPC</option>
+                            <option value="CPL">CPL</option>
+                            <option value="SGT">SGT</option>
+                            <option value="SSG">SSG</option>
+                            <option value="SFC">SFC</option>
+                            <option value="MSG">MSG</option>
+                            <option value="1SG">1SG</option>
+                            <option value="SGM">SGM</option>
+                            <option value="CSM">CSM</option>
+                            <option value="2LT">2LT</option>
+                            <option value="1LT">1LT</option>
+                            <option value="CPT">CPT</option>
+                            <option value="MAJ">MAJ</option>
+                            <option value="LTC">LTC</option>
+                            <option value="COL">COL</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="newUserFirstName">First Name</label>
+                        <input type="text" id="newUserFirstName" name="firstName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newUserLastName">Last Name</label>
+                        <input type="text" id="newUserLastName" name="lastName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newUserUsername">Username</label>
+                        <input type="text" id="newUserUsername" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newUserPassword">Password</label>
+                        <input type="password" id="newUserPassword" name="password" required minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label for="newUserPin">PIN (4 digits)</label>
+                        <input type="password" id="newUserPin" name="pin" pattern="[0-9]{4}" maxlength="4" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmUserPin">Confirm PIN</label>
+                        <input type="password" id="confirmUserPin" name="confirmPin" pattern="[0-9]{4}" maxlength="4" required>
+                    </div>
+                    <div id="createUserError" class="error-message" style="display: none;"></div>
+                </form>
+            </div>
+            <div class="form-actions">
+                <button type="button" id="cancelCreateUser" class="btn btn-secondary">Cancel</button>
+                <button type="button" id="submitCreateUser" class="btn btn-primary">
+                    <span class="btn-text">Create User</span>
+                    <div class="btn-loader" style="display: none;"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change PIN Modal -->
+    <div id="changePinModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Change PIN</h2>
+                <button class="modal-close" id="closeChangePinModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="changePinForm" class="user-form">
+                    <div class="form-group">
+                        <label for="changePinUser">User</label>
+                        <select id="changePinUser" name="userId" required>
+                            <option value="">Select User</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="currentPin">Current PIN</label>
+                        <input type="password" id="currentPin" name="currentPin" pattern="[0-9]{4}" maxlength="4" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newPin">New PIN (4 digits)</label>
+                        <input type="password" id="newPin" name="newPin" pattern="[0-9]{4}" maxlength="4" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmNewPin">Confirm New PIN</label>
+                        <input type="password" id="confirmNewPin" name="confirmNewPin" pattern="[0-9]{4}" maxlength="4" required>
+                    </div>
+                    <div id="changePinError" class="error-message" style="display: none;"></div>
+                </form>
+            </div>
+            <div class="form-actions">
+                <button type="button" id="cancelChangePin" class="btn btn-secondary">Cancel</button>
+                <button type="button" id="submitChangePin" class="btn btn-primary">
+                    <span class="btn-text">Change PIN</span>
+                    <div class="btn-loader" style="display: none;"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete User Modal -->
+    <div id="deleteUserModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Delete User</h2>
+                <button class="modal-close" id="closeDeleteUserModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="deleteUserForm" class="user-form">
+                    <div class="form-group">
+                        <label for="deleteUserSelect">User to Delete</label>
+                        <select id="deleteUserSelect" name="userId" required>
+                            <option value="">Select User</option>
+                        </select>
+                    </div>
+                    <div class="warning-message">
+                        <strong>Warning:</strong> This action cannot be undone. The user and all associated data will be permanently deleted.
+                    </div>
+                    <div class="form-group">
+                        <label for="deleteUserPin">User's PIN</label>
+                        <input type="password" id="deleteUserPin" name="userPin" pattern="[0-9]{4}" maxlength="4" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="deleteSystemPassword">System Password</label>
+                        <input type="password" id="deleteSystemPassword" name="systemPassword" required>
+                    </div>
+                    <div id="deleteUserError" class="error-message" style="display: none;"></div>
+                </form>
+            </div>
+            <div class="form-actions">
+                <button type="button" id="cancelDeleteUser" class="btn btn-secondary">Cancel</button>
+                <button type="button" id="submitDeleteUser" class="btn btn-danger">
+                    <span class="btn-text">Delete User</span>
+                    <div class="btn-loader" style="display: none;"></div>
+                </button>
+            </div>
+        </div>
     </div>
 
     <script src="js/modules/barcode-parser.js"></script>
