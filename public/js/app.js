@@ -110,10 +110,26 @@ class SoldierSignOutApp {
                 return;
             }
             
+            // Prevent multiple concurrent auth checks
+            if (this.authCheckInProgress) {
+                console.log('Auth check already in progress, skipping');
+                return;
+            }
+            this.authCheckInProgress = true;
+            
             console.log('Checking authentication...');
             const response = await Utils.fetchWithAuth('/api/signouts/auth/check');
-            const result = await response.json();
             
+            // DEBUG: Log response details
+            console.log('Auth check response status:', response.status);
+            console.log('Auth check response ok:', response.ok);
+            
+            if (!response.ok) {
+                console.log('Auth check failed - response not ok, status:', response.status);
+                throw new Error(`Auth check failed with status: ${response.status}`);
+            }
+            
+            const result = await response.json();
             console.log('Auth response:', result);
             
             if (!result.authenticated) {
@@ -126,29 +142,41 @@ class SoldierSignOutApp {
                 // Add a small delay and check if already redirecting
                 if (!window.location.href.includes('/login')) {
                     setTimeout(() => {
+                        console.log('EXECUTING REDIRECT TO LOGIN - NOT AUTHENTICATED');
                         window.location.href = '/login';
                     }, 100);
                 }
                 return;
             }
             
-            console.log('Authentication successful');
+            console.log('Authentication successful - NO REDIRECT NEEDED');
+            console.log('User data:', result.user);
+            console.log('About to set currentUser and start normal app flow...');
             this.currentUser = result.user;
-            this.userInfo.textContent = `${result.user.rank} ${result.user.full_name}`;
+            if (this.userInfo) {
+                this.userInfo.textContent = `${result.user.rank} ${result.user.full_name}`;
+            }
+            console.log('About to attach event listeners...');
             this.attachEventListeners();
+            console.log('About to load current signouts...');
             this.loadCurrentSignOuts();
+            console.log('About to start duration updates...');
             this.startDurationUpdates();
+            console.log('Authentication setup complete - no redirects should happen now');
             
         } catch (error) {
-            console.error('Authentication check failed:', error);
+            console.error('Authentication check failed with error:', error);
             // Prevent redirect loop
             if (window.location.pathname !== '/login' && window.location.pathname !== '/login.html') {
                 if (!window.location.href.includes('/login')) {
                     setTimeout(() => {
+                        console.log('EXECUTING REDIRECT TO LOGIN - DUE TO ERROR:', error.message);
                         window.location.href = '/login';
                     }, 100);
                 }
             }
+        } finally {
+            this.authCheckInProgress = false;
         }
     }
 
@@ -176,7 +204,10 @@ class SoldierSignOutApp {
         this.newSignOutBtn?.addEventListener('click', () => this.openNewSignOutModal());
         this.logsBtn?.addEventListener('click', () => this.showLogsView());
         this.settingsBtn?.addEventListener('click', () => this.showSettingsWithAuth());
-        this.changeUserBtn?.addEventListener('click', () => this.changeUser());
+        this.changeUserBtn?.addEventListener('click', () => {
+            console.log('Change User button clicked');
+            this.changeUser();
+        });
         this.logoutBtn?.addEventListener('click', () => this.logout());
         this.backToDashboard?.addEventListener('click', () => this.showDashboardView());
         this.backToMainBtn?.addEventListener('click', () => this.showDashboardView());
@@ -507,6 +538,10 @@ class SoldierSignOutApp {
     }
 
     async changeUser() {
+        console.log('CHANGE USER BLOCKED - This method is temporarily disabled for debugging');
+        console.trace('changeUser() call stack');
+        return; // Block the method entirely for debugging
+        
         try {
             const response = await Utils.fetchWithAuth('/api/signouts/auth/logout', {
                 method: 'POST'
@@ -525,6 +560,10 @@ class SoldierSignOutApp {
     }
 
     async logout() {
+        console.log('LOGOUT BLOCKED - This method is temporarily disabled for debugging');
+        console.trace('logout() call stack');
+        return; // Block the method entirely for debugging
+        
         try {
             const response = await Utils.fetchWithAuth('/api/signouts/auth/logout', {
                 method: 'POST'
@@ -887,7 +926,35 @@ class SoldierSignOutApp {
         }).join('');
     }
 
-    // ...existing code...
+    // Duration update methods
+    startDurationUpdates() {
+        console.log('Starting duration updates...');
+        // Clear any existing interval
+        if (this.durationInterval) {
+            clearInterval(this.durationInterval);
+        }
+        
+        // Set up interval to update durations every minute
+        this.durationInterval = setInterval(() => {
+            console.log('Duration update interval triggered');
+            // Only update if we're on the dashboard view and have signouts
+            if (this.dashboardView && this.dashboardView.style.display !== 'none' && this.signouts) {
+                console.log('Updating durations...');
+                this.renderCurrentSignOuts();
+            }
+        }, 60000); // Update every minute
+        
+        console.log('Duration update interval set up with ID:', this.durationInterval);
+    }
+
+    stopDurationUpdates() {
+        console.log('Stopping duration updates...');
+        if (this.durationInterval) {
+            clearInterval(this.durationInterval);
+            this.durationInterval = null;
+            console.log('Duration updates stopped');
+        }
+    }
 }
 
 // Initialize the app when the page loads

@@ -23,28 +23,46 @@
     width: 100%;
     height: 100%;
     z-index: -1;
-    background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+    background-image: url('../assets/background.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
     overflow: hidden;
+}
+
+/* Add overlay for better readability */
+.animated-bg::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(26, 32, 44, 0.7); /* Dark overlay for readability */
+    z-index: 1;
 }
 
 .animated-bg:before {
     content: '';
     position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0) 70%);
-    transform: rotate(30deg);
-    animation: bgAnimation 30s infinite linear;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, 
+        rgba(255, 255, 255, 0.03) 0%, 
+        transparent 50%, 
+        rgba(255, 255, 255, 0.03) 100%);
+    animation: subtleShimmer 20s infinite linear;
+    z-index: 2;
 }
 
-@keyframes bgAnimation {
+@keyframes subtleShimmer {
     0% {
-        transform: rotate(0deg);
+        transform: translateX(-100%);
     }
     100% {
-        transform: rotate(360deg);
+        transform: translateX(100%);
     }
 }
 
@@ -59,6 +77,8 @@
     overflow: hidden;
     background: var(--background-secondary);
     animation: fadeIn 0.6s ease-in-out;
+    position: relative;
+    z-index: 10; /* Ensure it appears above the background overlay */
 }
 
 /* Logo section */
