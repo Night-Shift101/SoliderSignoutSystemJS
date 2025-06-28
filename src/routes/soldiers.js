@@ -2,7 +2,7 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const router = express.Router();
 
-// Middleware to check authentication
+
 const requireAuth = (req, res, next) => {
     if (!req.session.user) {
         return res.status(401).json({ error: 'Authentication required' });
@@ -10,7 +10,7 @@ const requireAuth = (req, res, next) => {
     next();
 };
 
-// Middleware to verify PIN
+
 const verifyPin = async (req, res, next) => {
     const { pin } = req.body;
     if (!pin) {
@@ -29,9 +29,9 @@ const verifyPin = async (req, res, next) => {
     });
 };
 
-// Authentication routes
 
-// System authentication - verify system password
+
+
 router.post('/auth/system', [
     body('password').isLength({ min: 1 }).withMessage('System password is required')
 ], (req, res) => {
@@ -52,15 +52,15 @@ router.post('/auth/system', [
             return res.status(401).json({ error: result.message });
         }
         
-        // Set system authentication flag
+        
         req.session.systemAuthenticated = true;
         res.json({ success: true, message: 'System authenticated' });
     });
 });
 
-// Get all users for selection
+
 router.get('/auth/users', (req, res) => {
-    // Check if system is authenticated
+    
     if (!req.session.systemAuthenticated) {
         return res.status(401).json({ error: 'System authentication required' });
     }
@@ -74,12 +74,12 @@ router.get('/auth/users', (req, res) => {
     });
 });
 
-// User PIN authentication
+
 router.post('/auth/user', [
     body('userId').isInt().withMessage('Valid user ID is required'),
     body('pin').isLength({ min: 1 }).withMessage('PIN is required')
 ], (req, res) => {
-    // Check if system is authenticated
+    
     if (!req.session.systemAuthenticated) {
         return res.status(401).json({ error: 'System authentication required first' });
     }
@@ -101,12 +101,12 @@ router.post('/auth/user', [
             return res.status(401).json({ error: result.message });
         }
         
-        // Set user session
+        
         req.session.user = {
             id: userId,
             rank: result.user.rank,
             full_name: result.user.full_name,
-            username: `user_${userId}` // Generate a username for consistency
+            username: `user_${userId}` 
         };
         
         res.json({ success: true, user: req.session.user });
@@ -148,13 +148,13 @@ router.post('/auth/logout', (req, res) => {
     });
 });
 
-// Change user - clear user session but keep system authentication
+
 router.post('/auth/change-user', (req, res) => {
     if (!req.session.systemAuthenticated) {
         return res.status(401).json({ error: 'System authentication required' });
     }
     
-    // Clear user session but keep system authentication
+    
     delete req.session.user;
     res.json({ success: true, message: 'User session cleared' });
 });
@@ -169,7 +169,7 @@ router.get('/auth/check', (req, res) => {
     }
 });
 
-// Validation middleware for sign-outs
+
 const validateSignOut = [
     body('soldiers').isArray({ min: 1 }).withMessage('At least one soldier is required'),
     body('soldiers.*.rank').optional().trim(),
@@ -181,7 +181,7 @@ const validateSignOut = [
     body('pin').isLength({ min: 1 }).withMessage('PIN is required')
 ];
 
-// Get all sign-outs
+
 router.get('/', requireAuth, (req, res) => {
     req.db.getAllSignOuts((err, signouts) => {
         if (err) {
@@ -192,7 +192,7 @@ router.get('/', requireAuth, (req, res) => {
     });
 });
 
-// Get current sign-outs (currently out)
+
 router.get('/current', requireAuth, (req, res) => {
     req.db.getCurrentSignOuts((err, signouts) => {
         if (err) {
@@ -203,7 +203,7 @@ router.get('/current', requireAuth, (req, res) => {
     });
 });
 
-// Get filtered sign-outs for logs
+
 router.get('/logs', requireAuth, (req, res) => {
     const filters = {
         startDate: req.query.startDate,
@@ -222,7 +222,7 @@ router.get('/logs', requireAuth, (req, res) => {
     });
 });
 
-// Export logs as CSV
+
 router.get('/logs/export', requireAuth, (req, res) => {
     const filters = {
         startDate: req.query.startDate,
@@ -232,23 +232,23 @@ router.get('/logs/export', requireAuth, (req, res) => {
         status: req.query.status
     };
 
-    // Get individual soldier records instead of grouped sign-outs
+    
     req.db.getIndividualSignOutRecords(filters, (err, records) => {
         if (err) {
             console.error('Error fetching individual sign-out records for export:', err);
             return res.status(500).json({ error: 'Failed to export sign-outs' });
         }
 
-        // Convert to CSV with individual soldier records and DOD IDs
+        
         const csvHeaders = 'SignOut ID,Soldier Rank,Soldier First Name,Soldier Last Name,DOD ID,Location,Sign Out Time,Sign In Time,Duration (Minutes),Signed Out By,Signed In By,Status,Notes\n';
         const csvRows = records.map(record => {
             const signOutTime = new Date(record.sign_out_time);
             const signInTime = record.sign_in_time ? new Date(record.sign_in_time) : null;
             const durationMinutes = signInTime 
-                ? Math.round((signInTime - signOutTime) / (1000 * 60)) // minutes
-                : Math.round((new Date() - signOutTime) / (1000 * 60)); // minutes
+                ? Math.round((signInTime - signOutTime) / (1000 * 60)) 
+                : Math.round((new Date() - signOutTime) / (1000 * 60)); 
 
-            // Format soldier name components safely
+            
             const rank = (record.soldier_rank || '').replace(/"/g, '""');
             const firstName = (record.soldier_first_name || '').replace(/"/g, '""');
             const lastName = (record.soldier_last_name || '').replace(/"/g, '""');
@@ -283,7 +283,7 @@ router.get('/logs/export', requireAuth, (req, res) => {
     });
 });
 
-// Add new sign-out
+
 router.post('/', requireAuth, validateSignOut, verifyPin, (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -291,7 +291,7 @@ router.post('/', requireAuth, validateSignOut, verifyPin, (req, res) => {
     }
 
     const signOutData = {
-        soldiers: req.body.soldiers, // Array of soldier objects
+        soldiers: req.body.soldiers, 
         location: req.body.location,
         signed_out_by_id: req.session.user.id,
         signed_out_by_name: `${req.session.user.rank} ${req.session.user.full_name}`,
@@ -310,7 +310,7 @@ router.post('/', requireAuth, validateSignOut, verifyPin, (req, res) => {
     });
 });
 
-// Sign in soldiers
+
 router.patch('/:signoutId/signin', requireAuth, [
     body('pin').isLength({ min: 1 }).withMessage('PIN is required')
 ], verifyPin, (req, res) => {
@@ -330,7 +330,7 @@ router.patch('/:signoutId/signin', requireAuth, [
     });
 });
 
-// Get sign-out by ID
+
 router.get('/:signoutId', requireAuth, (req, res) => {
     const signoutId = req.params.signoutId;
 
@@ -346,7 +346,7 @@ router.get('/:signoutId', requireAuth, (req, res) => {
     });
 });
 
-// PIN validation for settings access
+
 router.post('/auth/validate-pin', requireAuth, [
     body('pin').isLength({ min: 1 }).withMessage('PIN is required')
 ], (req, res) => {
@@ -366,9 +366,9 @@ router.post('/auth/validate-pin', requireAuth, [
     });
 });
 
-// Settings routes
 
-// Export all data
+
+
 router.get('/export/all', requireAuth, (req, res) => {
     req.db.getAllSignOuts((err, signouts) => {
         if (err) {
@@ -376,7 +376,7 @@ router.get('/export/all', requireAuth, (req, res) => {
             return res.status(500).json({ error: 'Failed to export all data' });
         }
         
-        // Convert to CSV format
+        
         const csvData = convertToCSV(signouts);
         
         res.setHeader('Content-Type', 'text/csv');
@@ -385,7 +385,7 @@ router.get('/export/all', requireAuth, (req, res) => {
     });
 });
 
-// Create backup
+
 router.post('/backup', requireAuth, (req, res) => {
     const fs = require('fs');
     const path = require('path');
@@ -408,7 +408,7 @@ router.post('/backup', requireAuth, (req, res) => {
     }
 });
 
-// Clear old records (30+ days)
+
 router.delete('/clear-old', requireAuth, (req, res) => {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -422,7 +422,7 @@ router.delete('/clear-old', requireAuth, (req, res) => {
     });
 });
 
-// Reset system (delete all data)
+
 router.delete('/reset-system', requireAuth, (req, res) => {
     req.db.resetSystem((err) => {
         if (err) {
@@ -430,16 +430,16 @@ router.delete('/reset-system', requireAuth, (req, res) => {
             return res.status(500).json({ error: 'Failed to reset system' });
         }
         
-        // Clear session
+        
         req.session.destroy();
         
         res.json({ success: true, message: 'System reset successfully' });
     });
 });
 
-// User Management Routes
 
-// Create new user
+
+
 router.post('/auth/users', requireAuth, [
     body('username').trim().isLength({ min: 3 }).withMessage('Username must be at least 3 characters'),
     body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
@@ -489,7 +489,7 @@ router.post('/auth/users', requireAuth, [
     });
 });
 
-// Change user PIN
+
 router.patch('/auth/users/:userId/pin', requireAuth, [
     body('currentPin').matches(/^\d{4}$/).withMessage('Current PIN must be 4 digits'),
     body('newPin').matches(/^\d{4}$/).withMessage('New PIN must be 4 digits'),
@@ -524,7 +524,7 @@ router.patch('/auth/users/:userId/pin', requireAuth, [
     });
 });
 
-// Delete user
+
 router.delete('/auth/users/:userId', requireAuth, [
     body('userPin').matches(/^\d{4}$/).withMessage('User PIN must be 4 digits'),
     body('systemPassword').isLength({ min: 1 }).withMessage('System password is required')
@@ -559,7 +559,7 @@ router.delete('/auth/users/:userId', requireAuth, [
     });
 });
 
-// Helper function to convert JSON to CSV
+
 function convertToCSV(data) {
     if (!data || data.length === 0) {
         return 'No data available';
@@ -571,7 +571,7 @@ function convertToCSV(data) {
         ...data.map(row => 
             headers.map(header => {
                 const value = row[header];
-                // Escape commas and quotes in CSV
+                
                 if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
                     return `"${value.replace(/"/g, '""')}"`;
                 }

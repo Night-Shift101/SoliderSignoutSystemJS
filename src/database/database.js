@@ -8,7 +8,7 @@ class Database {
     }
 
     init() {
-        // Create data directory if it doesn't exist
+        
         const fs = require('fs');
         const dataDir = path.dirname(this.dbPath);
         if (!fs.existsSync(dataDir)) {
@@ -26,7 +26,7 @@ class Database {
     }
 
     createTables() {
-        // Users table for authentication (NCOs)
+        
         const createUsersTable = `
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -41,7 +41,7 @@ class Database {
             )
         `;
 
-        // Sign-outs table - Individual soldier entries with shared signout_id for groups
+        
         const createSignOutsTable = `
             CREATE TABLE IF NOT EXISTS signouts (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -72,7 +72,7 @@ class Database {
             } else {
                 console.log('Users table ready');
                 this.createDefaultAdmin();
-                this.createTestUsers(); // Add test users for development
+                this.createTestUsers(); 
             }
         });
 
@@ -85,7 +85,7 @@ class Database {
             }
         });
 
-        // Create trigger to update the updated_at timestamp
+        
         const updateTrigger = `
             CREATE TRIGGER IF NOT EXISTS update_signouts_timestamp 
             AFTER UPDATE ON signouts
@@ -101,14 +101,14 @@ class Database {
         });
     }
 
-    // Create default admin user
+    
     createDefaultAdmin() {
         const bcrypt = require('bcrypt');
         const defaultUsername = 'admin';
         const defaultPassword = 'admin123';
         const defaultPin = '1234';
         
-        // Check if admin user exists
+        
         this.db.get('SELECT id FROM users WHERE username = ?', [defaultUsername], (err, row) => {
             if (err) {
                 console.error('Error checking for admin user:', err.message);
@@ -116,7 +116,7 @@ class Database {
             }
             
             if (!row) {
-                // Create default admin user
+                
                 const passwordHash = bcrypt.hashSync(defaultPassword, 10);
                 const pinHash = bcrypt.hashSync(defaultPin, 10);
                 
@@ -138,7 +138,7 @@ class Database {
         });
     }
 
-    // Create test NCO users for development
+    
     createTestUsers() {
         const bcrypt = require('bcrypt');
         
@@ -160,7 +160,7 @@ class Database {
         ];
 
         testUsers.forEach(user => {
-            // Check if user exists
+            
             this.db.get('SELECT id FROM users WHERE username = ?', [user.username], (err, row) => {
                 if (err) {
                     console.error('Error checking for test user:', err.message);
@@ -171,7 +171,7 @@ class Database {
                 const pinHash = bcrypt.hashSync(user.pin, 10);
                 
                 if (!row) {
-                    // Create test user
+                    
                     this.db.run(
                         'INSERT INTO users (username, password_hash, pin_hash, rank, full_name) VALUES (?, ?, ?, ?, ?)',
                         [user.username, passwordHash, pinHash, user.rank, user.full_name],
@@ -184,7 +184,7 @@ class Database {
                         }
                     );
                 } else {
-                    // Update existing user's PIN
+                    
                     this.db.run(
                         'UPDATE users SET pin_hash = ? WHERE username = ?',
                         [pinHash, user.username],
@@ -201,8 +201,8 @@ class Database {
         });
     }
 
-    // User authentication methods
-    // System password verification - checks if any admin user's password matches
+    
+    
     verifySystemPassword(password, callback) {
         const bcrypt = require('bcrypt');
         const query = 'SELECT password_hash FROM users WHERE username = "admin" AND is_active = 1';
@@ -218,7 +218,7 @@ class Database {
         });
     }
 
-    // Get all NCO users for selection
+    
     getAllUsers(callback) {
         const query = 'SELECT id, username, rank, full_name FROM users WHERE is_active = 1 ORDER BY rank, full_name';
         
@@ -228,7 +228,7 @@ class Database {
         });
     }
 
-    // Verify user PIN by user ID
+    
     verifyUserPinById(userId, pin, callback) {
         const bcrypt = require('bcrypt');
         const query = 'SELECT pin_hash, rank, full_name FROM users WHERE id = ? AND is_active = 1';
@@ -260,7 +260,7 @@ class Database {
                 if (err) return callback(err, null);
                 if (!match) return callback(null, { success: false, message: 'Invalid password' });
                 
-                // Update last login
+                
                 this.db.run('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?', [user.id]);
                 
                 callback(null, { 
@@ -288,7 +288,7 @@ class Database {
         });
     }
 
-    // Get all sign-outs - Groups individual soldiers by signout_id
+    
     getAllSignOuts(callback) {
         const query = `
             SELECT 
@@ -326,7 +326,7 @@ class Database {
                 return callback(err);
             }
             
-            // Parse the soldiers JSON string for each row
+            
             const processedRows = rows.map(row => {
                 try {
                     row.soldiers = JSON.parse(row.soldiers);
@@ -341,7 +341,7 @@ class Database {
         });
     }
 
-    // Get currently signed out - Groups individual soldiers by signout_id
+    
     getCurrentSignOuts(callback) {
         const query = `
             SELECT 
@@ -377,7 +377,7 @@ class Database {
                 return callback(err);
             }
             
-            // Parse the soldiers JSON string for each row
+            
             const processedRows = rows.map(row => {
                 try {
                     row.soldiers = JSON.parse(row.soldiers);
@@ -392,21 +392,21 @@ class Database {
         });
     }
 
-    // Add new sign-out - Creates individual entries for each soldier with shared signout_id
+    
     addSignOut(signOutData, callback) {
-        // Generate unique sign-out ID for the group
+        
         const signOutId = this.generateSignOutId();
         const signOutTime = new Date().toISOString();
         
-        // Parse soldiers array from the request
+        
         const soldiers = signOutData.soldiers || [];
         
         if (!soldiers || soldiers.length === 0) {
             return callback(new Error('No soldiers provided for sign-out'));
         }
         
-        // Begin transaction to ensure all soldier entries are created together
-        const db = this.db; // Capture reference for use in callbacks
+        
+        const db = this.db; 
         
         db.serialize(() => {
             db.run('BEGIN TRANSACTION');
@@ -422,7 +422,7 @@ class Database {
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `;
             
-            // Insert each soldier as a separate row with the same signout_id
+            
             soldiers.forEach((soldier, index) => {
                 const params = [
                     signOutId,
@@ -447,7 +447,7 @@ class Database {
                         return callback(err);
                     }
                     
-                    // If this is the last soldier and no errors
+                    
                     if (completed === soldiers.length && !hasError) {
                         db.run('COMMIT', (commitErr) => {
                             if (commitErr) {
@@ -466,7 +466,7 @@ class Database {
         });
     }
 
-    // Sign in soldiers
+    
     signInSoldiers(signOutId, signedInById, signedInByName, callback) {
         const query = `
             UPDATE signouts 
@@ -482,7 +482,7 @@ class Database {
         });
     }
 
-    // Get sign-out by ID
+    
     getSignOutById(signOutId, callback) {
         const query = `
             SELECT 
@@ -523,7 +523,7 @@ class Database {
                 return callback(null, null);
             }
             
-            // Parse the soldiers JSON string
+            
             try {
                 row.soldiers = JSON.parse(row.soldiers);
             } catch (e) {
@@ -535,7 +535,7 @@ class Database {
         });
     }
 
-    // Get filtered sign-outs for logs - Groups individual soldiers by signout_id
+    
     getFilteredSignOuts(filters, callback) {
         let baseQuery = `
             SELECT 
@@ -604,7 +604,7 @@ class Database {
                 return callback(err);
             }
             
-            // Parse the soldiers JSON string for each row
+            
             const processedRows = rows.map(row => {
                 try {
                     row.soldiers = JSON.parse(row.soldiers);
@@ -619,7 +619,7 @@ class Database {
         });
     }
 
-    // Get individual soldier records for export (not grouped by signout_id)
+    
     getIndividualSignOutRecords(filters, callback) {
         let baseQuery = `
             SELECT 
@@ -680,7 +680,7 @@ class Database {
         });
     }
 
-    // Generate unique sign-out ID
+    
     generateSignOutId() {
         const now = new Date();
         const year = now.getFullYear().toString().slice(-2);
@@ -691,7 +691,7 @@ class Database {
         return `SO${year}${month}${day}-${time}`;
     }
 
-    // Close database connection
+    
     close() {
         if (this.db) {
             this.db.close((err) => {
@@ -704,9 +704,9 @@ class Database {
         }
    }
 
-    // Migration method to handle schema changes
+    
     migrateSignOutsTable() {
-        // Check if the table has the old structure (soldier_names column)
+        
         this.db.all("PRAGMA table_info(signouts)", (err, columns) => {
             if (err) {
                 console.error('Error checking table structure:', err.message);
@@ -725,7 +725,7 @@ class Database {
     }
 
     performSignOutsMigration() {
-        // Create backup table
+        
         const backupTableQuery = `
             CREATE TABLE IF NOT EXISTS signouts_backup AS 
             SELECT * FROM signouts
@@ -737,14 +737,14 @@ class Database {
                 return;
             }
             
-            // Drop the old table
+            
             this.db.run('DROP TABLE signouts', (err) => {
                 if (err) {
                     console.error('Error dropping old table:', err.message);
                     return;
                 }
                 
-                // Recreate with new structure
+                
                 const createNewTable = `
                     CREATE TABLE signouts (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -775,7 +775,7 @@ class Database {
                         return;
                     }
                     
-                    // Migrate data from backup
+                    
                     this.migrateOldData();
                 });
             });
@@ -783,7 +783,7 @@ class Database {
     }
 
     migrateOldData() {
-        // Get data from backup table
+        
         this.db.all('SELECT * FROM signouts_backup', (err, oldRecords) => {
             if (err) {
                 console.error('Error reading backup data:', err.message);
@@ -799,11 +799,11 @@ class Database {
             console.log(`Migrating ${oldRecords.length} old records...`);
             
             oldRecords.forEach(record => {
-                // Parse soldier names (comma-separated format from old system)
+                
                 const soldierNames = record.soldier_names.split(',').map(name => name.trim());
                 
                 soldierNames.forEach(soldierName => {
-                    // Try to extract rank and name (assuming format like "SGT John Doe")
+                    
                     const nameParts = soldierName.trim().split(' ');
                     let rank = 'Unknown';
                     let firstName = 'Unknown';
@@ -854,14 +854,14 @@ class Database {
             });
             
             console.log('Migration completed');
-            // Clean up backup table
+            
             setTimeout(() => {
                 this.db.run('DROP TABLE signouts_backup');
             }, 1000);
         });
     }
 
-    // Settings-related methods
+    
     
     clearOldRecords(cutoffDate, callback) {
         const deleteOldRecords = `
@@ -915,13 +915,13 @@ class Database {
         });
     }
     
-    // User Management Methods
+    
     
     createUser(userData, callback) {
         const bcrypt = require('bcrypt');
         const { username, password, pin, rank, firstName, lastName } = userData;
         
-        // Check if username already exists
+        
         this.db.get('SELECT id FROM users WHERE username = ?', [username], (err, row) => {
             if (err) {
                 return callback(err);
@@ -931,12 +931,12 @@ class Database {
                 return callback(new Error('Username already exists'));
             }
             
-            // Hash password and PIN
+            
             const passwordHash = bcrypt.hashSync(password, 10);
             const pinHash = bcrypt.hashSync(pin, 10);
             const fullName = `${firstName} ${lastName}`;
             
-            // Insert new user
+            
             const insertQuery = `
                 INSERT INTO users (username, password_hash, pin_hash, rank, full_name) 
                 VALUES (?, ?, ?, ?, ?)
@@ -960,7 +960,7 @@ class Database {
     changeUserPin(userId, currentPin, newPin, callback) {
         const bcrypt = require('bcrypt');
         
-        // First verify current PIN
+        
         this.verifyUserPin(userId, currentPin, (err, isValid) => {
             if (err) {
                 return callback(err);
@@ -970,7 +970,7 @@ class Database {
                 return callback(new Error('Current PIN is incorrect'));
             }
             
-            // Hash new PIN and update
+            
             const newPinHash = bcrypt.hashSync(newPin, 10);
             
             this.db.run(
@@ -994,7 +994,7 @@ class Database {
     deleteUser(userId, userPin, systemPassword, callback) {
         const bcrypt = require('bcrypt');
         
-        // Verify system password first
+        
         this.verifySystemPassword(systemPassword, (err, systemResult) => {
             if (err) {
                 return callback(err);
@@ -1004,7 +1004,7 @@ class Database {
                 return callback(new Error('Invalid system password'));
             }
             
-            // Verify user PIN
+            
             this.verifyUserPin(userId, userPin, (err, pinValid) => {
                 if (err) {
                     return callback(err);
@@ -1014,7 +1014,7 @@ class Database {
                     return callback(new Error('Invalid user PIN'));
                 }
                 
-                // Check if user exists and is not admin
+                
                 this.db.get('SELECT username FROM users WHERE id = ?', [userId], (err, user) => {
                     if (err) {
                         return callback(err);
@@ -1028,11 +1028,11 @@ class Database {
                         return callback(new Error('Cannot delete admin user'));
                     }
                     
-                    // Begin transaction to delete user and update their sign-out records
+                    
                     this.db.serialize(() => {
                         this.db.run('BEGIN TRANSACTION');
                         
-                        // Update sign-out records to remove user references
+                        
                         this.db.run(
                             'UPDATE signouts SET signed_out_by_name = signed_out_by_name || " (deleted user)" WHERE signed_out_by_id = ?',
                             [userId],
@@ -1051,7 +1051,7 @@ class Database {
                                             return callback(err);
                                         }
                                         
-                                        // Delete the user
+                                        
                                         this.db.run(
                                             'DELETE FROM users WHERE id = ?',
                                             [userId],

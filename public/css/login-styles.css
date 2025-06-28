@@ -1,9 +1,4 @@
-/* 
- * Soldier Sign-Out System - Login Page CSS
- * Styling for login interface
- */
 
-/* Login page specific styles */
 .login-body {
     background: var(--background-primary);
     min-height: 100vh;
@@ -15,7 +10,6 @@
     overflow: hidden;
 }
 
-/* Animated background */
 .animated-bg {
     position: absolute;
     top: 0;
@@ -30,7 +24,6 @@
     overflow: hidden;
 }
 
-/* Add overlay for better readability */
 .animated-bg::after {
     content: '';
     position: absolute;
@@ -38,7 +31,6 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(26, 32, 44, 0.7); /* Dark overlay for readability */
     z-index: 1;
 }
 
@@ -66,7 +58,6 @@
     }
 }
 
-/* Login container */
 .login-container {
     display: flex;
     width: 90%;
@@ -78,10 +69,8 @@
     background: var(--background-secondary);
     animation: fadeIn 0.6s ease-in-out;
     position: relative;
-    z-index: 10; /* Ensure it appears above the background overlay */
 }
 
-/* Logo section */
 .logo-section {
     flex: 1;
     background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
@@ -132,7 +121,6 @@
     opacity: 0.8;
 }
 
-/* Forms section */
 .forms-section {
     flex: 1;
     display: flex;
@@ -239,7 +227,6 @@
     }
 }
 
-/* Enhanced form input styles for login page */
 .form-group {
     margin-bottom: 16px;
     position: relative;
@@ -279,7 +266,6 @@
     opacity: 0.7;
 }
 
-/* Password input with toggle visibility */
 .password-input-wrapper {
     position: relative;
 }
@@ -303,7 +289,6 @@
     color: var(--text-primary);
 }
 
-/* Custom select styling */
 .form-group select {
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%234a5568' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M8 11.5a.5.5 0 0 0 .5-.5V6a.5.5 0 0 0-1 0v5a.5.5 0 0 0 .5.5z'/%3E%3Cpath fill-rule='evenodd' d='M5.354 7.146a.5.5 0 0 0-.708.708l3 3a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8 9.293 5.354 7.146z'/%3E%3C/svg%3E");
@@ -313,7 +298,6 @@
     padding-right: 40px;
 }
 
-/* Enhanced buttons for login */
 .btn-primary {
     background: linear-gradient(to right, var(--primary-color), var(--primary-light));
     border: none;
@@ -341,13 +325,11 @@
     color: var(--text-primary);
 }
 
-/* Animated focus effect */
 .form-group.focused label {
     color: var(--accent-blue);
     font-size: 13px;
 }
 
-/* Responsive design */
 @media (max-width: 768px) {
     .login-container {
         flex-direction: column;

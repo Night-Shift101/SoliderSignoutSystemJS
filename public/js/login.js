@@ -1,6 +1,6 @@
 class LoginApp {
     constructor() {
-        this.currentStep = 'system'; // 'system' or 'user'
+        this.currentStep = 'system'; 
         this.users = [];
         this.authCheckInProgress = false;
         this.initializeElements();
@@ -9,32 +9,32 @@ class LoginApp {
     }
 
     initializeElements() {
-        // Container elements
+        
         this.loginContainer = document.getElementById('loginContainer');
         this.animatedBg = document.getElementById('animatedBg');
         
-        // Forms
+        
         this.systemPasswordForm = document.getElementById('systemPasswordForm');
         this.userSelectionForm = document.getElementById('userSelectionForm');
         
-        // System password elements
+        
         this.systemPassword = document.getElementById('systemPassword');
         this.systemLoginBtn = document.getElementById('systemLoginBtn');
         this.systemErrorMessage = document.getElementById('systemErrorMessage');
         
-        // User selection elements
+        
         this.userSelect = document.getElementById('userSelect');
         this.userPin = document.getElementById('userPin');
         this.userLoginBtn = document.getElementById('userLoginBtn');
         this.userErrorMessage = document.getElementById('userErrorMessage');
         this.logoutBtn = document.getElementById('logoutBtn');
         
-        // Subtitle
+        
         this.loginSubtitle = document.getElementById('loginSubtitle');
     }
 
     attachEventListeners() {
-        // System password form
+        
         this.systemLoginBtn?.addEventListener('click', (e) => {
             e.preventDefault();
             this.handleSystemLogin();
@@ -47,7 +47,7 @@ class LoginApp {
             }
         });
 
-        // User selection form
+        
         this.userLoginBtn?.addEventListener('click', (e) => {
             e.preventDefault();
             this.handleUserLogin();
@@ -60,13 +60,13 @@ class LoginApp {
             }
         });
 
-        // Logout button
+        
         this.logoutBtn?.addEventListener('click', (e) => {
             e.preventDefault();
             this.handleLogout();
         });
 
-        // Password toggle buttons
+        
         document.querySelectorAll('.password-toggle').forEach(button => {
             button.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -77,7 +77,7 @@ class LoginApp {
 
     async checkExistingSession() {
         try {
-            // Prevent multiple rapid auth checks
+            
             if (this.authCheckInProgress) {
                 return;
             }
@@ -89,10 +89,10 @@ class LoginApp {
             const result = await response.json();
             
             if (result.authenticated) {
-                // Fully authenticated - DO NOT redirect if we're already being redirected
+                
                 console.log('User authenticated, but checking if redirect is safe');
                 
-                // Only redirect if we came directly to login page, not via a redirect
+                
                 const referrer = document.referrer;
                 const currentPath = window.location.pathname;
                 
@@ -101,15 +101,15 @@ class LoginApp {
                     window.location.href = '/';
                 } else {
                     console.log('Redirect loop detected, staying on login page');
-                    // Show a message instead of redirecting
+                    
                     this.showMessage('You are already logged in. Click here to go to dashboard.');
                 }
             } else if (result.systemAuthenticated) {
-                // System authenticated but no user selected
+                
                 await this.loadUsers();
                 this.showUserStep();
             } else {
-                // No authentication
+                
                 this.showSystemStep();
             }
         } catch (error) {
@@ -216,7 +216,7 @@ class LoginApp {
             const result = await response.json();
 
             if (response.ok && result.success) {
-                // Redirect to dashboard
+                
                 window.location.href = '/';
             } else {
                 this.showUserError(result.error || 'Invalid PIN');
@@ -235,13 +235,13 @@ class LoginApp {
                 method: 'POST',
                 credentials: 'same-origin'
             });
-            // Clear forms and show system step
+            
             this.systemPassword.value = '';
             this.userPin.value = '';
             this.showSystemStep();
         } catch (error) {
             console.error('Logout error:', error);
-            // Still show system step even if logout fails
+            
             this.showSystemStep();
         }
     }
@@ -249,11 +249,11 @@ class LoginApp {
     showSystemStep() {
         this.currentStep = 'system';
         
-        // Simple class changes
+        
         this.loginContainer.classList.remove('user-step');
         this.animatedBg.classList.remove('user-step');
         
-        // Simple form switching
+        
         this.userSelectionForm.style.display = 'none';
         this.systemPasswordForm.style.display = 'block';
         
@@ -261,18 +261,18 @@ class LoginApp {
         this.systemPassword.value = '';
         this.hideSystemError();
         
-        // Focus immediately
+        
         this.systemPassword.focus();
     }
 
     showUserStep() {
         this.currentStep = 'user';
         
-        // Simple class changes
+        
         this.animatedBg.classList.add('user-step');
         this.loginContainer.classList.add('user-step');
         
-        // Simple form switching
+        
         this.systemPasswordForm.style.display = 'none';
         this.userSelectionForm.style.display = 'block';
         
@@ -280,7 +280,7 @@ class LoginApp {
         this.userPin.value = '';
         this.hideUserError();
         
-        // Focus after brief delay for transition
+        
         setTimeout(() => {
             this.userSelect.focus();
         }, 200);
@@ -321,7 +321,7 @@ class LoginApp {
     }
 
     showMessage(message) {
-        // Create or update a message div
+        
         let messageDiv = document.getElementById('loginMessage');
         if (!messageDiv) {
             messageDiv = document.createElement('div');
@@ -337,7 +337,7 @@ class LoginApp {
                 font-weight: 500;
             `;
             
-            // Insert after login header
+            
             const loginHeader = document.querySelector('.login-header');
             if (loginHeader) {
                 loginHeader.parentNode.insertBefore(messageDiv, loginHeader.nextSibling);
@@ -351,7 +351,7 @@ class LoginApp {
     }
 }
 
-// Initialize the app when the page loads
+
 document.addEventListener('DOMContentLoaded', () => {
     try {
         new LoginApp();

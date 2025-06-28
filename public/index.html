@@ -12,7 +12,7 @@
 </head>
 <body>
     <div class="container">
-        <!-- Notification Chips Area -->
+        
         <div id="notificationChips" class="notification-chips-container"></div>
         
         <header class="header">
@@ -45,7 +45,7 @@
                     <span class="icon">+</span> New Sign-Out
                 </button>
                 
-                <!-- Hamburger Menu -->
+                
                 <div class="hamburger-menu">
                     <button id="hamburgerBtn" class="hamburger-btn" aria-label="Menu">
                         <div class="hamburger-icon">
@@ -78,9 +78,9 @@
         </header>
 
         <main class="main">
-            <!-- Dashboard View -->
+            
             <div id="dashboardView" class="view">
-                <!-- Current Sign-Outs Table -->
+                
                 <div class="section-header">
                     <h2>Currently Signed Out</h2>
                     <div class="search-section">
@@ -102,7 +102,7 @@
                             </tr>
                         </thead>
                         <tbody id="currentSignOutsTableBody">
-                            <!-- Data will be loaded here -->
+                            
                         </tbody>
                     </table>
                     <div id="emptyState" class="empty-state" style="display: none;">
@@ -113,7 +113,7 @@
                 </div>
             </div>
 
-            <!-- Logs View -->
+            
             <div id="logsView" class="view" style="display: none;">
                 <div class="logs-container">
                     <div class="section-header">
@@ -123,7 +123,7 @@
                         </button>
                     </div>
 
-                    <!-- Filters -->
+                    
                     <div class="logs-filters">
                         <div class="filter-grid">
                             <div class="form-group">
@@ -160,7 +160,7 @@
                         </div>
                     </div>
 
-                    <!-- Logs Table -->
+                    
                     <div class="table-container">
                         <table class="signouts-table">
                             <thead>
@@ -178,7 +178,7 @@
                                 </tr>
                             </thead>
                             <tbody id="logsTableBody">
-                                <!-- Data will be loaded here -->
+                                
                             </tbody>
                         </table>
                         <div id="logsEmptyState" class="empty-state" style="display: none;">
@@ -190,7 +190,7 @@
                 </div>
             </div>
 
-            <!-- Settings View -->
+            
             <div id="settingsView" class="view" style="display: none;">
                 <div class="settings-header">
                     <h2>System Settings</h2>
@@ -273,7 +273,7 @@
         </main>
     </div>
 
-    <!-- Modal for New Sign-Out -->
+    
     <div id="signOutModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -281,7 +281,7 @@
                 <button class="modal-close" id="closeModal">&times;</button>
             </div>
             <form id="signOutForm" class="form">
-                <!-- Barcode Scanning Section -->
+                
                 <div class="form-section">
                     <h3>Scan CAC Barcodes</h3>
                     <div class="form-group">
@@ -300,7 +300,7 @@
                         </div>
                     </div>
                     
-                    <!-- Soldiers List as Chips -->
+                    
                     <div class="form-group">
                         <div class="soldiers-header">
                             <label>Added Soldiers</label>
@@ -343,7 +343,7 @@
         </div>
     </div>
 
-    <!-- PIN Verification Modal for Sign-In -->
+    
     <div id="pinModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -370,7 +370,7 @@
         </div>
     </div>
 
-    <!-- Sign-Out Info Modal -->
+    
     <div id="infoModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -379,20 +379,20 @@
             </div>
             <div class="modal-body">
                 <div id="infoModalContent">
-                    <!-- Content will be populated dynamically -->
+                    
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Loading Overlay -->
+    
     <div id="loadingOverlay" class="loading-overlay" style="display: none;">
         <div class="loading-spinner"></div>
     </div>
 
-    <!-- User Management Modals -->
     
-    <!-- Create User Modal -->
+    
+    
     <div id="createUserModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -462,7 +462,7 @@
         </div>
     </div>
 
-    <!-- Change PIN Modal -->
+    
     <div id="changePinModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -502,7 +502,7 @@
         </div>
     </div>
 
-    <!-- Delete User Modal -->
+    
     <div id="deleteUserModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">

@@ -1,7 +1,3 @@
-/**
- * Barcode Scanning Module
- * Handles CAC barcode scanning and soldier management
- */
 class BarcodeManager {
     constructor(notificationManager) {
         this.notificationManager = notificationManager;
@@ -23,11 +19,11 @@ class BarcodeManager {
         this.clearBarcodeBtn.addEventListener('click', () => this.clearBarcodeData());
         this.clearAllSoldiersBtn.addEventListener('click', () => this.clearAllSoldiers());
         this.barcodeInput.addEventListener('paste', () => {
-            // Auto-parse after a short delay when data is pasted
+            
             setTimeout(() => this.handleBarcodeParse(), 100);
         });
         
-        // Event delegation for soldier chip removal buttons
+        
         document.addEventListener('click', (e) => {
             if (e.target.classList.contains('soldier-chip-remove')) {
                 const index = parseInt(e.target.dataset.index);
@@ -50,7 +46,7 @@ class BarcodeManager {
             const parsedInfo = window.BarcodeParser.parseSoldierInfo(barcodeData);
             
             if (parsedInfo && window.BarcodeParser.validateSoldierInfo(parsedInfo)) {
-                // Check if soldier is already added
+                
                 const isDuplicate = this.addedSoldiers.some(soldier => 
                     soldier.firstName === parsedInfo.firstName && 
                     soldier.lastName === parsedInfo.lastName &&
@@ -62,17 +58,17 @@ class BarcodeManager {
                     return;
                 }
                 
-                // Add soldier to the list
+                
                 this.addedSoldiers.push(parsedInfo);
                 this.renderSoldierChips();
                 
-                // Show success notification
+                
                 this.notificationManager.showNotification(
                     `Successfully added: ${parsedInfo.rank} ${parsedInfo.fullName}`, 
                     'success'
                 );
                 
-                // Clear the barcode input
+                
                 this.barcodeInput.value = '';
                 
                 console.log('Added soldier:', parsedInfo);
@@ -111,22 +107,22 @@ class BarcodeManager {
     }
 
     autoAdjustContainerHeight() {
-        // Auto-adjust container height based on content
+        
         setTimeout(() => {
             const container = this.soldiersChips;
             const contentHeight = container.scrollHeight;
             const minHeight = 60;
             const maxHeight = 300;
             
-            // Calculate optimal height
+            
             const optimalHeight = Math.min(Math.max(contentHeight + 24, minHeight), maxHeight);
             
-            // Only adjust if content exceeds current height or is much smaller
+            
             if (contentHeight > container.clientHeight || contentHeight < container.clientHeight - 50) {
                 container.style.height = `${optimalHeight}px`;
             }
             
-            // Add scroll if content exceeds max height
+            
             if (contentHeight > maxHeight) {
                 container.style.overflowY = 'auto';
             } else {

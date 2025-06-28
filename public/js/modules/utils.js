@@ -1,7 +1,3 @@
-/**
- * Utility Functions Module
- * Common utility functions used throughout the application
- */
 class Utils {
     static calculateDuration(startTime, endTime = null) {
         const start = new Date(startTime);
@@ -53,7 +49,7 @@ class Utils {
     }
 
     static renderSoldierChipsForTable(soldiers, soldierCount) {
-        // If soldiers is still a string (fallback), parse it
+        
         if (typeof soldiers === 'string') {
             if (!soldiers) return '<span class="no-soldiers">No soldiers</span>';
             const soldierNames = soldiers.split(',').map(name => name.trim()).filter(name => name.length > 0);
@@ -65,12 +61,12 @@ class Utils {
             }));
         }
         
-        // If soldiers is an array but empty
+        
         if (!soldiers || !Array.isArray(soldiers) || soldiers.length === 0) {
             return '<span class="no-soldiers">No soldiers</span>';
         }
         
-        // Determine rank category for styling
+        
         const getRankCategory = (rank) => {
             const rankUpper = (rank || '').toUpperCase();
             if (rankUpper.includes('LT') || rankUpper.includes('CPT') || rankUpper.includes('MAJ') || 
@@ -84,7 +80,7 @@ class Utils {
             }
         };
         
-        // Show first 4 soldiers as chips
+        
         const maxVisible = 4;
         const chipElements = soldiers.slice(0, maxVisible).map((soldier, index) => {
             const rankCategory = getRankCategory(soldier.rank);
@@ -104,7 +100,7 @@ class Utils {
         
         let result = `<div class="table-soldier-chips">${chipElements}`;
         
-        // Add "and X more" indicator if there are more soldiers
+        
         if (soldiers.length > maxVisible) {
             const remainingSoldiers = soldiers.slice(maxVisible);
             const remainingNames = remainingSoldiers.map(s => 
@@ -123,7 +119,7 @@ class Utils {
         
         result += '</div>';
         
-        // Add soldier count indicator
+        
         if (soldierCount && soldierCount > 1) {
             result += `
                 <div class="soldier-count-indicator">
@@ -158,7 +154,7 @@ class Utils {
         const start = new Date(startTime);
         const end = endTime ? new Date(endTime) : new Date();
         const diffMs = end - start;
-        return Math.floor(diffMs / (1000 * 60 * 60)); // Convert to hours
+        return Math.floor(diffMs / (1000 * 60 * 60)); 
     }
 
     static renderSoldierChips(soldiers) {

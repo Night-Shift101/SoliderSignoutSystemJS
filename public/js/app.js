@@ -1,7 +1,3 @@
-/**
- * Main Application Controller
- * Soldier Sign-Out System
- */
 class SoldierSignOutApp {
     constructor() {
         this.signouts = [];
@@ -10,11 +6,11 @@ class SoldierSignOutApp {
         this.currentSignOutId = null;
         this.durationInterval = null;
         
-        // Initialize modules
+        
         this.notificationManager = new NotificationManager();
         this.barcodeManager = new BarcodeManager(this.notificationManager);
         
-        // Make barcode manager globally accessible for onclick handlers
+        
         window.barcodeManager = this.barcodeManager;
         
         this.initializeElements();
@@ -22,18 +18,18 @@ class SoldierSignOutApp {
     }
 
     initializeElements() {
-        // User selector
+        
         this.userSelectorBtn = document.getElementById('userSelectorBtn');
         this.userSelectorDropdown = document.getElementById('userSelectorDropdown');
         this.currentUserName = document.getElementById('currentUserName');
         this.usersList = document.getElementById('usersList');
         
-        // Hamburger menu
+        
         this.hamburgerBtn = document.getElementById('hamburgerBtn');
         this.hamburgerMenu = document.querySelector('.hamburger-menu');
         this.hamburgerDropdown = document.getElementById('hamburgerDropdown');
         
-        // Buttons
+        
         this.refreshBtn = document.getElementById('refreshBtn');
         this.newSignOutBtn = document.getElementById('newSignOutBtn');
         this.logsBtn = document.getElementById('logsBtn');
@@ -43,18 +39,18 @@ class SoldierSignOutApp {
         this.backToDashboard = document.getElementById('backToDashboard');
         this.backToMainBtn = document.getElementById('backToMainBtn');
         
-        // Views
+        
         this.dashboardView = document.getElementById('dashboardView');
         this.logsView = document.getElementById('logsView');
         this.settingsView = document.getElementById('settingsView');
         
-        // Modal elements
+        
         this.signOutModal = document.getElementById('signOutModal');
         this.closeModal = document.getElementById('closeModal');
         this.cancelBtn = document.getElementById('cancelBtn');
         this.signOutForm = document.getElementById('signOutForm');
         
-        // PIN modal
+        
         this.pinModal = document.getElementById('pinModal');
         this.closePinModalBtn = document.getElementById('closePinModal');
         this.pinInput = document.getElementById('pinInput');
@@ -63,26 +59,26 @@ class SoldierSignOutApp {
         this.pinError = document.getElementById('pinError');
         this.signInDetails = document.getElementById('signInDetails');
         
-        // Info modal
+        
         this.infoModal = document.getElementById('infoModal');
         this.closeInfoModalBtn = document.getElementById('closeInfoModal');
         this.infoModalContent = document.getElementById('infoModalContent');
         
-        // Search
+        
         this.searchInput = document.getElementById('searchInput');
         
-        // Tables
+        
         this.currentSignOutsTableBody = document.getElementById('currentSignOutsTableBody');
         this.logsTableBody = document.getElementById('logsTableBody');
         this.emptyState = document.getElementById('emptyState');
         this.logsEmptyState = document.getElementById('logsEmptyState');
         
-        // Counts
+        
         this.currentlyOutCount = document.getElementById('currentlyOutCount');
         this.totalTodayCount = document.getElementById('totalTodayCount');
         this.totalRecordsCount = document.getElementById('totalRecordsCount');
         
-        // Filters
+        
         this.startDate = document.getElementById('startDate');
         this.endDate = document.getElementById('endDate');
         this.soldierNameFilter = document.getElementById('soldierNameFilter');
@@ -92,7 +88,7 @@ class SoldierSignOutApp {
         this.clearFiltersBtn = document.getElementById('clearFiltersBtn');
         this.exportCsvBtn = document.getElementById('exportCsvBtn');
         
-        // Settings elements
+        
         this.currentUserDisplay = document.getElementById('currentUserDisplay');
         this.userRoleDisplay = document.getElementById('userRoleDisplay');
         this.maxSignOutDuration = document.getElementById('maxSignOutDuration');
@@ -104,12 +100,12 @@ class SoldierSignOutApp {
         this.clearOldRecordsBtn = document.getElementById('clearOldRecordsBtn');
         this.resetSystemBtn = document.getElementById('resetSystemBtn');
         
-        // User Management elements
+        
         this.createUserBtn = document.getElementById('createUserBtn');
         this.changePinBtn = document.getElementById('changePinBtn');
         this.deleteUserBtn = document.getElementById('deleteUserBtn');
         
-        // User Management Modals
+        
         this.createUserModal = document.getElementById('createUserModal');
         this.closeCreateUserModal = document.getElementById('closeCreateUserModal');
         this.createUserForm = document.getElementById('createUserForm');
@@ -136,13 +132,13 @@ class SoldierSignOutApp {
 
     async checkAuthentication() {
         try {
-            // Prevent redirect loop - don't redirect if we're already on login page
+            
             if (window.location.pathname === '/login' || window.location.pathname === '/login.html') {
                 console.log('Already on login page, skipping auth check');
                 return;
             }
             
-            // Prevent multiple concurrent auth checks
+            
             if (this.authCheckInProgress) {
                 console.log('Auth check already in progress, skipping');
                 return;
@@ -152,7 +148,7 @@ class SoldierSignOutApp {
             console.log('Checking authentication...');
             const response = await Utils.fetchWithAuth('/api/signouts/auth/check');
             
-            // DEBUG: Log response details
+            
             console.log('Auth check response status:', response.status);
             console.log('Auth check response ok:', response.ok);
             
@@ -166,12 +162,12 @@ class SoldierSignOutApp {
             
             if (!result.authenticated) {
                 console.log('Not authenticated, redirecting to login...');
-                // Clear any existing intervals/timers
+                
                 if (this.durationInterval) {
                     clearInterval(this.durationInterval);
                 }
                 
-                // Add a small delay and check if already redirecting
+                
                 if (!window.location.href.includes('/login')) {
                     setTimeout(() => {
                         console.log('EXECUTING REDIRECT TO LOGIN - NOT AUTHENTICATED');
@@ -198,7 +194,7 @@ class SoldierSignOutApp {
             
         } catch (error) {
             console.error('Authentication check failed with error:', error);
-            // Prevent redirect loop
+            
             if (window.location.pathname !== '/login' && window.location.pathname !== '/login.html') {
                 if (!window.location.href.includes('/login')) {
                     setTimeout(() => {
@@ -213,38 +209,38 @@ class SoldierSignOutApp {
     }
 
     attachEventListeners() {
-        // User selector events
+        
         this.userSelectorBtn?.addEventListener('click', (e) => {
             e.stopPropagation();
             this.toggleUserSelector();
         });
         
-        // Close user selector when clicking outside
+        
         document.addEventListener('click', (e) => {
             if (!this.userSelectorDropdown?.parentElement.contains(e.target)) {
                 this.closeUserSelector();
             }
         });
         
-        // Hamburger menu events
+        
         this.hamburgerBtn?.addEventListener('click', (e) => {
             e.stopPropagation();
             this.toggleHamburgerMenu();
         });
         
-        // Close hamburger menu when clicking outside
+        
         document.addEventListener('click', (e) => {
             if (!this.hamburgerMenu?.contains(e.target)) {
                 this.closeHamburgerMenu();
             }
         });
         
-        // Close hamburger menu when clicking dropdown items
+        
         this.hamburgerDropdown?.addEventListener('click', () => {
             this.closeHamburgerMenu();
         });
         
-        // Button events
+        
         this.refreshBtn?.addEventListener('click', () => this.loadCurrentSignOuts());
         this.newSignOutBtn?.addEventListener('click', () => this.openNewSignOutModal());
         this.logsBtn?.addEventListener('click', () => this.showLogsView());
@@ -253,15 +249,15 @@ class SoldierSignOutApp {
         this.backToDashboard?.addEventListener('click', () => this.showDashboardView());
         this.backToMainBtn?.addEventListener('click', () => this.showDashboardView());
         
-        // Modal events
+        
         this.closeModal?.addEventListener('click', () => this.closeNewSignOutModal());
         this.cancelBtn?.addEventListener('click', () => this.closeNewSignOutModal());
         this.signOutForm?.addEventListener('submit', (e) => this.handleSignOut(e));
         
-        // Ensure Enter key submits form instead of triggering button clicks
+        
         this.signOutForm?.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
-                // Only submit if we're not in a textarea (for notes field)
+                
                 if (e.target.tagName !== 'TEXTAREA') {
                     e.preventDefault();
                     this.handleSignOut(e);
@@ -269,7 +265,7 @@ class SoldierSignOutApp {
             }
         });
         
-        // PIN modal events
+        
         this.closePinModalBtn?.addEventListener('click', () => this.closePinModal());
         this.pinCancel?.addEventListener('click', () => this.closePinModal());
         this.pinSubmit?.addEventListener('click', () => this.handleSignIn());
@@ -277,16 +273,16 @@ class SoldierSignOutApp {
             if (e.key === 'Enter') this.handleSignIn();
         });
         
-        // Info modal events
+        
         this.closeInfoModalBtn?.addEventListener('click', () => this.closeInfoModal());
         
-        // Search and filters
+        
         this.searchInput?.addEventListener('input', () => this.filterCurrentSignOuts());
         this.applyFiltersBtn?.addEventListener('click', () => this.loadFilteredLogs());
         this.clearFiltersBtn?.addEventListener('click', () => this.clearFilters());
         this.exportCsvBtn?.addEventListener('click', () => this.exportLogs());
         
-        // Settings event listeners
+        
         this.updateDurationBtn?.addEventListener('click', () => this.updateMaxDuration());
         this.updateWarningBtn?.addEventListener('click', () => this.updateWarningThreshold());
         this.exportAllDataBtn?.addEventListener('click', () => this.exportAllData());
@@ -294,12 +290,12 @@ class SoldierSignOutApp {
         this.clearOldRecordsBtn?.addEventListener('click', () => this.clearOldRecords());
         this.resetSystemBtn?.addEventListener('click', () => this.resetSystem());
         
-        // User Management event listeners
+        
         this.createUserBtn?.addEventListener('click', () => this.openCreateUserModal());
         this.changePinBtn?.addEventListener('click', () => this.openChangePinModal());
         this.deleteUserBtn?.addEventListener('click', () => this.openDeleteUserModal());
         
-        // User Management Modal Events
+        
         this.closeCreateUserModal?.addEventListener('click', () => this.closeCreateUserModal());
         this.cancelCreateUser?.addEventListener('click', () => this.closeCreateUserModal());
         this.submitCreateUser?.addEventListener('click', () => this.handleCreateUser());
@@ -324,7 +320,7 @@ class SoldierSignOutApp {
             this.handleDeleteUser();
         });
         
-        // Close modals when clicking outside
+        
         window.addEventListener('click', (e) => {
             if (e.target === this.signOutModal) this.closeNewSignOutModal();
             if (e.target === this.pinModal) this.closePinModal();
@@ -334,7 +330,7 @@ class SoldierSignOutApp {
             if (e.target === this.deleteUserModal) this.closeDeleteUserModal();
         });
         
-        // Event delegation for dynamically created buttons
+        
         document.addEventListener('click', async (e) => {
             if (e.target.closest('.sign-in-btn')) {
                 const button = e.target.closest('.sign-in-btn');
@@ -351,7 +347,7 @@ class SoldierSignOutApp {
         });
     }
 
-    // Hamburger Menu Management
+    
     toggleHamburgerMenu() {
         if (this.hamburgerMenu.classList.contains('active')) {
             this.closeHamburgerMenu();
@@ -362,7 +358,7 @@ class SoldierSignOutApp {
     
     openHamburgerMenu() {
         this.hamburgerMenu.classList.add('active');
-        // Add slight delay to ensure smooth animation
+        
         setTimeout(() => {
             this.hamburgerDropdown.style.pointerEvents = 'auto';
         }, 100);
@@ -373,7 +369,7 @@ class SoldierSignOutApp {
         this.hamburgerDropdown.style.pointerEvents = 'none';
     }
 
-    // User Selector Management
+    
     toggleUserSelector() {
         if (this.userSelectorDropdown.parentElement.classList.contains('active')) {
             this.closeUserSelector();
@@ -386,7 +382,7 @@ class SoldierSignOutApp {
         this.userSelectorDropdown.parentElement.classList.add('active');
         this.userSelectorBtn.classList.add('active');
         
-        // Load users when opening
+        
         await this.loadUsers();
     }
     
@@ -429,7 +425,7 @@ class SoldierSignOutApp {
             `;
         }).join('');
 
-        // Add click handlers to user items
+        
         this.usersList.querySelectorAll('.user-item').forEach(item => {
             item.addEventListener('click', (e) => {
                 const userId = parseInt(e.currentTarget.dataset.userId);
@@ -443,10 +439,10 @@ class SoldierSignOutApp {
     }
 
     promptUserSwitch(user) {
-        // Store the target user
+        
         this.targetUser = user;
         
-        // Show PIN modal for user switching
+        
         if (this.pinModal) {
             this.pinModal.style.display = 'flex';
             this.pinModal.style.visibility = 'visible';
@@ -454,16 +450,16 @@ class SoldierSignOutApp {
             this.pinModal.classList.add('show');
         }
         
-        // Set purpose for user switching
+        
         this.pinModal.dataset.purpose = 'user-switch';
         
-        // Update modal title
+        
         const modalTitle = this.pinModal.querySelector('.modal-header h2');
         if (modalTitle) {
             modalTitle.textContent = `Switch to ${user.rank} ${user.full_name}`;
         }
         
-        // Hide sign-in details for user switching
+        
         if (this.signInDetails) {
             this.signInDetails.style.display = 'none';
         }
@@ -478,7 +474,7 @@ class SoldierSignOutApp {
         }
     }
 
-    // View Management
+    
     showDashboardView() {
         this.dashboardView.style.display = 'block';
         this.logsView.style.display = 'none';
@@ -509,7 +505,7 @@ class SoldierSignOutApp {
             return;
         }
         
-        // Show PIN modal for settings access
+        
         this.pinModal.style.display = 'flex';
         this.pinModal.style.visibility = 'visible';
         this.pinModal.style.opacity = '1';
@@ -527,11 +523,11 @@ class SoldierSignOutApp {
             this.pinError.style.display = 'none';
         }
         
-        // Set a flag to indicate this is for settings access
+        
         this.pinModal.dataset.purpose = 'settings';
         console.log('PIN modal purpose set to settings');
         
-        // Update modal title
+        
         const modalTitle = this.pinModal.querySelector('.modal-header h2');
         if (modalTitle) {
             modalTitle.textContent = 'Enter PIN for Settings Access';
@@ -540,13 +536,13 @@ class SoldierSignOutApp {
             console.error('Modal title element not found!');
         }
         
-        // Hide sign-in details section for settings access
+        
         if (this.signInDetails) {
             this.signInDetails.style.display = 'none';
             console.log('Sign-in details hidden for settings access');
         }
         
-        // Force a repaint
+        
         this.pinModal.offsetHeight;
         
         console.log('PIN modal should now be visible');
@@ -567,7 +563,7 @@ class SoldierSignOutApp {
         this.loadSettingsData();
     }
 
-    // Authentication and PIN Modal Management
+    
     async handleSignIn() {
         const pin = this.pinInput?.value;
         
@@ -577,13 +573,13 @@ class SoldierSignOutApp {
         }
         
         try {
-            // Check if this is for settings access
+            
             if (this.pinModal?.dataset.purpose === 'settings') {
                 await this.authenticateForSettings(pin);
             } else if (this.pinModal?.dataset.purpose === 'user-switch') {
                 await this.authenticateUserSwitch(pin);
             } else {
-                // Regular sign-in flow
+                
                 await this.processSignIn(pin);
             }
         } catch (error) {
@@ -625,7 +621,7 @@ class SoldierSignOutApp {
             return;
         }
 
-        // Store user info before async operations that might clear it
+        
         const targetUserInfo = {
             id: this.targetUser.id,
             rank: this.targetUser.rank,
@@ -652,10 +648,10 @@ class SoldierSignOutApp {
                 this.closePinModal();
                 this.notificationManager.showNotification(`Switched to ${targetUserInfo.rank} ${targetUserInfo.full_name}`, 'success');
                 
-                // Reload the page to ensure all states are refreshed with new user context
+                
                 setTimeout(() => {
                     window.location.reload();
-                }, 1000); // Brief delay to show the success message
+                }, 1000); 
             } else {
                 this.showPinError('Invalid PIN');
             }
@@ -685,12 +681,12 @@ class SoldierSignOutApp {
             
             const result = await response.json();
             
-            // Check if the response contains a success message
+            
             if (result.message) {
                 this.closePinModal();
                 this.currentSignOutId = null;
                 
-                // Reload current sign-outs to reflect the change
+                
                 this.loadCurrentSignOuts();
                 this.notificationManager.showNotification('Soldiers signed in successfully', 'success');
             } else {
@@ -718,10 +714,10 @@ class SoldierSignOutApp {
             this.pinError.style.display = 'none';
         }
         
-        // Reset modal state - show sign-in details by default
+        
         this.resetPinModalState();
         
-        // Clear the purpose flag
+        
         if (this.pinModal) {
             delete this.pinModal.dataset.purpose;
         }
@@ -730,18 +726,18 @@ class SoldierSignOutApp {
     }
 
     resetPinModalState() {
-        // Reset modal title
+        
         const modalTitle = this.pinModal?.querySelector('.modal-header h2');
         if (modalTitle) {
             modalTitle.textContent = 'Enter PIN to Sign In';
         }
         
-        // Show sign-in details section by default
+        
         if (this.signInDetails) {
             this.signInDetails.style.display = 'block';
         }
         
-        // Clear target user
+        
         this.targetUser = null;
     }
 
@@ -755,7 +751,7 @@ class SoldierSignOutApp {
     async promptSignIn(signoutId, soldierNames) {
         this.currentSignOutId = signoutId;
         
-        // Show PIN modal for sign-in
+        
         if (this.pinModal) {
             this.pinModal.style.display = 'flex';
             this.pinModal.style.visibility = 'visible';
@@ -763,22 +759,22 @@ class SoldierSignOutApp {
             this.pinModal.classList.add('show');
         }
         
-        // Reset modal state for sign-in
+        
         this.resetPinModalState();
         
-        // Fetch sign-out details to show in modal
+        
         try {
             const response = await Utils.fetchWithAuth(`/api/signouts/${signoutId}`);
             if (response.ok) {
                 const signout = await response.json();
                 this.updateSignInDetails(signout);
             } else {
-                // Fallback to just showing soldier names if fetch fails
+                
                 this.updateSignInDetailsBasic(soldierNames, 'Unknown Location');
             }
         } catch (error) {
             console.error('Error fetching sign-out details for modal:', error);
-            // Fallback to just showing soldier names if fetch fails
+            
             this.updateSignInDetailsBasic(soldierNames, 'Unknown Location');
         }
         
@@ -795,7 +791,7 @@ class SoldierSignOutApp {
     updateSignInDetails(signout) {
         if (!this.signInDetails) return;
         
-        // Parse soldiers data
+        
         let soldiers = signout.soldiers;
         if (!soldiers && signout.soldier_rank) {
             soldiers = [{
@@ -878,7 +874,7 @@ class SoldierSignOutApp {
             
             const signout = await response.json();
             
-            // Parse soldiers data
+            
             let soldiers = signout.soldiers;
             if (!soldiers && signout.soldier_rank) {
                 soldiers = [{
@@ -960,20 +956,20 @@ class SoldierSignOutApp {
         }
     }
 
-    // Sign-Out Modal Management
+    
     openNewSignOutModal() {
         if (this.signOutModal) {
             this.signOutModal.style.display = 'flex';
             
-            // Reset form
+            
             if (this.signOutForm) {
                 this.signOutForm.reset();
             }
             
-            // Clear any existing soldiers from previous sessions
+            
             this.barcodeManager.clearSoldiers();
             
-            // Focus first input
+            
             const firstInput = this.signOutForm?.querySelector('input, select, textarea');
             if (firstInput) {
                 firstInput.focus();
@@ -986,12 +982,12 @@ class SoldierSignOutApp {
             this.signOutModal.style.display = 'none';
         }
         
-        // Reset form
+        
         if (this.signOutForm) {
             this.signOutForm.reset();
         }
         
-        // Clear soldiers when modal is closed/cancelled
+        
         this.barcodeManager.clearSoldiers();
     }
 
@@ -1001,10 +997,10 @@ class SoldierSignOutApp {
         try {
             const formData = new FormData(this.signOutForm);
             const signOutData = {
-                soldiers: this.barcodeManager.getSoldiers(), // Get soldiers from barcode manager
+                soldiers: this.barcodeManager.getSoldiers(), 
                 location: formData.get('location'),
                 notes: formData.get('notes') || '',
-                pin: formData.get('pin') // Add PIN for backend validation
+                pin: formData.get('pin') 
             };
             
             if (!signOutData.soldiers || signOutData.soldiers.length === 0) {
@@ -1037,7 +1033,7 @@ class SoldierSignOutApp {
             const result = await response.json();
             
             this.closeNewSignOutModal();
-            this.barcodeManager.clearSoldiers(); // Clear soldiers after successful sign-out
+            this.barcodeManager.clearSoldiers(); 
             this.loadCurrentSignOuts();
             this.notificationManager.showNotification('Sign-out created successfully', 'success');
             
@@ -1049,7 +1045,7 @@ class SoldierSignOutApp {
         }
     }
 
-    // Authentication Methods
+    
     async logout() {
         try {
             const response = await Utils.fetchWithAuth('/api/signouts/auth/logout', {
@@ -1071,7 +1067,7 @@ class SoldierSignOutApp {
         }
     }
 
-    // Filter and Search Functions
+    
     filterCurrentSignOuts() {
         const searchTerm = this.searchInput?.value.toLowerCase() || '';
         
@@ -1136,7 +1132,7 @@ class SoldierSignOutApp {
         }
     }
 
-    // Data Loading and Rendering Functions
+    
     async loadCurrentSignOuts() {
         try {
             Utils.showLoading(true);
@@ -1209,7 +1205,7 @@ class SoldierSignOutApp {
             const duration = Utils.calculateDuration(signout.sign_out_time);
             const signOutTime = Utils.formatTime(signout.sign_out_time);
             
-            // Calculate status based on duration
+            
             const hours = Utils.getDurationHours(signout.sign_out_time);
             let statusClass = 'status-normal';
             
@@ -1265,7 +1261,7 @@ class SoldierSignOutApp {
 
     async loadFilteredLogs() {
         try {
-            // Get filter parameters
+            
             const params = new URLSearchParams();
             if (this.startDate?.value) params.append('startDate', this.startDate.value);
             if (this.endDate?.value) params.append('endDate', this.endDate.value);
@@ -1325,23 +1321,23 @@ class SoldierSignOutApp {
         }
     }
 
-    // Duration update methods
+    
     startDurationUpdates() {
         console.log('Starting duration updates...');
-        // Clear any existing interval
+        
         if (this.durationInterval) {
             clearInterval(this.durationInterval);
         }
         
-        // Set up interval to update durations every minute
+        
         this.durationInterval = setInterval(() => {
             console.log('Duration update interval triggered');
-            // Only update if we're on the dashboard view and have signouts
+            
             if (this.dashboardView && this.dashboardView.style.display !== 'none' && this.signouts) {
                 console.log('Updating durations...');
                 this.renderCurrentSignOuts();
             }
-        }, 60000); // Update every minute
+        }, 60000); 
         
         console.log('Duration update interval set up with ID:', this.durationInterval);
     }
@@ -1355,7 +1351,7 @@ class SoldierSignOutApp {
         }
     }
 
-    // Settings Methods (placeholder implementations)
+    
     async updateMaxDuration() {
         this.notificationManager.showNotification('Feature not implemented yet', 'info');
     }
@@ -1380,7 +1376,7 @@ class SoldierSignOutApp {
         this.notificationManager.showNotification('Feature not implemented yet', 'info');
     }
 
-    // User Management Modal Methods
+    
     async openCreateUserModal() {
         console.log('Opening create user modal');
         if (this.createUserModal) {
@@ -1389,17 +1385,17 @@ class SoldierSignOutApp {
             this.createUserModal.style.opacity = '1';
             this.createUserModal.classList.add('show');
             
-            // Reset form
+            
             if (this.createUserForm) {
                 this.createUserForm.reset();
             }
             
-            // Clear any existing error messages
+            
             if (this.createUserError) {
                 this.createUserError.style.display = 'none';
             }
             
-            // Focus on first input
+            
             const firstInput = this.createUserForm?.querySelector('input, select');
             if (firstInput) {
                 setTimeout(() => firstInput.focus(), 100);
@@ -1416,7 +1412,7 @@ class SoldierSignOutApp {
             this.createUserModal.classList.remove('show');
         }
         
-        // Reset form and clear errors
+        
         if (this.createUserForm) {
             this.createUserForm.reset();
         }
@@ -1429,7 +1425,7 @@ class SoldierSignOutApp {
         console.log('Handling create user');
         
         try {
-            // Validate form data
+            
             const formData = new FormData(this.createUserForm);
             const userData = {
                 rank: formData.get('rank'),
@@ -1441,7 +1437,7 @@ class SoldierSignOutApp {
                 confirmPin: formData.get('confirmPin')
             };
 
-            // Validate required fields
+            
             const requiredFields = ['rank', 'firstName', 'lastName', 'username', 'password', 'pin', 'confirmPin'];
             const missingFields = requiredFields.filter(field => !userData[field] || userData[field].trim() === '');
             
@@ -1450,30 +1446,30 @@ class SoldierSignOutApp {
                 return;
             }
 
-            // Validate PIN format
+            
             if (!/^\d{4}$/.test(userData.pin)) {
                 this.showCreateUserError('PIN must be exactly 4 digits');
                 return;
             }
 
-            // Validate PIN confirmation
+            
             if (userData.pin !== userData.confirmPin) {
                 this.showCreateUserError('PIN confirmation does not match');
                 return;
             }
 
-            // Validate password length
+            
             if (userData.password.length < 6) {
                 this.showCreateUserError('Password must be at least 6 characters long');
                 return;
             }
 
-            // Show loading state
+            
             Utils.showLoading(true);
             this.submitCreateUser.disabled = true;
             this.submitCreateUser.textContent = 'Creating...';
 
-            // Send request to backend
+            
             const response = await Utils.fetchWithAuth('/api/signouts/auth/users', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1494,7 +1490,7 @@ class SoldierSignOutApp {
 
             const result = await response.json();
             
-            // Success
+            
             this.closeCreateUserModal();
             this.notificationManager.showNotification('User created successfully', 'success');
             console.log('User created:', result);
@@ -1524,20 +1520,20 @@ class SoldierSignOutApp {
             this.changePinModal.style.opacity = '1';
             this.changePinModal.classList.add('show');
             
-            // Reset form
+            
             if (this.changePinForm) {
                 this.changePinForm.reset();
             }
             
-            // Clear any existing error messages
+            
             if (this.changePinError) {
                 this.changePinError.style.display = 'none';
             }
             
-            // Load users into the select dropdown
+            
             await this.loadUsersForChangePin();
             
-            // Focus on first input
+            
             const firstInput = this.changePinForm?.querySelector('select, input');
             if (firstInput) {
                 setTimeout(() => firstInput.focus(), 100);
@@ -1554,7 +1550,7 @@ class SoldierSignOutApp {
             this.changePinModal.classList.remove('show');
         }
         
-        // Reset form and clear errors
+        
         if (this.changePinForm) {
             this.changePinForm.reset();
         }
@@ -1588,7 +1584,7 @@ class SoldierSignOutApp {
         console.log('Handling change PIN');
         
         try {
-            // Validate form data
+            
             const formData = new FormData(this.changePinForm);
             const changePinData = {
                 userId: formData.get('userId'),
@@ -1597,7 +1593,7 @@ class SoldierSignOutApp {
                 confirmNewPin: formData.get('confirmNewPin')
             };
 
-            // Validate required fields
+            
             const requiredFields = ['userId', 'currentPin', 'newPin', 'confirmNewPin'];
             const missingFields = requiredFields.filter(field => !changePinData[field] || changePinData[field].trim() === '');
             
@@ -1606,7 +1602,7 @@ class SoldierSignOutApp {
                 return;
             }
 
-            // Validate PIN format
+            
             if (!/^\d{4}$/.test(changePinData.currentPin)) {
                 this.showChangePinError('Current PIN must be exactly 4 digits');
                 return;
@@ -1617,24 +1613,24 @@ class SoldierSignOutApp {
                 return;
             }
 
-            // Validate PIN confirmation
+            
             if (changePinData.newPin !== changePinData.confirmNewPin) {
                 this.showChangePinError('New PIN confirmation does not match');
                 return;
             }
 
-            // Check if new PIN is different from current PIN
+            
             if (changePinData.currentPin === changePinData.newPin) {
                 this.showChangePinError('New PIN must be different from current PIN');
                 return;
             }
 
-            // Show loading state
+            
             Utils.showLoading(true);
             this.submitChangePin.disabled = true;
             this.submitChangePin.textContent = 'Changing...';
 
-            // Send request to backend
+            
             const response = await Utils.fetchWithAuth(`/api/signouts/auth/users/${changePinData.userId}/pin`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
@@ -1652,7 +1648,7 @@ class SoldierSignOutApp {
 
             const result = await response.json();
             
-            // Success
+            
             this.closeChangePinModal();
             this.notificationManager.showNotification('PIN changed successfully', 'success');
             console.log('PIN changed:', result);
@@ -1675,6 +1671,6 @@ class SoldierSignOutApp {
     }
 }
 
-// Ensure the SoldierSignOutApp class is instantiated
+
 const app = new SoldierSignOutApp();
-window.app = app; // Make globally accessible for debugging
+window.app = app; 
