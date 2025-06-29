@@ -1383,7 +1383,6 @@ body {
     border-radius: 8px;
     padding: 20px;
     margin-bottom: 20px;
-    box-shadow: var(--shadow-sm);
 }
 
 .filter-grid {
@@ -2035,5 +2034,192 @@ body {
     
     .form-actions .btn {
         width: 100%;
+    }
+}
+
+.accounts-list-container {
+    background: var(--background-secondary);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+}
+
+.accounts-header {
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.accounts-table-container {
+    margin-bottom: 24px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.accounts-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--background-secondary);
+}
+
+.accounts-table th {
+    background: var(--background-tertiary);
+    color: var(--text-primary);
+    font-weight: 600;
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.accounts-table td {
+    padding: 16px;
+    border-bottom: 1px solid var(--border-light);
+    vertical-align: middle;
+}
+
+.accounts-table tr:hover {
+    background: var(--background-tertiary);
+}
+
+.accounts-table tr.current-user {
+    background: rgba(49, 130, 206, 0.05);
+    border-left: 4px solid var(--accent-blue);
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge.active {
+    background: rgba(56, 161, 105, 0.1);
+    color: var(--accent-green);
+}
+
+.status-badge.inactive {
+    background: rgba(229, 62, 62, 0.1);
+    color: var(--accent-red);
+}
+
+.account-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.account-actions .btn {
+    padding: 6px 12px;
+    font-size: 12px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.account-actions .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.account-actions .btn-secondary {
+    background: var(--secondary-color);
+    color: white;
+}
+
+.account-actions .btn-secondary:hover:not(:disabled) {
+    background: #2d3748;
+    transform: translateY(-1px);
+}
+
+.account-actions .btn-danger {
+    background: var(--accent-red);
+    color: white;
+}
+
+.account-actions .btn-danger:hover:not(:disabled) {
+    background: #c53030;
+    transform: translateY(-1px);
+}
+
+.accounts-actions {
+    display: flex;
+    justify-content: flex-start;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+}
+
+.selected-user-info {
+    background: var(--background-tertiary);
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border-color);
+}
+
+.selected-user-info h4 {
+    margin: 0 0 8px 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.user-info-display {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.warning-message {
+    background: rgba(221, 107, 32, 0.1);
+    border: 1px solid rgba(221, 107, 32, 0.3);
+    color: #c05621;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    font-size: 14px;
+}
+
+.acknowledgment-message {
+    background: rgba(49, 130, 206, 0.1);
+    border: 1px solid rgba(49, 130, 206, 0.3);
+    color: #2c5282;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    font-size: 14px;
+}
+
+@media (max-width: 768px) {
+    .accounts-table-container {
+        overflow-x: auto;
+    }
+    
+    .accounts-table {
+        min-width: 800px;
+    }
+    
+    .account-actions {
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .account-actions .btn {
+        width: 100%;
+        justify-content: center;
     }
 }

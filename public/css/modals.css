@@ -1,0 +1,298 @@
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(26, 32, 44, 0.5);
+    backdrop-filter: blur(4px);
+}
+
+.modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+}
+
+.modal-content {
+    background-color: var(--background-secondary);
+    border: 1px solid var(--border-color);
+    margin: 5% auto;
+    padding: 0;
+    border-radius: 12px;
+    box-shadow: var(--shadow-xl);
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--background-tertiary);
+    border-radius: 12px 12px 0 0;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-secondary);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+    background-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+/* Large modals */
+.modal-lg .modal-content {
+    max-width: 800px;
+}
+
+/* Small modals */
+.modal-sm .modal-content {
+    max-width: 400px;
+}
+
+/* PIN Modal Specific Styles */
+.modal#pinModal .modal-content {
+    background: linear-gradient(135deg, var(--background-secondary) 0%, rgba(255, 255, 255, 0.95) 100%);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(20px);
+    max-width: 450px;
+    width: 90%;
+}
+
+.modal#pinModal .modal-header {
+    background: linear-gradient(135deg, rgba(248, 250, 252, 0.9) 0%, rgba(237, 242, 247, 0.9) 100%);
+    border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+.modal#pinModal .modal-header h2 {
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.modal#pinModal .modal-close {
+    background: rgba(74, 85, 104, 0.1);
+    color: var(--text-secondary);
+    border-radius: 8px;
+    width: 36px;
+    height: 36px;
+    transition: all 0.3s ease;
+}
+
+.modal#pinModal .modal-close:hover {
+    background: rgba(74, 85, 104, 0.15);
+    color: var(--primary-color);
+    transform: rotate(90deg);
+}
+
+.modal#pinModal .modal-body {
+    padding: 2rem;
+}
+
+.modal#pinModal .form-actions {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(226, 232, 240, 0.6);
+    gap: 1rem;
+}
+
+.modal#pinModal .form-actions .btn {
+    flex: 1;
+    justify-content: center;
+    padding: 14px 20px;
+    font-weight: 600;
+}
+
+.modal#pinModal .form-actions .btn:first-child {
+    background: var(--background-tertiary);
+    color: var(--text-secondary);
+}
+
+.modal#pinModal .form-actions .btn:last-child {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+}
+
+/* Info Section Styles */
+.info-section {
+    margin-bottom: 2rem;
+}
+
+.info-section:last-child {
+    margin-bottom: 0;
+}
+
+.info-section h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.info-box {
+    background: var(--background-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
+}
+
+.info-box:hover {
+    border-color: var(--accent-blue);
+    box-shadow: var(--shadow-md);
+}
+
+.info-box .info-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    line-height: 1;
+}
+
+.info-box .info-value {
+    font-size: 14px;
+    color: var(--text-primary);
+    font-weight: 500;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+/* Sign-in details specific styles */
+.sign-in-details {
+    background: var(--background-tertiary);
+    border: 1px solid var(--border-color);
+    padding: 1.25rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    font-size: 0.875rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.sign-in-info {
+    line-height: 1.6;
+    color: var(--text-primary);
+}
+
+.sign-in-section {
+    margin-bottom: 1rem;
+}
+
+.sign-in-section:last-child {
+    margin-bottom: 0;
+}
+
+.sign-in-section h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 8px 0;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.destination-info {
+    background: var(--background-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 12px;
+    margin-top: 8px;
+}
+
+.destination-info strong {
+    color: var(--accent-blue);
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.destination-info .notes {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: var(--background-tertiary);
+    border-radius: 4px;
+    font-style: italic;
+    color: var(--text-secondary);
+}
+
+.soldiers-info {
+    margin-top: 8px;
+}
+
+.time-info {
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+    font-weight: 600;
+    color: var(--accent-green);
+    background: var(--background-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-top: 8px;
+}
+
+@media (max-width: 768px) {
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .modal-content {
+        max-width: 95vw;
+        margin: 2% auto;
+    }
+}

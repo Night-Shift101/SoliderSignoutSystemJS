@@ -1,0 +1,295 @@
+/* Table and Status Card Styles */
+.status-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.status-card {
+    background: var(--background-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+    border-left: 4px solid var(--accent-green);
+    transition: all 0.2s ease;
+}
+
+.status-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+.status-card.overdue {
+    border-left-color: var(--accent-red);
+}
+
+.status-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.status-card-header h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-card-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+    margin: 0;
+}
+
+/* Search Input */
+.search-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 14px;
+    background: var(--background-secondary);
+    color: var(--text-primary);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+}
+
+/* Table Styles */
+.table-container {
+    background: var(--background-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    overflow-x: auto;
+}
+
+.signouts-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1000px;
+}
+
+.signouts-table th {
+    background: var(--background-tertiary);
+    padding: 16px 12px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-color);
+    font-size: 14px;
+    white-space: nowrap;
+    vertical-align: top;
+}
+
+.signouts-table td {
+    padding: 16px 12px;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 14px;
+    vertical-align: top;
+}
+
+.signouts-table tr:hover {
+    background: var(--background-tertiary);
+}
+
+/* Table Column Widths */
+.signouts-table td:nth-child(1) { width: 140px; min-width: 140px; }
+.signouts-table td:nth-child(2) { width: 320px; max-width: 320px; }
+.signouts-table td:nth-child(3) { width: 200px; }
+.signouts-table td:nth-child(4) { width: 150px; }
+.signouts-table td:nth-child(5) { width: 150px; }
+.signouts-table td:nth-child(6) { width: 180px; }
+.signouts-table td:nth-child(7) { width: 120px; }
+.signouts-table th:nth-child(8), .signouts-table td:nth-child(8) { width: 180px; }
+.signouts-table th:nth-child(9), .signouts-table td:nth-child(9) { width: 100px; }
+.signouts-table th:nth-child(10), .signouts-table td:nth-child(10) { width: 200px; }
+
+/* Status Badges */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.status-out {
+    background: rgba(221, 107, 32, 0.1);
+    color: var(--accent-orange);
+    border: 1px solid rgba(221, 107, 32, 0.2);
+}
+
+.status-returned {
+    background: rgba(56, 161, 105, 0.1);
+    color: var(--accent-green);
+    border: 1px solid rgba(56, 161, 105, 0.2);
+}
+
+.status-overdue {
+    background: rgba(229, 62, 62, 0.1);
+    color: var(--accent-red);
+    border: 1px solid rgba(229, 62, 62, 0.2);
+    animation: statusPulse 2s infinite;
+}
+
+.status-badge.active {
+    background: rgba(49, 130, 206, 0.1);
+    color: var(--accent-blue);
+    border: 1px solid rgba(49, 130, 206, 0.2);
+}
+
+@keyframes statusPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Table Soldier Chips */
+.table-soldier-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    max-width: 300px;
+}
+
+.table-soldier-chip {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 6px;
+    background: var(--background-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.table-soldier-chip:hover {
+    background: var(--accent-blue);
+    color: white;
+    border-color: var(--accent-blue);
+}
+
+.table-soldier-chip.rank-officer {
+    border-left: 3px solid var(--accent-blue);
+}
+
+.table-soldier-chip.rank-nco {
+    border-left: 3px solid var(--accent-green);
+}
+
+.table-soldier-chip.rank-enlisted {
+    border-left: 3px solid var(--accent-orange);
+}
+
+.table-soldier-chip-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--primary-color);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    z-index: 1000;
+    margin-bottom: 5px;
+}
+
+.table-soldier-chip-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: var(--primary-color);
+}
+
+.table-soldier-chip:hover .table-soldier-chip-tooltip {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+}
+
+.empty-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+}
+
+.empty-state h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-secondary);
+}
+
+.empty-state p {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+/* Loading States */
+.loading-skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Responsive Table */
+@media (max-width: 768px) {
+    .table-container {
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+    }
+    
+    .status-cards {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 12px;
+    }
+    
+    .status-card {
+        padding: 16px;
+    }
+    
+    .status-card-value {
+        font-size: 1.5rem;
+    }
+}
