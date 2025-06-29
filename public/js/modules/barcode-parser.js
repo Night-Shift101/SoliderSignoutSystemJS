@@ -1,4 +1,3 @@
-
 class BarcodeParser {
     static BASE32_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
     static BASE36_CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -203,16 +202,8 @@ class BarcodeParser {
 
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = BarcodeParser;
-}
-
-
-if (typeof window !== 'undefined') {
-    window.BarcodeParser = BarcodeParser;
-}
-
-
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = BarcodeParser;
 } else if (typeof window !== 'undefined') {
     window.BarcodeParser = BarcodeParser;
 }
+
+export default BarcodeParser;

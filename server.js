@@ -7,8 +7,13 @@ const rateLimit = require('express-rate-limit');
 const session = require('express-session');
 require('dotenv').config();
 
+// Import routes
+const mainRoutes = require('./src/routes/main');
+const authRoutes = require('./src/routes/auth');
+const usersRoutes = require('./src/routes/users');
+const signoutsRoutes = require('./src/routes/signouts');
+const settingsRoutes = require('./src/routes/settings');
 const Database = require('./src/database/database');
-const soldierRoutes = require('./src/routes/soldiers');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -32,8 +37,8 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            styleSrc: ["'self'", "'unsafe-inline'", "https:
-            fontSrc: ["'self'", "https:
+            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com"],
             scriptSrc: ["'self'"],
             imgSrc: ["'self'", "data:"]
         }
@@ -70,32 +75,21 @@ app.use((req, res, next) => {
     });
     next();
 });
-app.use(express.static(path.join(__dirname, 'public')));
-
-
+// Database middleware
 app.use((req, res, next) => {
     req.db = db;
     next();
 });
 
+// Routes
+app.use('/', mainRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/users', usersRoutes);
+app.use('/api/signouts', signoutsRoutes);
+app.use('/api/settings', settingsRoutes);
 
-app.use('/api/signouts', soldierRoutes);
-
-
-app.get('/', (req, res) => {
-    if (!req.session.user || !req.session.systemAuthenticated) {
-        return res.redirect('/login');
-    }
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-
-app.get('/login', (req, res) => {
-    if (req.session.user && req.session.systemAuthenticated) {
-        return res.redirect('/');
-    }
-    res.sendFile(path.join(__dirname, 'public', 'login.html'));
-});
+// Static files
+app.use(express.static(path.join(__dirname, 'public')));
 
 
 app.use((err, req, res, next) => {
@@ -110,7 +104,7 @@ app.use((req, res) => {
 
 
 app.listen(PORT, () => {
-    console.log(`Soldier Sign-Out System running on http:
+    console.log(`Soldier Sign-Out System running on http://localhost:${PORT}`);
     console.log('Database initialized successfully');
 });
 

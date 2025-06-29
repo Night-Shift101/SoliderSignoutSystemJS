@@ -148,3 +148,30 @@
     border-color: var(--accent-orange);
     box-shadow: 0 0 0 3px rgba(221, 107, 32, 0.1);
 }
+
+/* Password input wrapper */
+.password-input-wrapper {
+    position: relative;
+}
+
+.password-input-wrapper input {
+    padding-right: 50px;
+}
+
+.password-input-wrapper .password-toggle {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 18px;
+    padding: 4px;
+    transition: color 0.2s ease;
+}
+
+.password-input-wrapper .password-toggle:hover {
+    color: var(--text-primary);
+}

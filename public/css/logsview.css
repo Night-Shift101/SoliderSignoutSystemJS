@@ -1,0 +1,125 @@
+.logs-filters {
+    background-color: var(--background-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.filter-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 20px;
+    align-items: flex-end;
+    justify-content: flex-start;
+}
+
+.filter-grid .form-group {
+    flex: 1 1 180px;
+    min-width: 0;
+    max-width: 220px;
+    margin-bottom: 0;
+    position: relative;
+}
+
+.filter-grid .form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--text-primary);
+    white-space: nowrap;
+}
+
+.filter-grid .form-group input,
+.filter-grid .form-group select {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--background-secondary);
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+}
+
+.filter-grid .form-group input:focus,
+.filter-grid .form-group select:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+}
+
+.filter-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    margin-top: 4px;
+}
+
+.filter-actions .btn {
+    min-width: 120px;
+}
+
+.filter-actions .export-btn {
+    margin-left: auto;
+}
+
+@media (max-width: 1200px) {
+    .filter-grid {
+        gap: 12px;
+    }
+    
+    .filter-grid .form-group {
+        flex: 1 1 160px;
+    }
+}
+
+@media (max-width: 992px) {
+    .filter-grid {
+        flex-wrap: wrap;
+    }
+    
+    .filter-grid .form-group {
+        flex: 1 1 200px;
+        max-width: calc(50% - 8px);
+    }
+    
+    .filter-actions {
+        margin-top: 12px;
+    }
+    
+    .filter-actions .export-btn {
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .logs-filters {
+        padding: 16px;
+    }
+    
+    .filter-grid {
+        gap: 10px;
+    }
+    
+    .filter-grid .form-group {
+        flex: 1 1 100%;
+        max-width: 100%;
+    }
+    
+    .filter-actions {
+        justify-content: space-between;
+        width: 100%;
+    }
+    
+    .filter-actions .btn {
+        flex: 1;
+        min-width: 0;
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+}

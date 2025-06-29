@@ -7,8 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>Sign-Out System - Login</title>
-    <link rel="stylesheet" href="css/main-complete.css?v=20240628">
-    <link rel="stylesheet" href="css/login-styles.css?v=20240628">
+    <link rel="stylesheet" href="css/login.css?v=20240628">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="login-body">
@@ -67,7 +66,7 @@
                     <div class="form-group">
                         <label for="userPin">PIN</label>
                         <div class="password-input-wrapper">
-                            <input type="password" id="userPin" name="userPin" required maxlength="10" placeholder="Enter your PIN">
+                            <input type="password" id="userPin" name="userPin" required minlength="4" placeholder="Enter your PIN">
                             <button type="button" class="password-toggle" data-target="userPin">
                                 <span class="icon">👁</span>
                             </button>
@@ -91,6 +90,6 @@
         </div>
     </div>
 
-    <script src="js/login.js"></script>
+    <script src="js/modules/login.js"></script>
 </body>
 </html>

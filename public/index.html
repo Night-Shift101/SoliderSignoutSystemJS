@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>Soldier Sign-Out System</title>
-    <link rel="stylesheet" href="css/main-complete.css?v=20240628">
+    <link rel="stylesheet" href="css/main.css?v=20240628">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -201,27 +201,44 @@
 
                 <div class="settings-content">
                     <div class="settings-section">
-                        <h3>User Management</h3>
-                        <div class="settings-grid">
-                            <div class="setting-item">
-                                <label>Current User</label>
-                                <div class="setting-value" id="currentUserDisplay">Loading...</div>
+                        <h3>Account Management</h3>
+                        <div class="accounts-list-container">
+                            <div class="accounts-header">
+                                <div class="setting-item">
+                                    <label>Current User</label>
+                                    <div class="setting-value" id="currentUserDisplay">Loading...</div>
+                                </div>
                             </div>
-                            <div class="setting-item">
-                                <label>User Role</label>
-                                <div class="setting-value" id="userRoleDisplay">Admin</div>
+                            
+                            <div class="accounts-table-container">
+                                <table class="accounts-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Rank</th>
+                                            <th>Name</th>
+                                            <th>Username</th>
+                                            <th>Status</th>
+                                            <th>Created</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="accountsTableBody">
+                                        
+                                    </tbody>
+                                </table>
+                                <div id="accountsEmptyState" class="empty-state" style="display: none;">
+                                    <div class="empty-icon">👤</div>
+                                    <h3>No accounts found</h3>
+                                    <p>No user accounts are available.</p>
+                                </div>
                             </div>
-                        </div>
-                        <div class="settings-actions">
-                            <button type="button" class="btn btn-primary" id="createUserBtn">
-                                <span class="icon">+</span> Create New User
-                            </button>
-                            <button type="button" class="btn btn-secondary" id="changePinBtn">
-                                <span class="icon">🔑</span> Change PIN
-                            </button>
-                            <button type="button" class="btn btn-danger" id="deleteUserBtn">
-                                <span class="icon">🗑</span> Delete User
-                            </button>
+                            
+                            <div class="accounts-actions">
+                                <button type="button" class="btn btn-primary" id="addUserBtn">
+                                    <span class="icon">+</span> Add New User
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -328,7 +345,7 @@
                 
                 <div class="form-group">
                     <label for="pin">Your PIN *</label>
-                    <input type="password" id="pin" name="pin" required maxlength="10"
+                    <input type="password" id="pin" name="pin" required minlength="4"
                            placeholder="Enter your PIN to authorize this sign-out">
                 </div>
                 
@@ -347,15 +364,15 @@
     <div id="pinModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="pinModalTitle">Sign In Confirmation</h2>
+                <h2 id="pinModalTitle">PIN Required</h2>
                 <button class="modal-close" id="closePinModal">&times;</button>
             </div>
             <div class="modal-body">
-                <p id="pinModalMessage">Please enter your PIN to sign in this group:</p>
+                <p id="pinModalMessage">Please enter your PIN:</p>
                 <div id="signInDetails" class="sign-in-details"></div>
                 <div class="form-group">
                     <label for="pinInput">Your PIN *</label>
-                    <input type="password" id="pinInput" maxlength="10" required
+                    <input type="password" id="pinInput" minlength="4" required
                            placeholder="Enter your PIN">
                 </div>
                 <div id="pinError" class="error-message" style="display: none;"></div>
@@ -363,7 +380,7 @@
             <div class="form-actions">
                 <button type="button" id="pinCancel" class="btn btn-secondary">Cancel</button>
                 <button type="button" id="pinSubmit" class="btn btn-primary">
-                    <span class="btn-text">Sign In Group</span>
+                    <span id="pinSubmitText" class="btn-text">Confirm</span>
                     <div class="btn-loader" style="display: none;"></div>
                 </button>
             </div>
@@ -392,70 +409,37 @@
 
     
     
-    
-    <div id="createUserModal" class="modal">
+    <div id="addUserModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Create New User</h2>
-                <button class="modal-close" id="closeCreateUserModal">&times;</button>
+                <h2>Add New User</h2>
+                <button class="modal-close" id="closeAddUserModal">&times;</button>
             </div>
             <div class="modal-body">
-                <form id="createUserForm" class="user-form">
+                <form id="addUserForm" class="user-form">
                     <div class="form-group">
-                        <label for="newUserRank">Rank</label>
-                        <select id="newUserRank" name="rank" required>
-                            <option value="">Select Rank</option>
-                            <option value="PVT">PVT</option>
-                            <option value="PV2">PV2</option>
-                            <option value="PFC">PFC</option>
-                            <option value="SPC">SPC</option>
-                            <option value="CPL">CPL</option>
-                            <option value="SGT">SGT</option>
-                            <option value="SSG">SSG</option>
-                            <option value="SFC">SFC</option>
-                            <option value="MSG">MSG</option>
-                            <option value="1SG">1SG</option>
-                            <option value="SGM">SGM</option>
-                            <option value="CSM">CSM</option>
-                            <option value="2LT">2LT</option>
-                            <option value="1LT">1LT</option>
-                            <option value="CPT">CPT</option>
-                            <option value="MAJ">MAJ</option>
-                            <option value="LTC">LTC</option>
-                            <option value="COL">COL</option>
-                        </select>
+                        <label for="addUserRank">Rank *</label>
+                        <input type="text" id="addUserRank" name="rank" required placeholder="Enter rank (e.g., SGT, SDS, etc.)">
                     </div>
                     <div class="form-group">
-                        <label for="newUserFirstName">First Name</label>
-                        <input type="text" id="newUserFirstName" name="firstName" required>
+                        <label for="addUserName">Last Name *</label>
+                        <input type="text" id="addUserName" name="lastName" required placeholder="Last Name">
                     </div>
                     <div class="form-group">
-                        <label for="newUserLastName">Last Name</label>
-                        <input type="text" id="newUserLastName" name="lastName" required>
+                        <label for="addUserPin">PIN (minimum 4 digits) *</label>
+                        <input type="password" id="addUserPin" name="pin" pattern="[0-9]{4,}" minlength="4" required>
                     </div>
                     <div class="form-group">
-                        <label for="newUserUsername">Username</label>
-                        <input type="text" id="newUserUsername" name="username" required>
+                        <label for="confirmAddUserPin">Confirm PIN *</label>
+                        <input type="password" id="confirmAddUserPin" name="confirmPin" pattern="[0-9]{4,}" minlength="4" required>
                     </div>
-                    <div class="form-group">
-                        <label for="newUserPassword">Password</label>
-                        <input type="password" id="newUserPassword" name="password" required minlength="6">
-                    </div>
-                    <div class="form-group">
-                        <label for="newUserPin">PIN (4 digits)</label>
-                        <input type="password" id="newUserPin" name="pin" pattern="[0-9]{4}" maxlength="4" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="confirmUserPin">Confirm PIN</label>
-                        <input type="password" id="confirmUserPin" name="confirmPin" pattern="[0-9]{4}" maxlength="4" required>
-                    </div>
-                    <div id="createUserError" class="error-message" style="display: none;"></div>
+                    <div id="addUserError" class="error-message" style="display: none;"></div>
                 </form>
             </div>
             <div class="form-actions">
-                <button type="button" id="cancelCreateUser" class="btn btn-secondary">Cancel</button>
-                <button type="button" id="submitCreateUser" class="btn btn-primary">
-                    <span class="btn-text">Create User</span>
+                <button type="button" id="cancelAddUser" class="btn btn-secondary">Cancel</button>
+                <button type="button" id="submitAddUser" class="btn btn-primary">
+                    <span class="btn-text">Add User</span>
                     <div class="btn-loader" style="display: none;"></div>
                 </button>
             </div>
@@ -466,28 +450,27 @@
     <div id="changePinModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Change PIN</h2>
+                <h2>Change User PIN</h2>
                 <button class="modal-close" id="closeChangePinModal">&times;</button>
             </div>
             <div class="modal-body">
+                <div class="selected-user-info">
+                    <h4>Changing PIN for:</h4>
+                    <div id="changePinUserInfo" class="user-info-display"></div>
+                </div>
                 <form id="changePinForm" class="user-form">
+                    <input type="hidden" id="changePinUserId" name="userId">
                     <div class="form-group">
-                        <label for="changePinUser">User</label>
-                        <select id="changePinUser" name="userId" required>
-                            <option value="">Select User</option>
-                        </select>
+                        <label for="systemPasswordChangePin">System Password *</label>
+                        <input type="password" id="systemPasswordChangePin" name="systemPassword" required>
                     </div>
                     <div class="form-group">
-                        <label for="currentPin">Current PIN</label>
-                        <input type="password" id="currentPin" name="currentPin" pattern="[0-9]{4}" maxlength="4" required>
+                        <label for="newUserPin">New PIN (minimum 4 digits) *</label>
+                        <input type="password" id="newUserPin" name="newPin" pattern="[0-9]{4,}" minlength="4" required>
                     </div>
                     <div class="form-group">
-                        <label for="newPin">New PIN (4 digits)</label>
-                        <input type="password" id="newPin" name="newPin" pattern="[0-9]{4}" maxlength="4" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="confirmNewPin">Confirm New PIN</label>
-                        <input type="password" id="confirmNewPin" name="confirmNewPin" pattern="[0-9]{4}" maxlength="4" required>
+                        <label for="confirmNewUserPin">Confirm New PIN *</label>
+                        <input type="password" id="confirmNewUserPin" name="confirmNewPin" pattern="[0-9]{4,}" minlength="4" required>
                     </div>
                     <div id="changePinError" class="error-message" style="display: none;"></div>
                 </form>
@@ -506,27 +489,29 @@
     <div id="deleteUserModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Delete User</h2>
+                <h2>Delete User Account</h2>
                 <button class="modal-close" id="closeDeleteUserModal">&times;</button>
             </div>
             <div class="modal-body">
+                <div class="selected-user-info">
+                    <h4>Deleting account for:</h4>
+                    <div id="deleteUserInfo" class="user-info-display"></div>
+                </div>
+                <div class="warning-message">
+                    <strong>⚠️ WARNING:</strong> This action cannot be undone. The user account will be permanently deleted.
+                </div>
+                <div class="acknowledgment-message">
+                    <strong>📝 ACKNOWLEDGMENT:</strong> Your current user account will appear in the audit logs for this deletion action.
+                </div>
                 <form id="deleteUserForm" class="user-form">
+                    <input type="hidden" id="deleteUserId" name="userId">
                     <div class="form-group">
-                        <label for="deleteUserSelect">User to Delete</label>
-                        <select id="deleteUserSelect" name="userId" required>
-                            <option value="">Select User</option>
-                        </select>
-                    </div>
-                    <div class="warning-message">
-                        <strong>Warning:</strong> This action cannot be undone. The user and all associated data will be permanently deleted.
+                        <label for="systemPasswordDelete">System Password *</label>
+                        <input type="password" id="systemPasswordDelete" name="systemPassword" required>
                     </div>
                     <div class="form-group">
-                        <label for="deleteUserPin">User's PIN</label>
-                        <input type="password" id="deleteUserPin" name="userPin" pattern="[0-9]{4}" maxlength="4" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="deleteSystemPassword">System Password</label>
-                        <input type="password" id="deleteSystemPassword" name="systemPassword" required>
+                        <label for="currentUserPinDelete">Your PIN *</label>
+                        <input type="password" id="currentUserPinDelete" name="currentUserPin" pattern="[0-9]{4,}" minlength="4" required>
                     </div>
                     <div id="deleteUserError" class="error-message" style="display: none;"></div>
                 </form>
@@ -541,10 +526,8 @@
         </div>
     </div>
 
-    <script src="js/modules/barcode-parser.js"></script>
-    <script src="js/modules/notifications.js"></script>
-    <script src="js/modules/barcode-manager.js"></script>
-    <script src="js/modules/utils.js"></script>
-    <script src="js/app.js"></script>
+
+    <script type="module" src="js/SoldierSignOutApp.js"></script>
+
 </body>
 </html>

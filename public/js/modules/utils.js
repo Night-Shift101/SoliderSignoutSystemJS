@@ -189,3 +189,5 @@ class Utils {
         }).join('');
     }
 }
+
+export default Utils;

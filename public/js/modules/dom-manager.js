@@ -1,0 +1,142 @@
+class DOMManager {
+    constructor() {
+        this.elements = {};
+        this.initializeElements();
+    }
+
+    initializeElements() {
+        this.elements = {
+            // User selector elements
+            userSelectorBtn: document.getElementById('userSelectorBtn'),
+            userSelectorDropdown: document.getElementById('userSelectorDropdown'),
+            currentUserName: document.getElementById('currentUserName'),
+            usersList: document.getElementById('usersList'),
+            
+            // Navigation elements
+            hamburgerBtn: document.getElementById('hamburgerBtn'),
+            hamburgerMenu: document.querySelector('.hamburger-menu'),
+            hamburgerDropdown: document.getElementById('hamburgerDropdown'),
+            
+            // Main action buttons
+            refreshBtn: document.getElementById('refreshBtn'),
+            newSignOutBtn: document.getElementById('newSignOutBtn'),
+            logsBtn: document.getElementById('logsBtn'),
+            settingsBtn: document.getElementById('settingsBtn'),
+            changeUserBtn: document.getElementById('changeUserBtn'),
+            logoutBtn: document.getElementById('logoutBtn'),
+            backToDashboard: document.getElementById('backToDashboard'),
+            backToMainBtn: document.getElementById('backToMainBtn'),
+            
+            // Views
+            dashboardView: document.getElementById('dashboardView'),
+            logsView: document.getElementById('logsView'),
+            settingsView: document.getElementById('settingsView'),
+            
+            // Sign-out modal elements
+            signOutModal: document.getElementById('signOutModal'),
+            closeModal: document.getElementById('closeModal'),
+            cancelBtn: document.getElementById('cancelBtn'),
+            signOutForm: document.getElementById('signOutForm'),
+            
+            // PIN modal elements
+            pinModal: document.getElementById('pinModal'),
+            closePinModalBtn: document.getElementById('closePinModal'),
+            pinInput: document.getElementById('pinInput'),
+            pinSubmit: document.getElementById('pinSubmit'),
+            pinCancel: document.getElementById('pinCancel'),
+            pinError: document.getElementById('pinError'),
+            signInDetails: document.getElementById('signInDetails'),
+            
+            // Info modal elements
+            infoModal: document.getElementById('infoModal'),
+            closeInfoModalBtn: document.getElementById('closeInfoModal'),
+            infoModalContent: document.getElementById('infoModalContent'),
+            
+            // Search and filter elements
+            searchInput: document.getElementById('searchInput'),
+            
+            // Table elements
+            currentSignOutsTableBody: document.getElementById('currentSignOutsTableBody'),
+            logsTableBody: document.getElementById('logsTableBody'),
+            emptyState: document.getElementById('emptyState'),
+            logsEmptyState: document.getElementById('logsEmptyState'),
+            
+            // Statistics elements
+            currentlyOutCount: document.getElementById('currentlyOutCount'),
+            totalTodayCount: document.getElementById('totalTodayCount'),
+            totalRecordsCount: document.getElementById('totalRecordsCount'),
+            
+            // Filter elements
+            startDate: document.getElementById('startDate'),
+            endDate: document.getElementById('endDate'),
+            soldierNameFilter: document.getElementById('soldierNameFilter'),
+            locationFilter: document.getElementById('locationFilter'),
+            statusFilter: document.getElementById('statusFilter'),
+            applyFiltersBtn: document.getElementById('applyFiltersBtn'),
+            clearFiltersBtn: document.getElementById('clearFiltersBtn'),
+            exportCsvBtn: document.getElementById('exportCsvBtn'),
+            
+            // Log elements
+
+
+            // Settings elements
+            currentUserDisplay: document.getElementById('currentUserDisplay'),
+            maxSignOutDuration: document.getElementById('maxSignOutDuration'),
+            warningThreshold: document.getElementById('warningThreshold'),
+            updateDurationBtn: document.getElementById('updateDurationBtn'),
+            updateWarningBtn: document.getElementById('updateWarningBtn'),
+            exportAllDataBtn: document.getElementById('exportAllDataBtn'),
+            backupDataBtn: document.getElementById('backupDataBtn'),
+            clearOldRecordsBtn: document.getElementById('clearOldRecordsBtn'),
+            resetSystemBtn: document.getElementById('resetSystemBtn'),
+            
+            // User accounts elements
+            accountsTableBody: document.getElementById('accountsTableBody'),
+            accountsEmptyState: document.getElementById('accountsEmptyState'),
+            addUserBtn: document.getElementById('addUserBtn'),
+            
+            // Add user modal elements
+            addUserModal: document.getElementById('addUserModal'),
+            closeAddUserModalBtn: document.getElementById('closeAddUserModal'),
+            addUserForm: document.getElementById('addUserForm'),
+            cancelAddUser: document.getElementById('cancelAddUser'),
+            submitAddUser: document.getElementById('submitAddUser'),
+            addUserError: document.getElementById('addUserError'),
+            
+            // Change PIN modal elements
+            changePinModal: document.getElementById('changePinModal'),
+            closeChangePinModalBtn: document.getElementById('closeChangePinModal'),
+            changePinForm: document.getElementById('changePinForm'),
+            changePinUserId: document.getElementById('changePinUserId'),
+            changePinUserInfo: document.getElementById('changePinUserInfo'),
+            cancelChangePin: document.getElementById('cancelChangePin'),
+            submitChangePin: document.getElementById('submitChangePin'),
+            changePinError: document.getElementById('changePinError'),
+            
+            // Delete user modal elements
+            deleteUserModal: document.getElementById('deleteUserModal'),
+            closeDeleteUserModalBtn: document.getElementById('closeDeleteUserModal'),
+            deleteUserForm: document.getElementById('deleteUserForm'),
+            deleteUserId: document.getElementById('deleteUserId'),
+            deleteUserInfo: document.getElementById('deleteUserInfo'),
+            cancelDeleteUser: document.getElementById('cancelDeleteUser'),
+            submitDeleteUser: document.getElementById('submitDeleteUser'),
+            deleteUserError: document.getElementById('deleteUserError')
+        };
+    }
+
+    get(elementName) {
+        return this.elements[elementName];
+    }
+
+    getAll() {
+        return this.elements;
+    }
+
+    refresh() {
+        this.initializeElements();
+    }
+}
+
+
+export default DOMManager;

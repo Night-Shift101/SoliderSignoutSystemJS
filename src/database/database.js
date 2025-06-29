@@ -374,15 +374,15 @@ class Database {
         `;
         this.db.all(query, [], (err, rows) => {
             if (err) {
+                console.error('Database query error in getCurrentSignOuts:', err);
                 return callback(err);
             }
-            
-            
+
             const processedRows = rows.map(row => {
                 try {
                     row.soldiers = JSON.parse(row.soldiers);
                 } catch (e) {
-                    console.error('Error parsing soldiers JSON:', e);
+                    console.error('Error parsing soldiers JSON in getCurrentSignOuts:', e);
                     row.soldiers = [];
                 }
                 return row;
@@ -991,6 +991,34 @@ class Database {
         });
     }
     
+    changeUserPinAsAdmin(userId, newPin, adminUserId, callback) {
+        const bcrypt = require('bcrypt');
+        
+        this.db.get('SELECT id FROM users WHERE id = ?', [userId], (err, user) => {
+            if (err) {
+                return callback(err);
+            }
+            
+            if (!user) {
+                return callback(new Error('User not found'));
+            }
+            
+            const newPinHash = bcrypt.hashSync(newPin, 10);
+            
+            this.db.run(
+                'UPDATE users SET pin_hash = ? WHERE id = ?',
+                [newPinHash, userId],
+                function(err) {
+                    if (err) {
+                        return callback(err);
+                    }
+                    
+                    callback(null, { success: true });
+                }
+            );
+        });
+    }
+    
     deleteUser(userId, userPin, systemPassword, callback) {
         const bcrypt = require('bcrypt');
         
@@ -1080,6 +1108,191 @@ class Database {
             });
         });
     }
+    
+    deleteUserAsAdmin(userId, adminUserId, callback) {
+        this.db.get('SELECT username FROM users WHERE id = ?', [userId], (err, user) => {
+            if (err) {
+                return callback(err);
+            }
+            
+            if (!user) {
+                return callback(new Error('User not found'));
+            }
+            
+            if (user.username === 'admin') {
+                return callback(new Error('Cannot delete admin user'));
+            }
+            
+            this.db.run('BEGIN TRANSACTION', (err) => {
+                if (err) {
+                    return callback(err);
+                }
+                
+                this.db.run(
+                    'DELETE FROM users WHERE id = ?',
+                    [userId],
+                    (err) => {
+                        if (err) {
+                            this.db.run('ROLLBACK');
+                            return callback(err);
+                        }
+                        
+                        this.db.run('COMMIT', (err) => {
+                            if (err) {
+                                this.db.run('ROLLBACK');
+                                return callback(err);
+                            }
+                            
+                            callback(null, { success: true });
+                        });
+                    }
+                );
+            });
+        });
+    }
+
+    // User management methods
+    updateUserStatus(userId, isActive, callback) {
+        const query = `UPDATE users SET is_active = ? WHERE id = ?`;
+        this.db.run(query, [isActive ? 1 : 0, userId], function(err) {
+            if (err) {
+                return callback(err);
+            }
+            callback(null, { changes: this.changes });
+        });
+    }
+
+    getUserById(userId, callback) {
+        const query = `SELECT id, username, rank, full_name, is_active, created_at, last_login FROM users WHERE id = ?`;
+        this.db.get(query, [userId], (err, row) => {
+            if (err) {
+                return callback(err);
+            }
+            callback(null, row);
+        });
+    }
+
+    getAllUsers(callback) {
+        const query = `SELECT id, username, rank, full_name, is_active, created_at, last_login FROM users ORDER BY username`;
+        this.db.all(query, [], (err, rows) => {
+            if (err) {
+                return callback(err);
+            }
+            callback(null, rows);
+        });
+    }
+
+    exportSignoutsCSV(filters, requestedBy, callback) {
+        let baseQuery = `
+            SELECT 
+                signout_id,
+                soldier_rank,
+                soldier_first_name,
+                soldier_last_name,
+                soldier_dod_id,
+                location,
+                sign_out_time,
+                sign_in_time,
+                signed_out_by_id,
+                signed_out_by_name,
+                signed_in_by_id,
+                signed_in_by_name,
+                status,
+                notes,
+                created_at,
+                updated_at
+            FROM signouts
+            WHERE 1=1
+        `;
+        const params = [];
+
+        if (filters.startDate) {
+            baseQuery += ' AND sign_out_time >= ?';
+            params.push(filters.startDate);
+        }
+
+        if (filters.endDate) {
+            baseQuery += ' AND sign_out_time <= ?';
+            params.push(filters.endDate);
+        }
+
+        if (filters.soldierName) {
+            baseQuery += ' AND (soldier_first_name LIKE ? OR soldier_last_name LIKE ? OR (soldier_rank || " " || soldier_first_name || " " || soldier_last_name) LIKE ?)';
+            params.push(`%${filters.soldierName}%`, `%${filters.soldierName}%`, `%${filters.soldierName}%`);
+        }
+
+        if (filters.location) {
+            baseQuery += ' AND location LIKE ?';
+            params.push(`%${filters.location}%`);
+        }
+
+        if (filters.status) {
+            baseQuery += ' AND status = ?';
+            params.push(filters.status);
+        }
+
+        baseQuery += ' ORDER BY sign_out_time DESC';
+
+        this.db.all(baseQuery, params, (err, rows) => {
+            if (err) {
+                return callback(err);
+            }
+
+            const metadataRows = [
+                `Requested by: ${requestedBy}`,
+                `Requested at: ${new Date().toISOString()}`
+            ];
+
+            const headerRow = [
+                'Signout ID',
+                'Rank',
+                'First Name',
+                'Last Name',
+                'DOD ID',
+                'Location',
+                'Sign Out Time',
+                'Sign In Time',
+                'Signed Out By ID',
+                'Signed Out By Name',
+                'Signed In By ID',
+                'Signed In By Name',
+                'Status',
+                'Notes',
+                'Created At',
+                'Updated At'
+            ].join(',');
+
+            const dataRows = rows.map(row => {
+                return [
+                    row.signout_id,
+                    row.soldier_rank,
+                    row.soldier_first_name,
+                    row.soldier_last_name,
+                    row.soldier_dod_id || 'N/A',
+                    row.location,
+                    row.sign_out_time,
+                    row.sign_in_time || 'N/A',
+                    row.signed_out_by_id,
+                    row.signed_out_by_name,
+                    row.signed_in_by_id || 'N/A',
+                    row.signed_in_by_name || 'N/A',
+                    row.status,
+                    row.notes || '',
+                    row.created_at,
+                    row.updated_at
+                ].join(',');
+            });
+
+            const csvData = [
+                ...metadataRows,
+                headerRow,
+                ...dataRows
+            ].join('\n');
+
+            callback(null, csvData);
+        });
+    }
+
 }
 
 module.exports = Database;

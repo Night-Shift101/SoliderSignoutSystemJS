@@ -27,6 +27,7 @@
     "express-session": "^1.18.1",
     "express-validator": "^7.2.1",
     "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
     "pkg": "^5.8.1",
     "sqlite3": "^5.1.7"

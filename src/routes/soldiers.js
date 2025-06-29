@@ -1,33 +1,7 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
+const { requireAuth, requireBothAuth, verifyPin, handleValidationErrors } = require('../middleware/auth');
 const router = express.Router();
-
-
-const requireAuth = (req, res, next) => {
-    if (!req.session.user) {
-        return res.status(401).json({ error: 'Authentication required' });
-    }
-    next();
-};
-
-
-const verifyPin = async (req, res, next) => {
-    const { pin } = req.body;
-    if (!pin) {
-        return res.status(400).json({ error: 'PIN required for this action' });
-    }
-
-    req.db.verifyUserPin(req.session.user.id, pin, (err, isValid) => {
-        if (err) {
-            console.error('PIN verification error:', err);
-            return res.status(500).json({ error: 'PIN verification failed' });
-        }
-        if (!isValid) {
-            return res.status(401).json({ error: 'Invalid PIN' });
-        }
-        next();
-    });
-};
 
 
 
@@ -441,17 +415,8 @@ router.delete('/reset-system', requireAuth, (req, res) => {
 
 
 router.post('/auth/users', requireAuth, [
-    body('username').trim().isLength({ min: 3 }).withMessage('Username must be at least 3 characters'),
-    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
-    body('pin').matches(/^\d{4}$/).withMessage('PIN must be 4 digits'),
-    body('confirmPin').custom((value, { req }) => {
-        if (value !== req.body.pin) {
-            throw new Error('PIN confirmation does not match');
-        }
-        return true;
-    }),
+    body('pin').matches(/^\d{4,}$/).withMessage('PIN must be at least 4 digits'),
     body('rank').isLength({ min: 1 }).withMessage('Rank is required'),
-    body('firstName').trim().isLength({ min: 1 }).withMessage('First name is required'),
     body('lastName').trim().isLength({ min: 1 }).withMessage('Last name is required')
 ], (req, res) => {
     const errors = validationResult(req);
@@ -459,12 +424,17 @@ router.post('/auth/users', requireAuth, [
         return res.status(400).json({ errors: errors.array() });
     }
 
+    // Auto-generate username from rank and lastName
+    const rank = req.body.rank.trim().toUpperCase();
+    const lastName = req.body.lastName.trim().toLowerCase();
+    const username = `${rank}_${lastName}`;
+
     const userData = {
-        username: req.body.username,
-        password: req.body.password,
+        username: username,
+        password: 'temp123', // Default password - user will need to change
         pin: req.body.pin,
         rank: req.body.rank,
-        firstName: req.body.firstName,
+        firstName: '', // No first name provided in new structure
         lastName: req.body.lastName
     };
 
@@ -491,8 +461,8 @@ router.post('/auth/users', requireAuth, [
 
 
 router.patch('/auth/users/:userId/pin', requireAuth, [
-    body('currentPin').matches(/^\d{4}$/).withMessage('Current PIN must be 4 digits'),
-    body('newPin').matches(/^\d{4}$/).withMessage('New PIN must be 4 digits'),
+    body('currentPin').matches(/^\d{4,}$/).withMessage('Current PIN must be at least 4 digits'),
+    body('newPin').matches(/^\d{4,}$/).withMessage('New PIN must be at least 4 digits'),
     body('confirmNewPin').custom((value, { req }) => {
         if (value !== req.body.newPin) {
             throw new Error('New PIN confirmation does not match');
@@ -526,7 +496,7 @@ router.patch('/auth/users/:userId/pin', requireAuth, [
 
 
 router.delete('/auth/users/:userId', requireAuth, [
-    body('userPin').matches(/^\d{4}$/).withMessage('User PIN must be 4 digits'),
+    body('userPin').matches(/^\d{4,}$/).withMessage('User PIN must be at least 4 digits'),
     body('systemPassword').isLength({ min: 1 }).withMessage('System password is required')
 ], (req, res) => {
     const errors = validationResult(req);
@@ -560,27 +530,91 @@ router.delete('/auth/users/:userId', requireAuth, [
 });
 
 
-function convertToCSV(data) {
-    if (!data || data.length === 0) {
-        return 'No data available';
+router.post('/auth/change-user-pin', requireAuth, [
+    body('userId').isInt().withMessage('Valid user ID is required'),
+    body('systemPassword').isLength({ min: 1 }).withMessage('System password is required'),
+    body('newPin').matches(/^\d{4,}$/).withMessage('New PIN must be at least 4 digits')
+], (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
     }
-    
-    const headers = Object.keys(data[0]);
-    const csvContent = [
-        headers.join(','),
-        ...data.map(row => 
-            headers.map(header => {
-                const value = row[header];
-                
-                if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
-                    return `"${value.replace(/"/g, '""')}"`;
+
+    const { userId, systemPassword, newPin } = req.body;
+
+    req.db.verifySystemPassword(systemPassword, (err, isValid) => {
+        if (err) {
+            console.error('System password verification error:', err);
+            return res.status(500).json({ error: 'System authentication failed' });
+        }
+        if (!isValid) {
+            return res.status(401).json({ error: 'Invalid system password' });
+        }
+
+        req.db.changeUserPinAsAdmin(userId, newPin, req.session.user.id, (err, result) => {
+            if (err) {
+                console.error('Error changing user PIN:', err);
+                if (err.message === 'User not found') {
+                    return res.status(404).json({ error: 'User not found' });
                 }
-                return value || '';
-            }).join(',')
-        )
-    ].join('\n');
-    
-    return csvContent;
-}
+                return res.status(500).json({ error: 'Failed to change PIN' });
+            }
+            
+            res.json({ message: 'PIN changed successfully' });
+        });
+    });
+});
+
+router.post('/auth/delete-user', requireAuth, [
+    body('userId').isInt().withMessage('Valid user ID is required'),
+    body('systemPassword').isLength({ min: 1 }).withMessage('System password is required'),
+    body('currentUserPin').matches(/^\d{4,}$/).withMessage('Your PIN must be at least 4 digits')
+], (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { userId, systemPassword, currentUserPin } = req.body;
+
+    if (parseInt(userId) === req.session.user.id) {
+        return res.status(403).json({ error: 'Cannot delete your own account' });
+    }
+
+    req.db.verifySystemPassword(systemPassword, (err, isValid) => {
+        if (err) {
+            console.error('System password verification error:', err);
+            return res.status(500).json({ error: 'System authentication failed' });
+        }
+        if (!isValid) {
+            return res.status(401).json({ error: 'Invalid system password' });
+        }
+
+        req.db.verifyUserPin(req.session.user.id, currentUserPin, (err, isPinValid) => {
+            if (err) {
+                console.error('PIN verification error:', err);
+                return res.status(500).json({ error: 'PIN verification failed' });
+            }
+            if (!isPinValid) {
+                return res.status(401).json({ error: 'Invalid PIN' });
+            }
+
+            req.db.deleteUserAsAdmin(userId, req.session.user.id, (err, result) => {
+                if (err) {
+                    console.error('Error deleting user:', err);
+                    if (err.message === 'User not found') {
+                        return res.status(404).json({ error: 'User not found' });
+                    }
+                    if (err.message === 'Cannot delete admin user') {
+                        return res.status(403).json({ error: 'Cannot delete admin user' });
+                    }
+                    return res.status(500).json({ error: 'Failed to delete user' });
+                }
+                
+                res.json({ message: 'User deleted successfully' });
+            });
+        });
+    });
+});
 
 module.exports = router;

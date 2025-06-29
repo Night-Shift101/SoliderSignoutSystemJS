@@ -83,25 +83,20 @@ class LoginApp {
             }
             this.authCheckInProgress = true;
             
-            const response = await fetch('/api/signouts/auth/check', {
+            const response = await fetch('/api/auth/status', {
                 credentials: 'same-origin'
             });
             const result = await response.json();
             
-            if (result.authenticated) {
-                
+            if (result.userAuthenticated) {
                 console.log('User authenticated, but checking if redirect is safe');
-                
-                
                 const referrer = document.referrer;
                 const currentPath = window.location.pathname;
-                
                 if (currentPath === '/login' && (!referrer || !referrer.includes('/login'))) {
                     console.log('Safe to redirect to dashboard');
                     window.location.href = '/';
                 } else {
                     console.log('Redirect loop detected, staying on login page');
-                    
                     this.showMessage('You are already logged in. Click here to go to dashboard.');
                 }
             } else if (result.systemAuthenticated) {
@@ -132,7 +127,7 @@ class LoginApp {
         this.hideSystemError();
 
         try {
-            const response = await fetch('/api/signouts/auth/system', {
+            const response = await fetch('/api/auth/system', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -144,7 +139,8 @@ class LoginApp {
             const result = await response.json();
 
             if (response.ok && result.success) {
-                await this.loadUsers();
+                this.users = result.users; // Use users from system auth response
+                this.populateUserSelect();
                 this.showUserStep();
             } else {
                 this.showSystemError(result.error || 'Invalid system password');
@@ -159,7 +155,7 @@ class LoginApp {
 
     async loadUsers() {
         try {
-            const response = await fetch('/api/signouts/auth/users', {
+            const response = await fetch('/api/users', {
                 credentials: 'same-origin'
             });
 
@@ -204,7 +200,7 @@ class LoginApp {
         this.hideUserError();
 
         try {
-            const response = await fetch('/api/signouts/auth/user', {
+            const response = await fetch('/api/auth/user', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -231,7 +227,7 @@ class LoginApp {
 
     async handleLogout() {
         try {
-            await fetch('/api/signouts/auth/logout', {
+            await fetch('/api/auth/logout', {
                 method: 'POST',
                 credentials: 'same-origin'
             });

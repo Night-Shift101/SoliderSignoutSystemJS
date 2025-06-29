@@ -154,3 +154,5 @@ class BarcodeManager {
         this.renderSoldierChips();
     }
 }
+
+export default BarcodeManager;

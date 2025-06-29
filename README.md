@@ -146,9 +146,10 @@ A comprehensive Node.js web application for tracking military group sign-outs wi
 
 #### Authentication
 
-- `POST /api/signouts/auth/login` - User login
-- `POST /api/signouts/auth/logout` - User logout
-- `GET /api/signouts/auth/check` - Check authentication status
+- `POST /api/auth/system` - System password authentication
+- `POST /api/auth/user` - User PIN authentication  
+- `POST /api/auth/logout` - User logout
+- `GET /api/auth/status` - Check authentication status
 
 #### Sign-Outs
 
@@ -220,7 +221,7 @@ JS/
 ├── public/                  # Static frontend files
 │   ├── index.html          # Main dashboard
 │   ├── login.html          # Login page
-│   ├── app.js              # Frontend JavaScript
+│   ├── SoldierSignOutApp.js   # Main Frontend JavaScript Controller
 │   └── styles.css          # Styles
 └── test-*.js               # Test utilities
 ```
@@ -231,7 +232,7 @@ JS/
 
 1. Database changes: Update `src/database/database.js`
 2. API endpoints: Add to `src/routes/soldiers.js`
-3. Frontend: Update `public/app.js` and `public/index.html`
+3. Frontend: Update `public/SoldierSignOutApp.js` and `public/index.html`
 4. Styling: Modify `public/styles.css`
 
 ### Best Practices
