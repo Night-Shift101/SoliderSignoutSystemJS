@@ -76,8 +76,11 @@ class DOMManager {
             clearFiltersBtn: document.getElementById('clearFiltersBtn'),
             exportCsvBtn: document.getElementById('exportCsvBtn'),
             
-            // Log elements
-
+            // Sign out details modal
+            signOutDetailsModal: document.getElementById('signOutDetailsModal'),
+            signOutDetailsContent: document.getElementById('signOutDetailsContent'),
+            closeSignOutDetailsModal: document.getElementById('closeSignOutDetailsModal'),
+            exportPdfBtn: document.getElementById('exportPdfBtn'),
 
             // Settings elements
             currentUserDisplay: document.getElementById('currentUserDisplay'),

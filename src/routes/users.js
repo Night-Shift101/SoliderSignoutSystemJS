@@ -103,7 +103,7 @@ router.patch('/:id/pin',
                     return res.status(500).json({ error: 'Authentication failed' });
                 }
                 
-                if (!result.isValid) {
+                if (!result.success) {
                     return res.status(401).json({ error: 'Invalid system password' });
                 }
                 
@@ -128,7 +128,6 @@ router.delete('/:id',
     requireBothAuth,
     [
         param('id').isInt({ min: 1 }),
-        body('systemPassword').isLength({ min: 1 }).withMessage('System password is required')
     ],
     handleValidationErrors,
     async (req, res) => {
@@ -142,15 +141,7 @@ router.delete('/:id',
             }
             
             // Verify system password
-            req.db.verifySystemPassword(systemPassword, (err, result) => {
-                if (err) {
-                    console.error('System password verification error:', err);
-                    return res.status(500).json({ error: 'Authentication failed' });
-                }
-                
-                if (!result.isValid) {
-                    return res.status(401).json({ error: 'Invalid system password' });
-                }
+            
                 
                 // Delete the user using admin method
                 req.db.deleteUserAsAdmin(userId, req.session.user.id, (err, deleteResult) => {
@@ -160,7 +151,6 @@ router.delete('/:id',
                     }
                     res.json({ message: 'User deleted successfully' });
                 });
-            });
         } catch (error) {
             console.error('Delete user error:', error);
             res.status(500).json({ error: 'Failed to delete user' });

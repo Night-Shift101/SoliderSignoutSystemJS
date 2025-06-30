@@ -31,7 +31,6 @@ class AuthManager {
                 console.log('Auth check failed - response not ok, status:', response.status);
                 throw new Error(`Auth check failed with status: ${response.status}`);
             }
-            
             const result = await response.json();
             console.log('Auth response:', result);
             
@@ -93,7 +92,10 @@ class AuthManager {
             const response = await Utils.fetchWithAuth('/api/auth/user', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ pin })
+                body: JSON.stringify({ 
+                    userId: this.currentUser.id, 
+                    pin: pin 
+                })
             });
             
             if (!response.ok) {
@@ -102,7 +104,7 @@ class AuthManager {
             
             const result = await response.json();
             
-            if (result.valid) {
+            if (result.success) {
                 this.app.modalManager.closePinModal();
                 this.app.viewManager.showSettingsView();
                 this.app.notificationManager.showNotification('Settings access granted', 'success');

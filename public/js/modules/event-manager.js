@@ -128,11 +128,13 @@ class EventManager {
         const applyFiltersBtn = this.app.domManager.get('applyFiltersBtn');
         const clearFiltersBtn = this.app.domManager.get('clearFiltersBtn');
         const exportCsvBtn = this.app.domManager.get('exportCsvBtn');
+        const exportLogsPdfBtn = this.app.domManager.get('exportLogsPdfBtn');
         
         searchInput?.addEventListener('input', () => this.app.signOutManager.filterCurrentSignOuts());
         applyFiltersBtn?.addEventListener('click', () => this.app.logsManager.loadFilteredLogs());
         clearFiltersBtn?.addEventListener('click', () => this.app.logsManager.clearFilters());
         exportCsvBtn?.addEventListener('click', () => this.app.logsManager.exportLogs());
+        exportLogsPdfBtn?.addEventListener('click', () => this.app.logsManager.exportLogsPDF());
     }
 
     attachSettingsEvents() {
@@ -226,6 +228,13 @@ class EventManager {
             if (e.target.closest('.delete-user-btn') && !e.target.closest('.delete-user-btn').disabled) {
                 const button = e.target.closest('.delete-user-btn');
                 this.app.modalManager.openDeleteUserModal(button.dataset.userId, button.dataset.userName);
+            }
+        });
+        
+        this.app.domManager.get('logsTableBody')?.addEventListener('click', (e) => {
+            const row = e.target.closest('.log-row');
+            if (row && row.dataset.signoutId) {
+                this.app.modalManager.showSignOutDetails(row.dataset.signoutId);
             }
         });
     }
