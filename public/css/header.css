@@ -85,7 +85,7 @@
 
 .user-selector-btn.active {
     border-color: var(--accent-blue);
-    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+    box-shadow: var(--shadow-focus);
 }
 
 .user-selector-content {
@@ -180,7 +180,7 @@
 }
 
 .user-item.current {
-    background: rgba(49, 130, 206, 0.1);
+    background: var(--blue-alpha-medium);
     color: var(--accent-blue);
 }
 
@@ -296,7 +296,7 @@
     background: var(--background-secondary);
     border: 1px solid var(--border-color);
     border-radius: 12px;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-shadow: var(--shadow-xl);
     padding: 8px 0;
     z-index: 1000;
     opacity: 0;

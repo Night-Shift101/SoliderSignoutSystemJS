@@ -104,7 +104,6 @@ class Database {
             } else {
                 console.log('Users table ready');
                 this.userManager && this.userManager.createDefaultAdmin();
-                this.userManager && this.userManager.createTestUsers(); 
             }
         });
 
@@ -130,16 +129,16 @@ class Database {
         return this.userManager.createDefaultAdmin();
     }
     
-    createTestUsers() {
-        return this.userManager.createTestUsers();
-    }
-    
     verifySystemPassword(password, callback) {
         return this.userManager.verifySystemPassword(password, callback);
     }
     
     getAllUsers(callback) {
         return this.userManager.getAllUsers(callback);
+    }
+    
+    getAllUsersExtended(callback) {
+        return this.userManager.getAllUsersExtended(callback);
     }
     
     verifyUserPinById(userId, pin, callback) {

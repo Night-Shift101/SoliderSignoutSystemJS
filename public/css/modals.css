@@ -7,7 +7,7 @@
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(26, 32, 44, 0.5);
+    background-color: var(--background-overlay);
     backdrop-filter: blur(4px);
 }
 
@@ -20,11 +20,11 @@
 
 .modal-content {
     background-color: var(--background-secondary);
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--border-alpha-medium);
+    box-shadow: 0 25px 50px -12px var(--shadow-black-light);
     margin: 5% auto;
     padding: 0;
     border-radius: 12px;
-    box-shadow: var(--shadow-xl);
     width: 90%;
     max-width: 500px;
     max-height: 90vh;
@@ -112,8 +112,8 @@
 /* PIN Modal Specific Styles */
 .modal#pinModal .modal-content {
     background: linear-gradient(135deg, var(--background-secondary) 0%, var(--background-primary) 100%);
-    border: 1px solid rgba(226, 232, 240, 0.8);
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--border-alpha-medium);
+    box-shadow: 0 25px 50px -12px var(--shadow-black-light);
     backdrop-filter: blur(20px);
     max-width: 450px;
     width: 90%;
@@ -121,7 +121,7 @@
 
 .modal#pinModal .modal-header {
     background: var(--background-tertiary);
-    border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+    border-bottom: 1px solid var(--border-alpha-light);
 }
 
 .modal#pinModal .modal-header h2 {
@@ -130,7 +130,7 @@
 }
 
 .modal#pinModal .modal-close {
-    background: rgba(74, 85, 104, 0.1);
+    background: var(--secondary-alpha-light);
     color: var(--text-secondary);
     border-radius: 8px;
     width: 36px;
@@ -139,7 +139,7 @@
 }
 
 .modal#pinModal .modal-close:hover {
-    background: rgba(74, 85, 104, 0.15);
+    background: var(--secondary-alpha-medium);
     color: var(--primary-color);
     transform: rotate(90deg);
 }
@@ -153,7 +153,7 @@
     margin-top: 0;
     margin-bottom: 0;
     padding: 1rem 1.5rem 1.5rem 1.5rem;
-    border-top: 1px solid rgba(226, 232, 240, 0.6);
+    border-top: 1px solid var(--border-alpha-light);
     gap: 12px;
     display: flex;
 }
@@ -347,8 +347,8 @@
 
 /* Form Section Styling for Sign Out Modal */
 .modal#signOutModal .form-section {
-    background: linear-gradient(135deg, rgba(66, 153, 225, 0.03) 0%, rgba(72, 187, 120, 0.03) 100%);
-    border: 1px solid rgba(66, 153, 225, 0.1);
+    background: linear-gradient(135deg, var(--blue-alpha-light) 0%, var(--green-alpha-light) 100%);
+    border: 1px solid var(--blue-alpha-medium);
     border-radius: 12px;
     padding: 20px;
     margin-bottom: 24px;
@@ -396,8 +396,8 @@
 
 .modal#signOutModal #barcodeInput:focus {
     border-color: var(--accent-blue);
-    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
-    background: white;
+    box-shadow: var(--shadow-focus-blue);
+    background: var(--color-white);
 }
 
 .modal#signOutModal .barcode-actions {
@@ -420,15 +420,15 @@
 }
 
 .modal#signOutModal .btn-parse {
-    background: linear-gradient(135deg, var(--accent-blue) 0%, #3182ce 100%);
-    color: white;
+    background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-blue) 100%);
+    color: var(--color-white);
     border: none;
 }
 
 .modal#signOutModal .btn-parse:hover {
-    background: linear-gradient(135deg, #3182ce 0%, #2b77cb 100%);
+    background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-blue-dark) 100%);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
+    box-shadow: 0 4px 12px var(--blue-alpha-strong);
 }
 
 .modal#signOutModal .btn-clear {
@@ -439,7 +439,7 @@
 
 .modal#signOutModal .btn-clear:hover {
     background: var(--accent-red);
-    color: white;
+    color: var(--color-white);
     border-color: var(--accent-red);
     transform: translateY(-1px);
 }
@@ -469,8 +469,8 @@
 
 .modal#signOutModal .soldiers-chips-container.has-soldiers {
     border-style: solid;
-    border-color: rgba(66, 153, 225, 0.2);
-    background: linear-gradient(135deg, rgba(66, 153, 225, 0.02) 0%, rgba(72, 187, 120, 0.02) 100%);
+    border-color: var(--blue-alpha-strong);
+    background: linear-gradient(135deg, var(--blue-alpha-light) 0%, var(--green-alpha-light) 100%);
 }
 
 .modal#signOutModal .empty-state-chips {
@@ -496,12 +496,12 @@
     align-items: center;
     gap: 8px;
     position: relative;
-    background: linear-gradient(135deg, white 0%, #f8fafc 100%);
-    border: 1px solid rgba(66, 153, 225, 0.2);
+    background: linear-gradient(135deg, var(--background-secondary) 0%, var(--background-primary) 100%);
+    border: 1px solid var(--blue-alpha-strong);
     border-radius: 8px;
     padding: 10px 14px;
     margin: 4px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-sm);
     transition: all 0.3s ease;
     max-width: 280px;
     min-height: 36px;
@@ -509,9 +509,9 @@
 
 .modal#signOutModal .soldier-chip:hover {
     border-color: var(--accent-blue);
-    box-shadow: 0 4px 12px rgba(66, 153, 225, 0.15);
+    box-shadow: 0 4px 12px var(--blue-alpha-medium);
     transform: translateY(-1px);
-    background: linear-gradient(135deg, #f8fafc 0%, white 100%);
+    background: linear-gradient(135deg, var(--background-primary) 0%, var(--background-secondary) 100%);
 }
 
 .modal#signOutModal .soldier-chip-name {
@@ -527,8 +527,8 @@
 }
 
 .modal#signOutModal .soldier-chip-remove {
-    background: linear-gradient(135deg, var(--accent-red) 0%, #e53e3e 100%);
-    color: white;
+    background: linear-gradient(135deg, var(--accent-red) 0%, var(--accent-red) 100%);
+    color: var(--color-white);
     border: none;
     width: 20px;
     height: 20px;
@@ -545,9 +545,9 @@
 }
 
 .modal#signOutModal .soldier-chip-remove:hover {
-    background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+    background: linear-gradient(135deg, var(--accent-red) 0%, var(--accent-red-dark) 100%);
     transform: scale(1.1);
-    box-shadow: 0 2px 8px rgba(229, 62, 62, 0.3);
+    box-shadow: 0 2px 8px var(--red-alpha-strong);
 }
 
 .modal#signOutModal .soldier-chip-remove:active {
@@ -560,7 +560,7 @@
     left: 50%;
     transform: translateX(-50%);
     background: var(--primary-color);
-    color: white;
+    color: var(--color-white);
     padding: 6px 10px;
     border-radius: 6px;
     font-size: 11px;
@@ -619,7 +619,7 @@
 .soldier-chip[data-rank*="CPT"],
 .soldier-chip[data-rank*="1LT"],
 .soldier-chip[data-rank*="2LT"] {
-    border-left: 4px solid #3182ce;
+    border-left: 4px solid var(--accent-blue);
 }
 
 .soldier-chip[data-rank*="SGM"],
@@ -627,7 +627,7 @@
 .soldier-chip[data-rank*="SFC"],
 .soldier-chip[data-rank*="SSG"],
 .soldier-chip[data-rank*="SGT"] {
-    border-left: 4px solid #38a169;
+    border-left: 4px solid var(--accent-green);
 }
 
 .soldier-chip[data-rank*="CPL"],
@@ -635,7 +635,7 @@
 .soldier-chip[data-rank*="PFC"],
 .soldier-chip[data-rank*="PV2"],
 .soldier-chip[data-rank*="PVT"] {
-    border-left: 4px solid #d69e2e;
+    border-left: 4px solid var(--accent-yellow);
 }
 
 /* Animation for new chips */

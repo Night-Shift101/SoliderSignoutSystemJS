@@ -52,7 +52,7 @@
 .form-group select:focus {
     outline: none;
     border-color: var(--accent-blue);
-    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+    box-shadow: var(--shadow-focus);
 }
 
 .form-group input:disabled,
@@ -132,21 +132,21 @@
 .form-group.has-error textarea,
 .form-group.has-error select {
     border-color: var(--accent-red);
-    box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
+    box-shadow: var(--shadow-focus-red);
 }
 
 .form-group.has-success input,
 .form-group.has-success textarea,
 .form-group.has-success select {
     border-color: var(--accent-green);
-    box-shadow: 0 0 0 3px rgba(56, 161, 105, 0.1);
+    box-shadow: var(--shadow-focus-green);
 }
 
 .form-group.has-warning input,
 .form-group.has-warning textarea,
 .form-group.has-warning select {
     border-color: var(--accent-orange);
-    box-shadow: 0 0 0 3px rgba(221, 107, 32, 0.1);
+    box-shadow: var(--shadow-focus-orange);
 }
 
 /* Password input wrapper */

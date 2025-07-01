@@ -4,8 +4,6 @@ class SettingsManager {
     }
 
     async loadSettingsData() {
-        console.log('Loading settings data...');
-        
         try {
             const currentUserDisplay = this.app.domManager.get('currentUserDisplay');
             if (currentUserDisplay && this.app.currentUser) {
@@ -15,7 +13,7 @@ class SettingsManager {
             await this.loadAccountsList();
             
         } catch (error) {
-            console.error('Error loading settings data:', error);
+            console.error('Error loading settings:', error);
             this.app.notificationManager.showNotification('Failed to load settings', 'error');
         }
     }
@@ -26,12 +24,14 @@ class SettingsManager {
             const accountsEmptyState = this.app.domManager.get('accountsEmptyState');
             
             if (!accountsTableBody) {
-                console.log('Accounts table body not found');
                 return;
             }
 
             const response = await Utils.fetchWithAuth('/api/users');
-            if (!response.ok) throw new Error('Failed to fetch users');
+            
+            if (!response.ok) {
+                throw new Error('Failed to fetch users');
+            }
             
             const users = await response.json();
             
@@ -90,9 +90,8 @@ class SettingsManager {
                 `;
             }).join('');
             
-            
         } catch (error) {
-            console.error('Error loading accounts list:', error);
+            console.error('Error loading user accounts:', error);
             this.app.notificationManager.showNotification('Failed to load user accounts', 'error');
         }
     }

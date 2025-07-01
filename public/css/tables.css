@@ -64,7 +64,7 @@
 .search-input:focus {
     outline: none;
     border-color: var(--accent-blue);
-    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+    box-shadow: var(--shadow-focus);
 }
 
 /* Table Styles */
@@ -130,28 +130,28 @@
 }
 
 .status-out {
-    background: rgba(221, 107, 32, 0.1);
+    background: var(--orange-alpha-medium);
     color: var(--accent-orange);
-    border: 1px solid rgba(221, 107, 32, 0.2);
+    border: 1px solid var(--orange-alpha-strong);
 }
 
 .status-returned {
-    background: rgba(56, 161, 105, 0.1);
+    background: var(--green-alpha-medium);
     color: var(--accent-green);
-    border: 1px solid rgba(56, 161, 105, 0.2);
+    border: 1px solid var(--green-alpha-strong);
 }
 
 .status-overdue {
-    background: rgba(229, 62, 62, 0.1);
+    background: var(--red-alpha-medium);
     color: var(--accent-red);
-    border: 1px solid rgba(229, 62, 62, 0.2);
+    border: 1px solid var(--red-alpha-strong);
     animation: statusPulse 2s infinite;
 }
 
 .status-badge.active {
-    background: rgba(49, 130, 206, 0.1);
+    background: var(--blue-alpha-medium);
     color: var(--accent-blue);
-    border: 1px solid rgba(49, 130, 206, 0.2);
+    border: 1px solid var(--blue-alpha-strong);
 }
 
 @keyframes statusPulse {
@@ -186,7 +186,7 @@
 
 .table-soldier-chip:hover {
     background: var(--accent-blue);
-    color: white;
+    color: var(--color-white);
     border-color: var(--accent-blue);
 }
 
@@ -208,7 +208,7 @@
     left: 50%;
     transform: translateX(-50%);
     background: var(--primary-color);
-    color: white;
+    color: var(--color-white);
     padding: 8px 12px;
     border-radius: 6px;
     font-size: 12px;
@@ -262,7 +262,7 @@
 
 /* Loading States */
 .loading-skeleton {
-    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background: linear-gradient(90deg, var(--loading-bg-1) 25%, var(--loading-bg-2) 50%, var(--loading-bg-1) 75%);
     background-size: 200% 100%;
     animation: loading 1.5s infinite;
 }

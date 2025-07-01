@@ -48,7 +48,7 @@
 .filter-grid .form-group select:focus {
     outline: none;
     border-color: var(--accent-blue);
-    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+    box-shadow: var(--shadow-focus);
 }
 
 .filter-actions {

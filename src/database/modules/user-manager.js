@@ -6,92 +6,16 @@ class UserManager {
     }
 
     createDefaultAdmin() {
-        const defaultUsername = 'admin';
-        const defaultPassword = 'admin123';
-        const defaultPin = '1234';
-        
-        this.db.get('SELECT id FROM users WHERE username = ?', [defaultUsername], (err, row) => {
+        this.db.get('SELECT id FROM users WHERE username = ?', ['admin'], (err, row) => {
             if (err) {
                 console.error('Error checking for admin user:', err.message);
                 return;
             }
             
             if (!row) {
-                const passwordHash = bcrypt.hashSync(defaultPassword, 10);
-                const pinHash = bcrypt.hashSync(defaultPin, 10);
-                
-                this.db.run(
-                    'INSERT INTO users (username, password_hash, pin_hash, rank, full_name) VALUES (?, ?, ?, ?, ?)',
-                    [defaultUsername, passwordHash, pinHash, 'Admin', 'System Administrator'],
-                    function(err) {
-                        if (err) {
-                            console.error('Error creating default user:', err.message);
-                        } else {
-                            console.log('Default admin user created:');
-                            console.log('  Username: admin');
-                            console.log('  Password: admin123');
-                            console.log('  PIN: 1234');
-                        }
-                    }
-                );
+                console.log('⚠️  No admin user found in database.');
+                console.log('   Please run "node setup.js" to initialize the system.');
             }
-        });
-    }
-    
-    createTestUsers() {
-        const testUsers = [
-            {
-                username: 'testnco',
-                password: 'test123',
-                pin: '1234',
-                rank: 'SGT',
-                full_name: 'Test NCO'
-            },
-            {
-                username: 'testsgt',
-                password: 'test123', 
-                pin: '5678',
-                rank: 'SSG',
-                full_name: 'Staff Sergeant Test'
-            }
-        ];
-
-        testUsers.forEach(user => {
-            this.db.get('SELECT id FROM users WHERE username = ?', [user.username], (err, row) => {
-                if (err) {
-                    console.error('Error checking for test user:', err.message);
-                    return;
-                }
-                
-                const passwordHash = bcrypt.hashSync(user.password, 10);
-                const pinHash = bcrypt.hashSync(user.pin, 10);
-                
-                if (!row) {
-                    this.db.run(
-                        'INSERT INTO users (username, password_hash, pin_hash, rank, full_name) VALUES (?, ?, ?, ?, ?)',
-                        [user.username, passwordHash, pinHash, user.rank, user.full_name],
-                        function(err) {
-                            if (err) {
-                                console.error(`Error creating test user ${user.username}:`, err.message);
-                            } else {
-                                console.log(`Test user created: ${user.rank} ${user.full_name} (PIN: ${user.pin})`);
-                            }
-                        }
-                    );
-                } else {
-                    this.db.run(
-                        'UPDATE users SET pin_hash = ? WHERE username = ?',
-                        [pinHash, user.username],
-                        function(err) {
-                            if (err) {
-                                console.error(`Error updating PIN for ${user.username}:`, err.message);
-                            } else {
-                                console.log(`Updated PIN for ${user.rank} ${user.full_name} to: ${user.pin}`);
-                            }
-                        }
-                    );
-                }
-            });
         });
     }
     

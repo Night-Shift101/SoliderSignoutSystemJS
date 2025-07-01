@@ -56,7 +56,7 @@
 
 .btn-danger:hover:not(:disabled) {
     background: var(--accent-red);
-    color: white;
+    color: var(--color-white);
     transform: translateY(-1px);
     box-shadow: var(--shadow-md);
 }
@@ -69,7 +69,7 @@
 
 .btn-success:hover:not(:disabled) {
     background: var(--accent-green);
-    color: white;
+    color: var(--color-white);
     transform: translateY(-1px);
     box-shadow: var(--shadow-md);
 }
@@ -92,9 +92,9 @@
     display: inline-block;
     width: 16px;
     height: 16px;
-    border: 2px solid #ffffff40;
+    border: 2px solid var(--border-white-light);
     border-radius: 50%;
-    border-top-color: #ffffff;
+    border-top-color: var(--background-secondary);
     animation: spin 1s ease-in-out infinite;
 }
 

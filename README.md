@@ -33,44 +33,75 @@ A comprehensive Node.js web application for tracking military group sign-outs wi
 - Node.js 14+ and npm
 - Git (for cloning)
 
-### Installation
+### Initial Setup
 
 1. **Clone the repository**
-
    ```bash
    git clone <repository-url>
    cd JS
    ```
-2. **Install dependencies**
 
+2. **Install dependencies**
    ```bash
    npm install
    ```
-3. **Start the development server**
 
+3. **Run Setup Script**
+   ```bash
+   npm run setup
+   ```
+   
+   The setup script will:
+   - Optionally wipe existing database
+   - Initialize fresh database tables
+   - Set up your system password (for application access)
+   - Create your admin user account with:
+     - Custom rank and name
+     - Auto-generated secure password
+     - Custom PIN for administrative actions
+
+4. **Start the application**
    ```bash
    npm run dev
    ```
-4. **Access the application**
 
-   - Open your browser to `http://localhost:3000`
-   - You'll be redirected to the login page
+5. **Access the System**
+   - Navigate to: `http://localhost:3000`
+   - Use the credentials you created during setup
+
+### Production Deployment
+
+```bash
+npm start
+```
 
 ## 🔐 Authentication
 
-### Default Admin Account
+The system uses a secure two-factor authentication system:
 
-- **Username**: `admin`
-- **Password**: `admin123`
-- **PIN**: `1234`
+1. **System Password**: Set during initial setup (application access)
+2. **User Authentication**: Username and password for user accounts
+3. **Action PIN**: Each user has a unique 4-6 digit PIN for administrative actions
+
+### Admin Account
+
+After running setup, you'll receive:
+- **System Password**: Custom password for application access
+- **Admin Username**: `admin` (fixed)
+- **Admin Password**: Auto-generated secure password
+- **Admin PIN**: Custom PIN you set during setup
+
+⚠️ **Important**: All credentials are displayed once during setup - save them securely!
 
 ## 📚 User Guide
 
 ### Logging In
 
 1. Navigate to the application URL
-2. Enter your username and password
-3. Click "Sign In"
+2. Enter the system password (set during setup)
+3. Select your user account
+4. Enter your PIN
+5. Click "Sign In"
 
 ### Creating a Sign-Out
 
