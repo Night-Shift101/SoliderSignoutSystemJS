@@ -23,7 +23,7 @@
 
 .btn-primary {
     background: var(--primary-color);
-    color: white;
+    color: var(--background-tertiary);
     border-color: var(--primary-color);
 }
 

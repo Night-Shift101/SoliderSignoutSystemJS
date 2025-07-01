@@ -4,7 +4,7 @@ const { requireAuth, requireBothAuth, verifyPin,requireSystemAuth, handleValidat
 const router = express.Router();
 router.get('/', requireSystemAuth, async (req, res) => {
     try {
-        req.db.getAllUsers((err, users) => {
+        req.db.getAllUsersExtended((err, users) => {
             if (err) {
                 return res.status(500).json({ error: 'Failed to fetch users' });
             }
@@ -163,7 +163,6 @@ router.patch('/:id/activate',
     param('id').isInt({ min: 1 }),
     handleValidationErrors,
     async (req, res) => {
-
         try {
             const userId = parseInt(req.params.id, 10);
             if (isNaN(userId)) {

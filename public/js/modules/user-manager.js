@@ -115,7 +115,7 @@ class UserManager {
             const result = await response.json();
             
             this.app.modalManager.closeAddUserModal();
-            this.loadAccountsList();
+            this.app.settingsManager.reloadAccountsList();
             this.app.notificationManager.showNotification('User created successfully', 'success');
             console.log('User created:', result);
 
@@ -195,6 +195,7 @@ class UserManager {
 
             this.app.modalManager.closeChangePinModal();
             this.app.notificationManager.showNotification('PIN changed successfully', 'success');
+            this.app.settingsManager.reloadAccountsList();
 
         } catch (error) {
             console.error('Error changing PIN:', error);
@@ -255,7 +256,7 @@ class UserManager {
             }
 
             this.app.modalManager.closeDeleteUserModal();
-            this.loadAccountsList();
+            this.app.settingsManager.reloadAccountsList();
             this.app.notificationManager.showNotification('User deleted successfully', 'success');
 
         } catch (error) {
@@ -289,7 +290,7 @@ class UserManager {
                 throw new Error('Failed to activate user');
             }
 
-            this.loadAccountsList();
+            this.app.settingsManager.reloadAccountsList();
             this.app.notificationManager.showNotification(`${userName} activated successfully`, 'success');
         } catch (error) {
             console.error('Error activating user:', error);
@@ -307,7 +308,7 @@ class UserManager {
                 throw new Error('Failed to deactivate user');
             }
 
-            this.loadAccountsList();
+            this.app.settingsManager.reloadAccountsList();
             this.app.notificationManager.showNotification(`${userName} deactivated successfully`, 'success');
         } catch (error) {
             console.error('Error deactivating user:', error);

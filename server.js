@@ -13,6 +13,7 @@ const authRoutes = require('./src/routes/auth');
 const usersRoutes = require('./src/routes/users');
 const signoutsRoutes = require('./src/routes/signouts');
 const settingsRoutes = require('./src/routes/settings');
+const preferencesRoutes = require('./src/routes/preferences');
 const Database = require('./src/database/database');
 
 const app = express();
@@ -87,6 +88,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/signouts', signoutsRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/preferences', preferencesRoutes(db));
 
 // Static files
 app.use(express.static(path.join(__dirname, 'public')));

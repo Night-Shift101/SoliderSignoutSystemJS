@@ -111,7 +111,7 @@
 
 /* PIN Modal Specific Styles */
 .modal#pinModal .modal-content {
-    background: linear-gradient(135deg, var(--background-secondary) 0%, rgba(255, 255, 255, 0.95) 100%);
+    background: linear-gradient(135deg, var(--background-secondary) 0%, var(--background-primary) 100%);
     border: 1px solid rgba(226, 232, 240, 0.8);
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     backdrop-filter: blur(20px);
@@ -120,7 +120,7 @@
 }
 
 .modal#pinModal .modal-header {
-    background: linear-gradient(135deg, rgba(248, 250, 252, 0.9) 0%, rgba(237, 242, 247, 0.9) 100%);
+    background: var(--background-tertiary);
     border-bottom: 1px solid rgba(226, 232, 240, 0.6);
 }
 
@@ -145,24 +145,27 @@
 }
 
 .modal#pinModal .modal-body {
-    padding: 2rem;
-    padding-bottom: 1.5rem;
+    padding: 1.5rem;
+    padding-bottom: 0;
 }
 
 .modal#pinModal .form-actions {
-    margin-top: 2rem;
-    margin-bottom: 0.5rem;
-    padding-top: 1.5rem;
-    padding-bottom: 0.5rem;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding: 1rem 1.5rem 1.5rem 1.5rem;
     border-top: 1px solid rgba(226, 232, 240, 0.6);
-    gap: 1rem;
+    gap: 12px;
+    display: flex;
 }
 
 .modal#pinModal .form-actions .btn {
     flex: 1;
     justify-content: center;
-    padding: 14px 20px;
+    padding: 12px 16px;
     font-weight: 600;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    min-width: 0;
 }
 
 .modal#pinModal .form-actions .btn:first-child {
@@ -297,6 +300,378 @@
     color: var(--accent-green);
 }
 
+/* Sign Out Modal Specific Styles */
+.modal#signOutModal .modal-content {
+    max-width: 600px;
+    width: 95%;
+}
+
+.modal#signOutModal .modal-header {
+    background: var(--background-tertiary);
+    border-bottom: 1px solid var(--border-color);
+    padding: 20px 24px;
+}
+
+.modal#signOutModal .modal-header h2 {
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.modal#signOutModal .modal-header h2::before {
+    content: "👥";
+    font-size: 1rem;
+}
+
+.modal#signOutModal .modal-close {
+    background: none;
+    color: var(--text-secondary);
+    border-radius: 6px;
+    width: 32px;
+    height: 32px;
+    font-size: 1.5rem;
+    transition: all 0.2s ease;
+}
+
+.modal#signOutModal .modal-close:hover {
+    background-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+.modal#signOutModal .form {
+    padding: 24px;
+}
+
+/* Form Section Styling for Sign Out Modal */
+.modal#signOutModal .form-section {
+    background: linear-gradient(135deg, rgba(66, 153, 225, 0.03) 0%, rgba(72, 187, 120, 0.03) 100%);
+    border: 1px solid rgba(66, 153, 225, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+.modal#signOutModal .form-section::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent-blue) 0%, var(--accent-green) 100%);
+}
+
+.modal#signOutModal .form-section h3 {
+    color: var(--primary-color);
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.modal#signOutModal .form-section h3::before {
+    content: "🔍";
+    font-size: 1rem;
+}
+
+/* Barcode Input Styling */
+.modal#signOutModal #barcodeInput {
+    background: var(--background-secondary);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    transition: all 0.3s ease;
+    resize: vertical;
+    min-height: 80px;
+}
+
+.modal#signOutModal #barcodeInput:focus {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+    background: white;
+}
+
+.modal#signOutModal .barcode-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+
+.modal#signOutModal .barcode-actions .btn {
+    flex: 1;
+    min-width: 130px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-weight: 600;
+    padding: 10px 16px;
+    transition: all 0.3s ease;
+}
+
+.modal#signOutModal .btn-parse {
+    background: linear-gradient(135deg, var(--accent-blue) 0%, #3182ce 100%);
+    color: white;
+    border: none;
+}
+
+.modal#signOutModal .btn-parse:hover {
+    background: linear-gradient(135deg, #3182ce 0%, #2b77cb 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
+}
+
+.modal#signOutModal .btn-clear {
+    background: var(--background-tertiary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.modal#signOutModal .btn-clear:hover {
+    background: var(--accent-red);
+    color: white;
+    border-color: var(--accent-red);
+    transform: translateY(-1px);
+}
+
+/* Soldiers Section */
+.modal#signOutModal .soldiers-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.modal#signOutModal .soldiers-header label {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.modal#signOutModal .soldiers-chips-container {
+    background: var(--background-secondary);
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+    padding: 16px;
+    min-height: 60px;
+    transition: all 0.3s ease;
+}
+
+.modal#signOutModal .soldiers-chips-container.has-soldiers {
+    border-style: solid;
+    border-color: rgba(66, 153, 225, 0.2);
+    background: linear-gradient(135deg, rgba(66, 153, 225, 0.02) 0%, rgba(72, 187, 120, 0.02) 100%);
+}
+
+.modal#signOutModal .empty-state-chips {
+    color: var(--text-muted);
+    font-style: italic;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 28px;
+    font-size: 0.9rem;
+}
+
+.modal#signOutModal .empty-state-chips::before {
+    content: "👥";
+    margin-right: 8px;
+    opacity: 0.5;
+}
+
+/* Enhanced Soldier Chips for Modal */
+.modal#signOutModal .soldier-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    background: linear-gradient(135deg, white 0%, #f8fafc 100%);
+    border: 1px solid rgba(66, 153, 225, 0.2);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    max-width: 280px;
+    min-height: 36px;
+}
+
+.modal#signOutModal .soldier-chip:hover {
+    border-color: var(--accent-blue);
+    box-shadow: 0 4px 12px rgba(66, 153, 225, 0.15);
+    transform: translateY(-1px);
+    background: linear-gradient(135deg, #f8fafc 0%, white 100%);
+}
+
+.modal#signOutModal .soldier-chip-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: 1.3;
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.modal#signOutModal .soldier-chip-remove {
+    background: linear-gradient(135deg, var(--accent-red) 0%, #e53e3e 100%);
+    color: white;
+    border: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.modal#signOutModal .soldier-chip-remove:hover {
+    background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(229, 62, 62, 0.3);
+}
+
+.modal#signOutModal .soldier-chip-remove:active {
+    transform: scale(0.95);
+}
+
+.modal#signOutModal .soldier-chip-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--primary-color);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    margin-bottom: 8px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
+.modal#signOutModal .soldier-chip-tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 4px solid transparent;
+    border-top-color: var(--primary-color);
+}
+
+.modal#signOutModal .soldier-chip:hover .soldier-chip-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(-2px);
+}
+
+/* Container for soldier chips */
+.soldiers-chips-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: flex-start;
+    padding: 12px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.soldiers-chips-container:empty::before {
+    content: "No soldiers added yet. Scan CAC barcodes to add soldiers.";
+    color: var(--text-muted);
+    font-style: italic;
+    text-align: center;
+    width: 100%;
+    display: block;
+    padding: 20px;
+    font-size: 0.9rem;
+}
+
+/* Rank-based styling */
+.soldier-chip[data-rank*="COL"],
+.soldier-chip[data-rank*="LTC"],
+.soldier-chip[data-rank*="MAJ"],
+.soldier-chip[data-rank*="CPT"],
+.soldier-chip[data-rank*="1LT"],
+.soldier-chip[data-rank*="2LT"] {
+    border-left: 4px solid #3182ce;
+}
+
+.soldier-chip[data-rank*="SGM"],
+.soldier-chip[data-rank*="MSG"],
+.soldier-chip[data-rank*="SFC"],
+.soldier-chip[data-rank*="SSG"],
+.soldier-chip[data-rank*="SGT"] {
+    border-left: 4px solid #38a169;
+}
+
+.soldier-chip[data-rank*="CPL"],
+.soldier-chip[data-rank*="SPC"],
+.soldier-chip[data-rank*="PFC"],
+.soldier-chip[data-rank*="PV2"],
+.soldier-chip[data-rank*="PVT"] {
+    border-left: 4px solid #d69e2e;
+}
+
+/* Animation for new chips */
+@keyframes chipSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.soldier-chip {
+    animation: chipSlideIn 0.3s ease-out;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .soldier-chip {
+        max-width: 100%;
+        margin: 2px 0;
+    }
+    
+    .soldiers-chips-container {
+        gap: 4px;
+        padding: 8px;
+    }
+    
+    .soldier-chip-name {
+        font-size: 12px;
+    }
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
     .info-grid {
         grid-template-columns: 1fr;
@@ -305,5 +680,29 @@
     .modal-content {
         max-width: 95vw;
         margin: 2% auto;
+    }
+    
+    .modal#signOutModal .modal-content {
+        width: 98%;
+        margin: 2% auto;
+        max-height: 95vh;
+    }
+    
+    .modal#signOutModal .barcode-actions {
+        flex-direction: column;
+    }
+    
+    .modal#signOutModal .barcode-actions .btn {
+        min-width: unset;
+    }
+    
+    .modal#signOutModal .form-actions {
+        flex-direction: column;
+    }
+    
+    .modal#signOutModal .soldiers-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
     }
 }

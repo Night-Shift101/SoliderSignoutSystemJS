@@ -61,6 +61,11 @@ class AuthManager {
                 currentUserName.textContent = `${result.user.rank} ${result.user.full_name}`;
             }
             
+            // Load user theme preference
+            if (this.app.themeManager) {
+                await this.app.themeManager.loadThemePreference();
+            }
+            
             console.log('About to load current signouts...');
             try {
                 await this.app.signOutManager.loadCurrentSignOuts();
@@ -147,11 +152,26 @@ class AuthManager {
             
             if (result.success) {
                 this.app.modalManager.closePinModal();
+                
+                // Update current user
+                this.currentUser = targetUserInfo;
+                this.app.currentUser = targetUserInfo;
+                
+                // Update UI
+                const currentUserName = this.app.domManager.get('currentUserName');
+                if (currentUserName) {
+                    currentUserName.textContent = `${targetUserInfo.rank} ${targetUserInfo.full_name}`;
+                }
+                
+                // Load user theme preference
+                if (this.app.themeManager) {
+                    await this.app.themeManager.loadThemePreference();
+                }
+                
                 this.app.notificationManager.showNotification(`Switched to ${targetUserInfo.rank} ${targetUserInfo.full_name}`, 'success');
                 
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000); 
+                // Refresh current sign-outs for the new user
+                await this.app.signOutManager.loadCurrentSignOuts();
             } else {
                 this.app.modalManager.showPinError('Invalid PIN');
             }
@@ -176,19 +196,25 @@ class AuthManager {
             
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.error || 'Sign-in failed');
+                
+                if (errorData.details && Array.isArray(errorData.details)) {
+                    const errorMessages = errorData.details.map(err => err.msg).join(', ');
+                    throw new Error(errorMessages);
+                } else {
+                    throw new Error(errorData.error || 'Sign-in failed');
+                }
             }
             
             const result = await response.json();
             
-            if (result.message) {
+            if (result.success !== false) {
                 this.app.modalManager.closePinModal();
                 this.app.currentSignOutId = null;
                 
                 this.app.signOutManager.loadCurrentSignOuts();
-                this.app.notificationManager.showNotification('Soldiers signed in successfully', 'success');
+                this.app.notificationManager.showNotification(result.message || 'Soldiers signed in successfully', 'success');
             } else {
-                this.app.modalManager.showPinError('Sign-in failed');
+                this.app.modalManager.showPinError(result.message || 'Sign-in failed');
             }
         } catch (error) {
             console.error('Sign-in error:', error);

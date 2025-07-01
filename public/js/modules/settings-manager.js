@@ -90,10 +90,16 @@ class SettingsManager {
                 `;
             }).join('');
             
+            
         } catch (error) {
             console.error('Error loading accounts list:', error);
             this.app.notificationManager.showNotification('Failed to load user accounts', 'error');
         }
+    }
+    
+
+    async reloadAccountsList() {
+        await this.loadAccountsList();
     }
 }
 

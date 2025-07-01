@@ -26,6 +26,8 @@ class DOMManager {
             logoutBtn: document.getElementById('logoutBtn'),
             backToDashboard: document.getElementById('backToDashboard'),
             backToMainBtn: document.getElementById('backToMainBtn'),
+            darkModeToggle: document.getElementById('darkModeToggle'),
+            darkModeText: document.getElementById('darkModeText'),
             
             // Views
             dashboardView: document.getElementById('dashboardView'),

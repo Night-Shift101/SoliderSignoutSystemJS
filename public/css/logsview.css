@@ -62,11 +62,14 @@
 
 .filter-actions .btn {
     min-width: 120px;
+    justify-content: center;
 }
 
 .filter-actions .export-btn {
     margin-left: auto;
 }
+
+
 
 @media (max-width: 1200px) {
     .filter-grid {

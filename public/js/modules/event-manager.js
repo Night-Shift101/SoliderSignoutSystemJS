@@ -59,6 +59,7 @@ class EventManager {
         const logoutBtn = this.app.domManager.get('logoutBtn');
         const backToDashboard = this.app.domManager.get('backToDashboard');
         const backToMainBtn = this.app.domManager.get('backToMainBtn');
+        const darkModeToggle = this.app.domManager.get('darkModeToggle');
         
         refreshBtn?.addEventListener('click', () => this.app.signOutManager.loadCurrentSignOuts());
         newSignOutBtn?.addEventListener('click', () => this.app.modalManager.openNewSignOutModal());
@@ -67,6 +68,7 @@ class EventManager {
         logoutBtn?.addEventListener('click', () => this.app.authManager.logout());
         backToDashboard?.addEventListener('click', () => this.app.viewManager.showDashboardView());
         backToMainBtn?.addEventListener('click', () => this.app.viewManager.showDashboardView());
+        darkModeToggle?.addEventListener('click', () => this.app.toggleDarkMode());
     }
 
     attachModalEvents() {

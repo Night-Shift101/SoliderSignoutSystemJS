@@ -293,7 +293,7 @@
     top: calc(100% + 8px);
     right: 0;
     min-width: 200px;
-    background: white;
+    background: var(--background-secondary);
     border: 1px solid var(--border-color);
     border-radius: 12px;
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);

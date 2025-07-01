@@ -10,6 +10,7 @@ import SignOutManager from './modules/signout-manager.js';
 import LogsManager from './modules/logs-manager.js';
 import UserManager from './modules/user-manager.js';
 import SettingsManager from './modules/settings-manager.js';
+import ThemeManager from './modules/theme-manager.js';
 import Utils from './modules/utils.js';
 
 class SoldierSignOutApp {
@@ -34,6 +35,7 @@ class SoldierSignOutApp {
         this.logsManager = new LogsManager(this);
         this.userManager = new UserManager(this);
         this.settingsManager = new SettingsManager(this);
+        this.themeManager = new ThemeManager(this);
         window.barcodeManager = this.barcodeManager;
         window.BarcodeParser = BarcodeParser;
         window.Utils = Utils;
@@ -85,6 +87,10 @@ class SoldierSignOutApp {
 
     showSettingsWithAuth() {
         this.viewManager.showSettingsWithAuth();
+    }
+
+    toggleDarkMode() {
+        this.themeManager.toggleTheme();
     }
 }
 
