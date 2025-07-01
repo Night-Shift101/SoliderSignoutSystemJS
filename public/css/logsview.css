@@ -67,6 +67,7 @@
 
 .filter-actions .export-btn {
     margin-left: auto;
+    color: var(--text-primary);
 }
 
 

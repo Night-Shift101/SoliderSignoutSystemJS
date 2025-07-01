@@ -90,6 +90,15 @@ app.use('/api/signouts', signoutsRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/preferences', preferencesRoutes(db));
 
+// Health check endpoint for connection monitoring
+app.get('/api/health', (req, res) => {
+    res.status(200).json({ 
+        status: 'ok', 
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime()
+    });
+});
+
 // Static files
 app.use(express.static(path.join(__dirname, 'public')));
 

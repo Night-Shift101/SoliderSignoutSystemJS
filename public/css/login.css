@@ -2,6 +2,7 @@
 
 /* Import base styles and variables */
 @import './base.css';
+@import './connection.css';
 @import './buttons.css';
 @import './forms.css';
 

@@ -11,6 +11,8 @@ import LogsManager from './modules/logs-manager.js';
 import UserManager from './modules/user-manager.js';
 import SettingsManager from './modules/settings-manager.js';
 import ThemeManager from './modules/theme-manager.js';
+import KeyboardManager from './modules/keyboard-manager.js';
+import ConnectionManager from './modules/connection-manager.js';
 import Utils from './modules/utils.js';
 
 class SoldierSignOutApp {
@@ -36,6 +38,8 @@ class SoldierSignOutApp {
         this.userManager = new UserManager(this);
         this.settingsManager = new SettingsManager(this);
         this.themeManager = new ThemeManager(this);
+        this.keyboardManager = new KeyboardManager(this);
+        this.connectionManager = new ConnectionManager(this);
         window.barcodeManager = this.barcodeManager;
         window.BarcodeParser = BarcodeParser;
         window.Utils = Utils;

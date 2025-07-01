@@ -5,6 +5,7 @@
 
 /* Component styles */
 @import './notifications.css';
+@import './connection.css';
 @import './header.css';
 @import './buttons.css';
 @import './forms.css';

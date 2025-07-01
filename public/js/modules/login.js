@@ -75,6 +75,24 @@ class LoginApp {
         });
     }
 
+    togglePasswordVisibility(button) {
+        const targetId = button.getAttribute('data-target');
+        const targetInput = document.getElementById(targetId);
+        const iconSpan = button.querySelector('.icon');
+        
+        if (!targetInput || !iconSpan) {
+            return;
+        }
+        
+        if (targetInput.type === 'password') {
+            targetInput.type = 'text';
+            iconSpan.textContent = '🙈';
+        } else {
+            targetInput.type = 'password';
+            iconSpan.textContent = '👁';
+        }
+    }
+
     async checkExistingSession() {
         try {
             
@@ -351,6 +369,20 @@ class LoginApp {
 document.addEventListener('DOMContentLoaded', () => {
     try {
         new LoginApp();
+        
+        // Initialize basic connection monitoring for login page
+        import('./connection-manager.js').then(({ default: ConnectionManager }) => {
+            const fakeApp = {
+                notificationManager: {
+                    showNotification: (message, type) => {
+                        console.log(`${type.toUpperCase()}: ${message}`);
+                    }
+                }
+            };
+            new ConnectionManager(fakeApp);
+        }).catch(error => {
+            console.error('Error loading connection manager:', error);
+        });
     } catch (error) {
         console.error('Error initializing LoginApp:', error);
     }
