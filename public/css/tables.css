@@ -113,10 +113,10 @@
 .signouts-table td:nth-child(4) { width: 150px; }
 .signouts-table td:nth-child(5) { width: 150px; }
 .signouts-table td:nth-child(6) { width: 180px; }
-.signouts-table td:nth-child(7) { width: 120px; }
+.signouts-table td:nth-child(7) { width: 180px; }
 .signouts-table th:nth-child(8), .signouts-table td:nth-child(8) { width: 180px; }
 .signouts-table th:nth-child(9), .signouts-table td:nth-child(9) { width: 100px; }
-.signouts-table th:nth-child(10), .signouts-table td:nth-child(10) { width: 200px; }
+.signouts-table th:nth-child(10), .signouts-table td:nth-child(10) { width: 300px; }
 
 /* Status Badges */
 .status-badge {

@@ -77,10 +77,10 @@ class DOMManager {
             exportCsvBtn: document.getElementById('exportCsvBtn'),
             
             // Sign out details modal
-            signOutDetailsModal: document.getElementById('signOutDetailsModal'),
-            signOutDetailsContent: document.getElementById('signOutDetailsContent'),
-            closeSignOutDetailsModal: document.getElementById('closeSignOutDetailsModal'),
-            exportPdfBtn: document.getElementById('exportPdfBtn'),
+            // signOutDetailsModal: document.getElementById('signOutDetailsModal'),
+            // signOutDetailsContent: document.getElementById('signOutDetailsContent'),
+            // closeSignOutDetailsModal: document.getElementById('closeSignOutDetailsModal'),
+            // exportPdfBtn: document.getElementById('exportPdfBtn'),
 
             // Settings elements
             currentUserDisplay: document.getElementById('currentUserDisplay'),

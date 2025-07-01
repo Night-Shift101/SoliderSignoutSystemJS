@@ -294,14 +294,7 @@
 }
 
 .time-info {
-    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
-    font-weight: 600;
     color: var(--accent-green);
-    background: var(--background-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    padding: 8px 12px;
-    margin-top: 8px;
 }
 
 @media (max-width: 768px) {

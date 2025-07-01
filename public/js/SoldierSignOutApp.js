@@ -90,4 +90,5 @@ class SoldierSignOutApp {
 
 window.addEventListener('DOMContentLoaded', () => {
     window.app = new SoldierSignOutApp();
+    window.app.showDashboardView();
 });

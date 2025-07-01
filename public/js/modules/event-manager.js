@@ -231,12 +231,12 @@ class EventManager {
             }
         });
         
-        this.app.domManager.get('logsTableBody')?.addEventListener('click', (e) => {
-            const row = e.target.closest('.log-row');
-            if (row && row.dataset.signoutId) {
-                this.app.modalManager.showSignOutDetails(row.dataset.signoutId);
-            }
-        });
+        // this.app.domManager.get('logsTableBody')?.addEventListener('click', (e) => {
+        //     const row = e.target.closest('.log-row');
+        //     if (row && row.dataset.signoutId) {
+        //         this.app.modalManager.showSignOutDetails(row.dataset.signoutId);
+        //     }
+        // });
     }
 }
 

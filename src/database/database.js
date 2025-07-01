@@ -430,8 +430,8 @@ class Database {
                     soldier.firstName || '',
                     soldier.lastName || '',
                     soldier.dodId || null,
-                    signOutData.location,
-                    signOutTime,
+                    signOutData.destination,
+                    signOutData.signOutTime.toISOString(),
                     signOutData.signed_out_by_id,
                     signOutData.signed_out_by_name,
                     signOutData.notes || ''
@@ -1290,6 +1290,64 @@ class Database {
             ].join('\n');
 
             callback(null, csvData);
+        });
+    }
+
+    getSignOutsByIds(signOutIds, callback) {
+        if (!signOutIds || signOutIds.length === 0) {
+            return callback(null, []);
+        }
+
+        const placeholders = signOutIds.map(() => '?').join(',');
+        const query = `
+            SELECT 
+                signout_id,
+                location,
+                sign_out_time,
+                sign_in_time,
+                signed_out_by_id,
+                signed_out_by_name,
+                signed_in_by_id,
+                signed_in_by_name,
+                status,
+                notes,
+                created_at,
+                updated_at,
+                GROUP_CONCAT(
+                    CASE 
+                        WHEN soldier_rank != '' THEN soldier_rank || ' ' || soldier_first_name || ' ' || soldier_last_name
+                        ELSE soldier_first_name || ' ' || soldier_last_name
+                    END, ', '
+                ) as soldier_names,
+                COUNT(*) as soldier_count,
+                '[' || GROUP_CONCAT(
+                    '{"rank":"' || COALESCE(soldier_rank, '') || 
+                    '","firstName":"' || soldier_first_name || 
+                    '","lastName":"' || soldier_last_name || 
+                    '","dodId":"' || COALESCE(soldier_dod_id, '') || '"}'
+                    , ',') || ']' as soldiers
+            FROM signouts 
+            WHERE signout_id IN (${placeholders})
+            GROUP BY signout_id, location, sign_out_time, sign_in_time, signed_out_by_id, signed_out_by_name, signed_in_by_id, signed_in_by_name, status, notes, created_at, updated_at
+            ORDER BY sign_out_time DESC
+        `;
+
+        this.db.all(query, signOutIds, (err, rows) => {
+            if (err) {
+                return callback(err);
+            }
+            
+            const processedRows = rows.map(row => {
+                try {
+                    row.soldiers = JSON.parse(row.soldiers);
+                } catch (e) {
+                    console.error('Error parsing soldiers JSON:', e);
+                    row.soldiers = [];
+                }
+                return row;
+            });
+            
+            callback(null, processedRows);
         });
     }
 

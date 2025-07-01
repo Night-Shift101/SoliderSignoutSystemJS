@@ -39,7 +39,7 @@ app.use(helmet({
             defaultSrc: ["'self'"],
             styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
             fontSrc: ["'self'", "https://fonts.gstatic.com"],
-            scriptSrc: ["'self'"],
+            scriptSrc: ["'self'","https://cdnjs.cloudflare.com/ajax/libs/jspdf/3.5.3/jspdf.min.js"],
             imgSrc: ["'self'", "data:"]
         }
     }

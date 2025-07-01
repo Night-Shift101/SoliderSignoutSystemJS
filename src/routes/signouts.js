@@ -9,8 +9,10 @@ const validateSignOut = [
     body('soldiers.*.rank').optional().trim(),
     body('soldiers.*.firstName').trim().isLength({ min: 1 }).withMessage('First name is required for each soldier'),
     body('soldiers.*.lastName').trim().isLength({ min: 1 }).withMessage('Last name is required for each soldier'),
-    body('destination').trim().isLength({ min: 1 }).withMessage('Destination is required'),
-    body('estimatedReturn').isISO8601().withMessage('Valid estimated return time is required'),
+    body('soldiers.*.dodId').optional().trim(),
+    body('soldiers.*.middleName').optional().trim(),
+    body('location').trim().isLength({ min: 1 }).withMessage('Location is required'),
+    body('estimatedReturn').optional().isISO8601().withMessage('Valid estimated return time required'),
     body('notes').optional().trim(),
     body('emergencyContact').optional().trim(),
     body('vehicleInfo').optional().trim(),
@@ -48,6 +50,23 @@ router.get('/', requireAuth, requireSystemAuth, (req, res) => {
     
 });
 
+// Get all group members for specific sign-out IDs
+router.post('/groups', requireAuth, requireSystemAuth, (req, res) => {
+    const { signOutIds } = req.body;
+    
+    if (!signOutIds || !Array.isArray(signOutIds) || signOutIds.length === 0) {
+        return res.status(400).json({ error: 'Sign-out IDs array is required' });
+    }
+    
+    req.db.getSignOutsByIds(signOutIds, (err, signouts) => {
+        if (err) {
+            console.error('Error fetching signouts by IDs:', err);
+            return res.status(500).json({ error: 'Failed to fetch group members' });
+        }
+        res.json(signouts);
+    });
+});
+
 // Get signout by ID
 router.get('/:id', requireBothAuth, (req, res) => {
     const signoutId = req.params.id;
@@ -70,10 +89,15 @@ router.get('/:id', requireBothAuth, (req, res) => {
 router.post('/', [requireBothAuth, ...validateSignOut], (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+        console.error('Validation errors:', errors.array());
+        console.error('Request body:', JSON.stringify(req.body, null, 2));
+        return res.status(400).json({ 
+            error: 'Validation failed',
+            details: errors.array() 
+        });
     }
 
-    const { soldiers, destination, estimatedReturn, notes, emergencyContact, vehicleInfo, pin } = req.body;
+    const { soldiers, location, estimatedReturn, notes, emergencyContact, vehicleInfo, pin } = req.body;
 
     // Verify PIN
     req.db.verifyUserPin(req.session.user.id, pin, (err, isValid) => {
@@ -86,22 +110,27 @@ router.post('/', [requireBothAuth, ...validateSignOut], (req, res) => {
             return res.status(401).json({ error: 'Invalid PIN' });
         }
 
+        requester = req.session.user.rank + " " + req.session.user.full_name
+
         const signoutData = {
             soldiers: soldiers.map(soldier => ({
                 rank: soldier.rank || '',
-                firstName: soldier.firstName.trim(),
-                lastName: soldier.lastName.trim()
+                firstName: soldier.firstName ? soldier.firstName.trim() : '',
+                lastName: soldier.lastName ? soldier.lastName.trim() : '',
+                middleName: soldier.middleName || soldier.middleInitial || '',
+                dodId: soldier.dodId ? soldier.dodId.trim() : null
             })),
-            destination: destination.trim(),
-            estimatedReturn: new Date(estimatedReturn),
+            destination: location.trim(),
+            estimatedReturn: estimatedReturn ? new Date(estimatedReturn) : null,
             notes: notes?.trim() || '',
             emergencyContact: emergencyContact?.trim() || '',
             vehicleInfo: vehicleInfo?.trim() || '',
-            signedOutBy: req.session.user.id,
-            signOutTime: new Date()
+            signed_out_by_id: req.session.user.id,
+            signOutTime: new Date(),
+            signed_out_by_name: requester
         };
 
-        req.db.createSignout(signoutData, (err, signoutId) => {
+        req.db.addSignOut(signoutData, (err, signoutId) => {
             if (err) {
                 console.error('Error creating signout:', err);
                 return res.status(500).json({ error: 'Failed to create sign-out' });
@@ -141,13 +170,13 @@ router.patch('/:id/signin', [
             return res.status(401).json({ error: 'Invalid PIN' });
         }
 
-        const signinData = {
-            signInTime: new Date(),
-            signedInBy: req.session.user.id,
-            signInNotes: notes?.trim() || ''
-        };
+        
+        var signedInBy = req.session.user.id
+        var signedInByName = req.session.user.rank + " " + req.session.user.full_name
+            
+    
 
-        req.db.signInSoldiers(signoutId, signinData, (err, result) => {
+        req.db.signInSoldiers(signoutId, signedInBy, signedInByName, (err, result) => {
             if (err) {
                 console.error('Error signing in soldiers:', err);
                 return res.status(500).json({ error: 'Failed to sign in soldiers' });

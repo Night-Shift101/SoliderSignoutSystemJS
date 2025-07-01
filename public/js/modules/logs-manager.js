@@ -1,6 +1,7 @@
 class LogsManager {
     constructor(app) {
         this.app = app;
+        this.currentLogs = null;
     }
 
     async loadFilteredLogs() {
@@ -22,11 +23,46 @@ class LogsManager {
             
             if (!response.ok) throw new Error('Failed to fetch logs');
             
-            const logs = await response.json();
+            let logs = await response.json();
+            
+            // If soldier name filter is applied, get all soldiers from matching sign-out groups
+            if (soldierNameFilter?.value) {
+                logs = await this.expandLogsWithGroupMembers(logs);
+            }
+            
+            this.currentLogs = logs;
             this.renderLogsTable(logs);
         } catch (error) {
             console.error('Error loading logs:', error);
             this.app.notificationManager.showNotification('Failed to load logs', 'error');
+        }
+    }
+
+    async expandLogsWithGroupMembers(logs) {
+        try {
+            // Extract unique sign-out IDs from the filtered results
+            const signOutIds = [...new Set(logs.map(log => log.signout_id))];
+            
+            if (signOutIds.length === 0) return logs;
+            
+            // Fetch all soldiers for these sign-out IDs
+            const response = await Utils.fetchWithAuth('/api/signouts/groups', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ signOutIds })
+            });
+            
+            if (!response.ok) {
+                console.warn('Failed to fetch group members, returning original logs');
+                return logs;
+            }
+            
+            const expandedLogs = await response.json();
+            return expandedLogs;
+            
+        } catch (error) {
+            console.error('Error expanding logs with group members:', error);
+            return logs; // Return original logs if expansion fails
         }
     }
 
@@ -83,13 +119,13 @@ class LogsManager {
         if (locationFilter) locationFilter.value = '';
         if (statusFilter) statusFilter.value = '';
         
+        this.currentLogs = null; // Clear cached logs
         this.loadFilteredLogs();
     }
 
     async exportLogs() {
         try {
-            Utils.showLoading(true);
-            
+            Utils.showLoading(true);            
             const startDate = this.app.domManager.get('startDate');
             const endDate = this.app.domManager.get('endDate');
             const soldierNameFilter = this.app.domManager.get('soldierNameFilter');
@@ -127,9 +163,57 @@ class LogsManager {
         }
     }
 
+    generateCSVFromLogs(logs) {
+        let csvContent = 'Sign-Out ID,Soldiers,Location,Sign Out Time,Sign In Time,Duration,Signed Out By,Signed In By,Status,Notes\n';
+        
+        logs.forEach(log => {
+            const soldierNames = log.soldiers && Array.isArray(log.soldiers) 
+                ? log.soldiers.map(s => `${s.rank} ${s.lastName}`).join('; ')
+                : 'Unknown';
+            const signOutTime = new Date(log.sign_out_time).toLocaleString();
+            const signInTime = log.sign_in_time ? new Date(log.sign_in_time).toLocaleString() : 'N/A';
+            const duration = log.sign_in_time 
+                ? Utils.calculateDuration(log.sign_out_time, log.sign_in_time)
+                : Utils.calculateDuration(log.sign_out_time);
+            
+            const row = [
+                log.signout_id,
+                soldierNames,
+                log.location,
+                signOutTime,
+                signInTime,
+                duration,
+                log.signed_out_by_name || '',
+                log.signed_in_by_name || 'N/A',
+                log.status,
+                log.notes || ''
+            ].map(field => `"${String(field).replace(/"/g, '""')}"`).join(',');
+            
+            csvContent += row + '\n';
+        });
+        
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `signout-logs-${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        this.app.notificationManager.showNotification('Logs exported successfully', 'success');
+    }
+
     async exportLogsPDF() {
         try {
             Utils.showLoading(true);
+            
+            // Use currentLogs if available (which includes expanded groups), otherwise fetch fresh data
+            if (this.currentLogs && this.currentLogs.length > 0) {
+                this.generateLogsPDF(this.currentLogs);
+                return;
+            }
             
             const startDate = this.app.domManager.get('startDate');
             const endDate = this.app.domManager.get('endDate');

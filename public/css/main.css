@@ -792,3 +792,7 @@
     min-width: auto;
     white-space: nowrap;
 }
+
+.search-section {
+    width: 20rem;
+}

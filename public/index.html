@@ -210,7 +210,7 @@
                                     <div class="setting-value" id="currentUserDisplay">Loading...</div>
                                 </div>
                             </div>
-                            
+                            <br>
                             <div class="accounts-table-container">
                                 <table class="accounts-table">
                                     <thead>
@@ -243,51 +243,7 @@
                         </div>
                     </div>
 
-                    <div class="settings-section">
-                        <h3>System Configuration</h3>
-                        <div class="settings-grid">
-                            <div class="setting-item">
-                                <label for="maxSignOutDuration">Max Sign-Out Duration (hours)</label>
-                                <div class="setting-input-group">
-                                    <input type="number" id="maxSignOutDuration" min="1" max="24" value="8" class="setting-input">
-                                    <button type="button" class="btn btn-sm btn-primary" id="updateDurationBtn">Update</button>
-                                </div>
-                            </div>
-                            <div class="setting-item">
-                                <label for="warningThreshold">Warning Threshold (hours)</label>
-                                <div class="setting-input-group">
-                                    <input type="number" id="warningThreshold" min="1" max="12" value="4" class="setting-input">
-                                    <button type="button" class="btn btn-sm btn-primary" id="updateWarningBtn">Update</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="settings-section">
-                        <h3>Data Management</h3>
-                        <div class="settings-actions">
-                            <button type="button" class="btn btn-secondary" id="exportAllDataBtn">
-                                <span class="icon">↓</span> Export All Data
-                            </button>
-                            <button type="button" class="btn btn-secondary" id="backupDataBtn">
-                                <span class="icon">⚬</span> Create Backup
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="settings-section danger-section">
-                        <h3>Danger Zone</h3>
-                        <div class="settings-actions">
-                            <button type="button" class="btn btn-danger" id="clearOldRecordsBtn">
-                                <span class="icon">⚠</span> Clear Old Records (30+ days)
-                            </button>
-                            <button type="button" class="btn btn-danger" id="resetSystemBtn">
-                                <span class="icon">⚠</span> Reset System
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                    
         </main>
     </div>
 
@@ -527,7 +483,7 @@
         </div>
     </div>
 
-
+<!-- 
     <div id="signOutDetailsModal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
@@ -535,13 +491,13 @@
                 <button class="btn btn-secondary" id="closeSignOutDetailsModal">&times;</button>
             </div>
             <div class="modal-body" id="signOutDetailsContent">
-                <!-- Details will be populated here -->
+                Details will be populated here
             </div>
             <div class="modal-footer">
-                <button id="exportPdfBtn" class="btn btn-primary">Export as PDF</button>
+                <button id="closeSignOutDetails", class="btn btn-secondary">Close</button>
             </div>
         </div>
-    </div>
+    </div> -->
 
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/3.5.3/jspdf.min.js"></script>
