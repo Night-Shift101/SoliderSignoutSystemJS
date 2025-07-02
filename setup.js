@@ -26,42 +26,7 @@ class SystemSetup {
     }
 
     async questionHidden(prompt) {
-        return new Promise((resolve) => {
-            process.stdout.write(prompt);
-            process.stdin.setRawMode(true);
-            process.stdin.resume();
-            process.stdin.setEncoding('utf8');
-            
-            let input = '';
-            const onData = (char) => {
-                if (char === '\u0003') { // Ctrl+C
-                    process.exit();
-                }
-                if (char === '\r' || char === '\n') {
-                    process.stdin.setRawMode(false);
-                    process.stdin.removeListener('data', onData);
-                    process.stdin.pause();
-                    process.stdout.write('\n');
-                    
-                    // Properly reset stdin for readline
-                    setImmediate(() => {
-                        process.stdin.setRawMode(false);
-                        process.stdin.resume();
-                        resolve(input);
-                    });
-                } else if (char === '\u007f' || char === '\b') { // Backspace
-                    if (input.length > 0) {
-                        input = input.slice(0, -1);
-                        process.stdout.write('\b \b');
-                    }
-                } else if (char.charCodeAt(0) >= 32) { // Printable characters
-                    input += char;
-                    process.stdout.write('*');
-                }
-            };
-            
-            process.stdin.on('data', onData);
-        });
+        return this.question(prompt);
     }
 
     validatePassword(password) {
@@ -243,7 +208,7 @@ class SystemSetup {
 
         // Get admin full name
         while (true) {
-            const fullName = await this.question('Enter admin full name (e.g., John Smith): ');
+            const fullName = await this.question('Enter a name for the admin account. (e.g., Root Admin): ');
             const nameError = this.validateName(fullName);
             if (nameError) {
                 console.log(`❌ ${nameError}`);
