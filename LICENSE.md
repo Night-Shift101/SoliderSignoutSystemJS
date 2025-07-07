@@ -1,0 +1,2 @@
+[SoliderSignoutSystemJS](https://github.com/Night-Shift101/SoliderSignoutSystemJS/) © 2025 by [Gavin Fox](https://gavinfox.org) is licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+![](https://mirrors.creativecommons.org/presskit/icons/cc.svg)![](https://mirrors.creativecommons.org/presskit/icons/by.svg)![](https://mirrors.creativecommons.org/presskit/icons/nc.svg)![](https://mirrors.creativecommons.org/presskit/icons/sa.svg)
