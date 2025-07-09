@@ -96,24 +96,34 @@ router.patch('/:id/pin',
             const userId = parseInt(req.params.id, 10);
             const { systemPassword, newPin } = req.body;
             
-            // Verify system password
-            req.db.verifySystemPassword(systemPassword, (err, result) => {
+            req.db.getUserById(userId, (err, user) => {
                 if (err) {
-                    console.error('System password verification error:', err);
-                    return res.status(500).json({ error: 'Authentication failed' });
+                    return res.status(500).json({ error: 'Failed to fetch user' });
+                }
+                if (!user) {
+                    return res.status(404).json({ error: 'User not found' });
+                }
+                if (user.username === 'admin') {
+                    return res.status(400).json({ error: 'Cannot change admin PIN through this endpoint. Use admin credentials endpoint.' });
                 }
                 
-                if (!result.success) {
-                    return res.status(401).json({ error: 'Invalid system password' });
-                }
-                
-                // Update the PIN using admin method
-                req.db.changeUserPinAsAdmin(userId, newPin, req.session.user.id, (err, updateResult) => {
+                req.db.verifySystemPassword(systemPassword, (err, result) => {
                     if (err) {
-                        console.error('Update PIN error:', err);
-                        return res.status(500).json({ error: 'Failed to update PIN' });
+                        console.error('System password verification error:', err);
+                        return res.status(500).json({ error: 'Authentication failed' });
                     }
-                    res.json({ message: 'PIN updated successfully' });
+                    
+                    if (!result.success) {
+                        return res.status(401).json({ error: 'Invalid system password' });
+                    }
+                    
+                    req.db.changeUserPinAsAdmin(userId, newPin, req.session.user.id, (err, updateResult) => {
+                        if (err) {
+                            console.error('Update PIN error:', err);
+                            return res.status(500).json({ error: 'Failed to update PIN' });
+                        }
+                        res.json({ message: 'PIN updated successfully' });
+                    });
                 });
             });
         } catch (error) {
@@ -140,10 +150,17 @@ router.delete('/:id',
                 return res.status(400).json({ error: 'Cannot delete your own account' });
             }
             
-            // Verify system password
-            
+            req.db.getUserById(userId, (err, user) => {
+                if (err) {
+                    return res.status(500).json({ error: 'Failed to fetch user' });
+                }
+                if (!user) {
+                    return res.status(404).json({ error: 'User not found' });
+                }
+                if (user.username === 'admin') {
+                    return res.status(400).json({ error: 'Cannot delete admin account' });
+                }
                 
-                // Delete the user using admin method
                 req.db.deleteUserAsAdmin(userId, req.session.user.id, (err, deleteResult) => {
                     if (err) {
                         console.error('Delete user error:', err);
@@ -151,6 +168,7 @@ router.delete('/:id',
                     }
                     res.json({ message: 'User deleted successfully' });
                 });
+            });
         } catch (error) {
             console.error('Delete user error:', error);
             res.status(500).json({ error: 'Failed to delete user' });
@@ -218,6 +236,9 @@ router.patch('/:id/deactivate',
                 if (!user.is_active) {
                     return res.status(400).json({ error: 'User is already inactive' });
                 }
+                if (user.username === 'admin') {
+                    return res.status(400).json({ error: 'Cannot deactivate admin account' });
+                }
 
                 req.db.updateUserStatus(userId, false, (err, result) => {
                     if (err) {
@@ -230,6 +251,54 @@ router.patch('/:id/deactivate',
         } catch (error) {
             console.error('Deactivate user error:', error);
             res.status(500).json({ error: 'Failed to deactivate user' });
+        }
+    }
+);
+
+router.patch('/admin/credentials',
+    requireBothAuth,
+    [
+        body('currentPassword').isLength({ min: 1 }).withMessage('Current password is required'),
+        body('newPassword').isLength({ min: 6 }).withMessage('New password is required and must be at least 6 characters'),
+        body('newPin').isLength({ min: 4 }).withMessage('New PIN is required and must be at least 4 characters')
+    ],
+    handleValidationErrors,
+    async (req, res) => {
+        try {
+            const { currentPassword, newPassword, newPin } = req.body;
+
+            req.db.getUserByUsername('admin', (err, adminUser) => {
+                if (err) {
+                    return res.status(500).json({ error: 'Failed to fetch admin user' });
+                }
+                
+                if (!adminUser) {
+                    return res.status(404).json({ error: 'Admin user not found' });
+                }
+
+                req.db.verifyUserPassword(adminUser.id, currentPassword, (err, isValid) => {
+                    if (err) {
+                        return res.status(500).json({ error: 'Authentication failed' });
+                    }
+                    
+                    if (!isValid) {
+                        return res.status(401).json({ error: 'Current password is incorrect' });
+                    }
+
+                    const updates = { password: newPassword, pin: newPin };
+
+                    req.db.updateAdminCredentials(adminUser.id, updates, (err, result) => {
+                        if (err) {
+                            console.error('Update admin credentials error:', err);
+                            return res.status(500).json({ error: 'Failed to update credentials' });
+                        }
+                        res.json({ message: 'Admin credentials updated successfully' });
+                    });
+                });
+            });
+        } catch (error) {
+            console.error('Update admin credentials error:', error);
+            res.status(500).json({ error: 'Failed to update credentials' });
         }
     }
 );

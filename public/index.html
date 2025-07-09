@@ -56,9 +56,7 @@
                     </button>
                     
                     <div id="hamburgerDropdown" class="hamburger-dropdown">
-                        <button id="changeUserBtn" class="dropdown-item">
-                            <span class="icon">⚪</span> Change User
-                        </button>
+                        
                         <button id="refreshBtn" class="dropdown-item">
                             <span class="icon">↻</span> Refresh
                         </button>
@@ -481,6 +479,43 @@
                 <button type="button" id="cancelDeleteUser" class="btn btn-secondary">Cancel</button>
                 <button type="button" id="submitDeleteUser" class="btn btn-danger">
                     <span class="btn-text">Delete User</span>
+                    <div class="btn-loader" style="display: none;"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="changeAdminCredentialsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Change Admin Credentials</h2>
+                <button class="modal-close" id="closeChangeAdminCredentialsModalBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="info-message">
+                    <strong>🔐 ADMIN CREDENTIALS:</strong> Update the system password and admin PIN.
+                </div>
+                <form id="changeAdminCredentialsForm" class="user-form">
+                    <input type="hidden" id="adminCredentialsUserId" name="userId">
+                    <div class="form-group">
+                        <label for="currentPasswordAdmin">Current Password *</label>
+                        <input type="password" id="currentPasswordAdmin" name="currentPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newPasswordAdmin">New Password *</label>
+                        <input type="password" id="newPasswordAdmin" name="newPassword" minlength="6" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newPinAdmin">New PIN *</label>
+                        <input type="password" id="newPinAdmin" name="newPin" pattern="[0-9]{4,}" minlength="4" required>
+                    </div>
+                    <div id="changeAdminCredentialsError" class="error-message" style="display: none;"></div>
+                </form>
+            </div>
+            <div class="form-actions">
+                <button type="button" id="cancelChangeAdminCredentials" class="btn btn-secondary">Cancel</button>
+                <button type="button" id="submitChangeAdminCredentials" class="btn btn-primary">
+                    <span class="btn-text">Update Credentials</span>
                     <div class="btn-loader" style="display: none;"></div>
                 </button>
             </div>

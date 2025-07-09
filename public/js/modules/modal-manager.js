@@ -1,4 +1,3 @@
-
 class ModalManager {
     constructor(app) {
         this.app = app;
@@ -517,6 +516,53 @@ class ModalManager {
         const deleteUserError = this.app.domManager.get('deleteUserError');
         if (deleteUserError) {
             deleteUserError.style.display = 'none';
+        }
+    }
+
+    openChangeAdminCredentialsModal(userId) {
+        const changeAdminCredentialsModal = this.app.domManager.get('changeAdminCredentialsModal');
+        const adminCredentialsUserId = this.app.domManager.get('adminCredentialsUserId');
+        
+        if (changeAdminCredentialsModal) {
+            changeAdminCredentialsModal.style.display = 'flex';
+            changeAdminCredentialsModal.style.visibility = 'visible';
+            changeAdminCredentialsModal.style.opacity = '1';
+            changeAdminCredentialsModal.classList.add('show');
+        }
+        
+        if (adminCredentialsUserId) {
+            adminCredentialsUserId.value = userId;
+        }
+        
+        const changeAdminCredentialsForm = this.app.domManager.get('changeAdminCredentialsForm');
+        if (changeAdminCredentialsForm) {
+            changeAdminCredentialsForm.reset();
+            adminCredentialsUserId.value = userId;
+        }
+        
+        const changeAdminCredentialsError = this.app.domManager.get('changeAdminCredentialsError');
+        if (changeAdminCredentialsError) {
+            changeAdminCredentialsError.style.display = 'none';
+        }
+    }
+
+    closeChangeAdminCredentialsModal() {
+        const changeAdminCredentialsModal = this.app.domManager.get('changeAdminCredentialsModal');
+        if (changeAdminCredentialsModal) {
+            changeAdminCredentialsModal.style.display = 'none';
+            changeAdminCredentialsModal.style.visibility = 'hidden';
+            changeAdminCredentialsModal.style.opacity = '0';
+            changeAdminCredentialsModal.classList.remove('show');
+        }
+        
+        const changeAdminCredentialsForm = this.app.domManager.get('changeAdminCredentialsForm');
+        if (changeAdminCredentialsForm) {
+            changeAdminCredentialsForm.reset();
+        }
+        
+        const changeAdminCredentialsError = this.app.domManager.get('changeAdminCredentialsError');
+        if (changeAdminCredentialsError) {
+            changeAdminCredentialsError.style.display = 'none';
         }
     }
 

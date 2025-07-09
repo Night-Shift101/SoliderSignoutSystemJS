@@ -10,9 +10,7 @@ class SignOutManager {
         try {
             Utils.showLoading(true);
             const response = await Utils.fetchWithAuth('/api/signouts/reports/current');
-            
             if (!response.ok) throw new Error('Failed to fetch current sign-outs');
-            
             this.signouts = await response.json();
             this.filteredSignouts = [...this.signouts];
             this.renderCurrentSignOuts();
@@ -223,7 +221,7 @@ class SignOutManager {
             const dashboardView = this.app.domManager.get('dashboardView');
             if (dashboardView && dashboardView.style.display !== 'none' && this.signouts) {
                 console.log('Updating durations...');
-                this.renderCurrentSignOuts();
+                this.loadCurrentSignOuts();
             }
         }, 60000); 
         

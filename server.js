@@ -2,8 +2,6 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const helmet = require('helmet');
-const morgan = require('morgan');
-const rateLimit = require('express-rate-limit');
 const session = require('express-session');
 require('dotenv').config();
 
@@ -47,21 +45,10 @@ app.use(helmet({
 }));
 
 
-const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, 
-    max: 500, 
-    skip: (req, res) => {
-        
-        return req.path.endsWith('.css') || req.path.endsWith('.js') || 
-               req.path.endsWith('.png') || req.path.endsWith('.jpg') || 
-               req.path.endsWith('.jpeg') || req.path.endsWith('.gif');
-    }
-});
-app.use(limiter);
+
 
 
 app.use(cors());
-app.use(morgan('combined'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

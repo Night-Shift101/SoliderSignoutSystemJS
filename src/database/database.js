@@ -265,8 +265,20 @@ class Database {
         return this.userManager.getUserById(userId, callback);
     }
 
+    getUserByUsername(username, callback) {
+        return this.userManager.getUserByUsername(username, callback);
+    }
+
     updateUserStatus(userId, isActive, callback) {
         return this.userManager.updateUserStatus(userId, isActive, callback);
+    }
+
+    verifyUserPassword(userId, password, callback) {
+        return this.userManager.verifyUserPassword(userId, password, callback);
+    }
+
+    updateAdminCredentials(userId, updates, callback) {
+        return this.userManager.updateAdminCredentials(userId, updates, callback);
     }
 }
 

@@ -65,12 +65,12 @@ class BarcodeParser {
             
             const lines = cleanData.split('\n').map(line => line.trim());
             
-            if (lines.length < 2) {
-                throw new Error('Insufficient barcode data - expected at least 2 lines');
+            if (lines.length < 1) {
+                throw new Error('Insufficient barcode data - expected at least 1 line');
             }
 
             const line1 = lines[0];
-            const line2 = lines[1];
+
 
             
             
@@ -104,11 +104,11 @@ class BarcodeParser {
             let rank = null;
             
             
-            const commonRanks = ['PVT', 'PFC', 'SPC', 'CPL', 'SGT', 'SSG', 'SFC', 'MSG', 'SGM', 'CSM',
+            const commonRanks = ['PVT', 'PV2', 'PFC', 'SPC', 'CPL', 'SGT', 'SSG', 'SFC', 'MSG', 'SGM', 'CSM',
                                '2LT', '1LT', 'CPT', 'MAJ', 'LTC', 'COL', 'BG', 'MG', 'LTG', 'GEN'];
             
             for (const possibleRank of commonRanks) {
-                if (line2.includes(possibleRank)) {
+                if (line1.includes(possibleRank)) {
                     rank = possibleRank;
                     break;
                 }
@@ -116,7 +116,7 @@ class BarcodeParser {
             
             
             if (!rank) {
-                const rankMatch = line2.match(/([A-Z]{2,4})\s+/);
+                const rankMatch = line1.match(/([A-Z]{2,4})\s+/);
                 if (rankMatch) {
                     rank = rankMatch[1];
                 }
@@ -136,7 +136,7 @@ class BarcodeParser {
             
             
             if (!dodId) {
-                const base32Match = line2.match(/([A-Z2-7]{10,20})/g);
+                const base32Match = line1.match(/([A-Z2-7]{10,20})/g);
                 if (base32Match) {
                     
                     for (const candidate of base32Match) {

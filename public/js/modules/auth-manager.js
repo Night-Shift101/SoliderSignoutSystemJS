@@ -171,7 +171,15 @@ class AuthManager {
                 this.app.notificationManager.showNotification(`Switched to ${targetUserInfo.rank} ${targetUserInfo.full_name}`, 'success');
                 
                 // Refresh current sign-outs for the new user
-                await this.app.signOutManager.loadCurrentSignOuts();
+                if (dashboardView && window.getComputedStyle(dashboardView).display !== 'none') {
+                    await this.app.signOutManager.loadCurrentSignOuts();
+                } else if (logsView && window.getComputedStyle(logsView).display !== 'none') {
+                    await this.app.logsManager.loadFilteredLogs();
+                } else if (settingsView && window.getComputedStyle(settingsView).display !== 'none') {
+                    await this.app.settingsManager.loadSettingsData();
+                } else {
+                    await this.app.signOutManager.loadCurrentSignOuts();
+                }
             } else {
                 this.app.modalManager.showPinError('Invalid PIN');
             }

@@ -18,9 +18,9 @@ class BarcodeManager {
         this.parseBarcodeBtn.addEventListener('click', () => this.handleBarcodeParse());
         this.clearBarcodeBtn.addEventListener('click', () => this.clearBarcodeData());
         this.clearAllSoldiersBtn.addEventListener('click', () => this.clearAllSoldiers());
-        this.barcodeInput.addEventListener('paste', () => {
+        this.barcodeInput.addEventListener('input', () => {
             
-            setTimeout(() => this.handleBarcodeParse(), 100);
+            setTimeout(() => this.handleBarcodeParse(), 500);
         });
         
         

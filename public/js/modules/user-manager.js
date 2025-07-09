@@ -316,6 +316,86 @@ class UserManager {
         }
     }
 
+    async handleChangeAdminCredentials() {
+        console.log('Handling change admin credentials');
+        
+        try {
+            const changeAdminCredentialsForm = this.app.domManager.get('changeAdminCredentialsForm');
+            const submitChangeAdminCredentials = this.app.domManager.get('submitChangeAdminCredentials');
+            
+            const formData = new FormData(changeAdminCredentialsForm);
+            const credentialsData = {
+                currentPassword: formData.get('currentPassword'),
+                newPassword: formData.get('newPassword'),
+                newPin: formData.get('newPin')
+            };
+
+            if (!credentialsData.currentPassword || credentialsData.currentPassword.trim() === '') {
+                this.showChangeAdminCredentialsError('Please enter your current password');
+                return;
+            }
+
+            if (!credentialsData.newPassword || credentialsData.newPassword.trim() === '') {
+                this.showChangeAdminCredentialsError('Please enter a new password');
+                return;
+            }
+
+            if (!credentialsData.newPin || credentialsData.newPin.trim() === '') {
+                this.showChangeAdminCredentialsError('Please enter a new PIN');
+                return;
+            }
+
+            if (credentialsData.newPassword.length < 6) {
+                this.showChangeAdminCredentialsError('New password must be at least 6 characters');
+                return;
+            }
+
+            if (credentialsData.newPin.length < 4) {
+                this.showChangeAdminCredentialsError('New PIN must be at least 4 characters');
+                return;
+            }
+
+            Utils.showLoading(true);
+            if (submitChangeAdminCredentials) {
+                submitChangeAdminCredentials.disabled = true;
+                submitChangeAdminCredentials.textContent = 'Updating...';
+            }
+
+            const response = await Utils.fetchWithAuth('/api/users/admin/credentials', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(credentialsData)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to update admin credentials');
+            }
+
+            this.app.modalManager.closeChangeAdminCredentialsModal();
+            this.app.notificationManager.showNotification('Admin credentials updated successfully', 'success');
+
+        } catch (error) {
+            console.error('Error updating admin credentials:', error);
+            this.showChangeAdminCredentialsError(error.message || 'Failed to update admin credentials');
+        } finally {
+            Utils.showLoading(false);
+            const submitChangeAdminCredentials = this.app.domManager.get('submitChangeAdminCredentials');
+            if (submitChangeAdminCredentials) {
+                submitChangeAdminCredentials.disabled = false;
+                submitChangeAdminCredentials.textContent = 'Update Credentials';
+            }
+        }
+    }
+
+    showChangeAdminCredentialsError(message) {
+        const changeAdminCredentialsError = this.app.domManager.get('changeAdminCredentialsError');
+        if (changeAdminCredentialsError) {
+            changeAdminCredentialsError.textContent = message;
+            changeAdminCredentialsError.style.display = 'block';
+        }
+    }
+
     async loadAccountsList() {
         // This method would load the accounts table in settings
         // Implementation would depend on the existing settings structure

@@ -200,6 +200,19 @@ class EventManager {
             e.preventDefault();
             this.app.userManager.handleDeleteUser();
         });
+        
+        const closeChangeAdminCredentialsModalBtn = this.app.domManager.get('closeChangeAdminCredentialsModalBtn');
+        const cancelChangeAdminCredentials = this.app.domManager.get('cancelChangeAdminCredentials');
+        const submitChangeAdminCredentials = this.app.domManager.get('submitChangeAdminCredentials');
+        const changeAdminCredentialsForm = this.app.domManager.get('changeAdminCredentialsForm');
+        
+        closeChangeAdminCredentialsModalBtn?.addEventListener('click', () => this.app.modalManager.closeChangeAdminCredentialsModal());
+        cancelChangeAdminCredentials?.addEventListener('click', () => this.app.modalManager.closeChangeAdminCredentialsModal());
+        submitChangeAdminCredentials?.addEventListener('click', () => this.app.userManager.handleChangeAdminCredentials());
+        changeAdminCredentialsForm?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.app.userManager.handleChangeAdminCredentials();
+        });
     }
 
     attachGlobalEvents() {
@@ -230,6 +243,10 @@ class EventManager {
             if (e.target.closest('.delete-user-btn') && !e.target.closest('.delete-user-btn').disabled) {
                 const button = e.target.closest('.delete-user-btn');
                 this.app.modalManager.openDeleteUserModal(button.dataset.userId, button.dataset.userName);
+            }
+            if (e.target.closest('.change-admin-credentials-btn')) {
+                const button = e.target.closest('.change-admin-credentials-btn');
+                this.app.modalManager.openChangeAdminCredentialsModal(button.dataset.userId);
             }
         });
         

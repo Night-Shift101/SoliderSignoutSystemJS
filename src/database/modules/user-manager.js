@@ -333,6 +333,16 @@ class UserManager {
         });
     }
 
+    getUserByUsername(username, callback) {
+        const query = `SELECT id, username, rank, full_name, is_active, created_at, last_login FROM users WHERE username = ?`;
+        this.db.get(query, [username], (err, row) => {
+            if (err) {
+                return callback(err);
+            }
+            callback(null, row);
+        });
+    }
+
     updateUserStatus(userId, isActive, callback) {
         const query = `UPDATE users SET is_active = ? WHERE id = ?`;
         this.db.run(query, [isActive ? 1 : 0, userId], function(err) {
@@ -343,6 +353,38 @@ class UserManager {
                 return callback(new Error('User not found'));
             }
             callback(null, { success: true, changes: this.changes });
+        });
+    }
+
+    verifyUserPassword(userId, password, callback) {
+        const query = 'SELECT password_hash FROM users WHERE id = ? AND is_active = 1';
+        
+        this.db.get(query, [userId], (err, user) => {
+            if (err) return callback(err, null);
+            if (!user) return callback(null, false);
+            
+            bcrypt.compare(password, user.password_hash, callback);
+        });
+    }
+
+    updateAdminCredentials(userId, updates, callback) {
+        const fields = [];
+        const values = [];
+        
+        fields.push('password_hash = ?');
+        values.push(bcrypt.hashSync(updates.password, 10));
+        
+        fields.push('pin_hash = ?');
+        values.push(bcrypt.hashSync(updates.pin, 10));
+        
+        values.push(userId);
+        
+        const query = `UPDATE users SET ${fields.join(', ')} WHERE id = ? AND username = 'admin'`;
+        
+        this.db.run(query, values, function(err) {
+            if (err) return callback(err);
+            if (this.changes === 0) return callback(new Error('Admin user not found'));
+            callback(null, { success: true });
         });
     }
 }

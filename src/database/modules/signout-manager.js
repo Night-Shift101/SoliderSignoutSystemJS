@@ -175,11 +175,11 @@ class SignoutManager {
     signInSoldiers(signOutId, signedInById, signedInByName, callback) {
         const query = `
             UPDATE signouts 
-            SET status = 'IN', sign_in_time = datetime('now'), 
+            SET status = 'IN', sign_in_time = ?, 
                 signed_in_by_id = ?, signed_in_by_name = ?
             WHERE signout_id = ? AND status = 'OUT'
         `;
-        this.db.run(query, [signedInById, signedInByName, signOutId], function(err) {
+        this.db.run(query, [new Date().toISOString(), signedInById, signedInByName, signOutId], function(err) {
             if (err) {
                 return callback(err, null);
             }

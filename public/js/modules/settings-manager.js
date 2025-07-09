@@ -45,6 +45,7 @@ class SettingsManager {
             
             accountsTableBody.innerHTML = users.map(user => {
                 const isCurrentUser = this.app.currentUser && this.app.currentUser.id === user.id;
+                const isAdminUser = user.username === 'admin';
                 const statusClass = user.is_active ? 'status-active' : 'status-inactive';
                 const statusText = user.is_active ? 'Active' : 'Inactive';
                 
@@ -53,37 +54,44 @@ class SettingsManager {
                         <td>${user.id}</td>
                         <td>${user.rank}</td>
                         <td>${user.full_name}</td>
-                        <td>${user.role || 'User'}</td>
+                        <td>${user.role || (user.username === 'admin' ? 'Admin' : 'User')}</td>
                         <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                         <td>${new Date(user.created_at).toLocaleDateString()}</td>
                         <td>
                             <div class="action-buttons">
-                                <button class="btn btn-sm btn-secondary change-pin-btn" 
-                                        data-user-id="${user.id}" 
-                                        data-user-name="${user.rank} ${user.full_name}"
-                                        ${isCurrentUser ? 'disabled' : ''}>
-                                    Change PIN
-                                </button>
-                                ${user.is_active ? `
-                                    <button class="btn btn-sm btn-warning deactivate-user-btn" 
+                                ${isAdminUser ? `
+                                    <button class="btn btn-sm btn-primary change-admin-credentials-btn" 
+                                            data-user-id="${user.id}">
+                                        Change Credentials
+                                    </button>
+                                ` : `
+                                    <button class="btn btn-sm btn-secondary change-pin-btn" 
                                             data-user-id="${user.id}" 
                                             data-user-name="${user.rank} ${user.full_name}"
                                             ${isCurrentUser ? 'disabled' : ''}>
-                                        Deactivate
+                                        Change PIN
                                     </button>
-                                ` : `
-                                    <button class="btn btn-sm btn-success activate-user-btn" 
+                                    ${user.is_active ? `
+                                        <button class="btn btn-sm btn-warning deactivate-user-btn" 
+                                                data-user-id="${user.id}" 
+                                                data-user-name="${user.rank} ${user.full_name}"
+                                                ${isCurrentUser ? 'disabled' : ''}>
+                                            Deactivate
+                                        </button>
+                                    ` : `
+                                        <button class="btn btn-sm btn-success activate-user-btn" 
+                                                data-user-id="${user.id}" 
+                                                data-user-name="${user.rank} ${user.full_name}">
+                                            Activate
+                                        </button>
+                                    `}
+                                    <button class="btn btn-sm btn-danger delete-user-btn" 
                                             data-user-id="${user.id}" 
-                                            data-user-name="${user.rank} ${user.full_name}">
-                                        Activate
+                                            data-user-name="${user.rank} ${user.full_name}"
+                                            ${isCurrentUser ? 'disabled' : ''}>
+                                        Delete
                                     </button>
                                 `}
-                                <button class="btn btn-sm btn-danger delete-user-btn" 
-                                        data-user-id="${user.id}" 
-                                        data-user-name="${user.rank} ${user.full_name}"
-                                        ${isCurrentUser ? 'disabled' : ''}>
-                                    Delete
-                                </button>
                             </div>
                         </td>
                     </tr>

@@ -126,7 +126,16 @@ class DOMManager {
             deleteUserInfo: document.getElementById('deleteUserInfo'),
             cancelDeleteUser: document.getElementById('cancelDeleteUser'),
             submitDeleteUser: document.getElementById('submitDeleteUser'),
-            deleteUserError: document.getElementById('deleteUserError')
+            deleteUserError: document.getElementById('deleteUserError'),
+            
+            // Change admin credentials modal elements
+            changeAdminCredentialsModal: document.getElementById('changeAdminCredentialsModal'),
+            closeChangeAdminCredentialsModalBtn: document.getElementById('closeChangeAdminCredentialsModalBtn'),
+            changeAdminCredentialsForm: document.getElementById('changeAdminCredentialsForm'),
+            adminCredentialsUserId: document.getElementById('adminCredentialsUserId'),
+            cancelChangeAdminCredentials: document.getElementById('cancelChangeAdminCredentials'),
+            submitChangeAdminCredentials: document.getElementById('submitChangeAdminCredentials'),
+            changeAdminCredentialsError: document.getElementById('changeAdminCredentialsError')
         };
     }
 
