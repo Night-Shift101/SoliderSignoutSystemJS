@@ -184,6 +184,16 @@
     color: var(--accent-blue);
 }
 
+.user-item.disabled {
+    opacity: 0.6;
+    background: var(--background-secondary);
+}
+
+.user-item.disabled:hover {
+    background: var(--background-tertiary);
+    opacity: 0.7;
+}
+
 .user-item-content {
     display: flex;
     flex-direction: column;
@@ -202,6 +212,14 @@
     font-weight: 600;
 }
 
+.user-item.disabled .user-item-name {
+    color: var(--text-secondary);
+}
+
+.user-item.disabled .user-item-role {
+    color: var(--text-muted);
+}
+
 .user-item-role {
     font-size: 12px;
     color: var(--text-secondary);
@@ -212,6 +230,14 @@
     font-size: 12px;
     color: var(--accent-green);
     font-weight: 600;
+}
+
+.user-item-indicator.current {
+    color: var(--accent-green);
+}
+
+.user-item-indicator.disabled {
+    color: var(--accent-red);
 }
 
 .users-loading {

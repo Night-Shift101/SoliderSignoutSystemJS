@@ -377,3 +377,13 @@
         transform: translateY(0);
     }
 }
+
+/* Disabled account styling */
+.form-group select option[data-is-active="0"] {
+    color: #dc3545;
+    background-color: #ffeaea;
+}
+
+.form-group select option[data-is-active="0"]:hover {
+    background-color: #ffdddd;
+}

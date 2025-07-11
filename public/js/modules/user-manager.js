@@ -35,13 +35,15 @@ class UserManager {
 
         usersList.innerHTML = users.map(user => {
             const isCurrent = this.app.currentUser && this.app.currentUser.id === user.id;
+            const isDisabled = user.is_active === 0 || user.is_active === false;
             return `
-                <button class="user-item ${isCurrent ? 'current' : ''}" data-user-id="${user.id}">
+                <button class="user-item ${isCurrent ? 'current' : ''} ${isDisabled ? 'disabled' : ''}" data-user-id="${user.id}">
                     <div class="user-item-content">
                         <div class="user-item-name">${user.rank} ${user.full_name}</div>
                         <div class="user-item-role">${user.role || 'User'}</div>
                     </div>
-                    ${isCurrent ? '<span class="user-item-indicator">●</span>' : ''}
+                    ${isCurrent ? '<span class="user-item-indicator current">●</span>' : ''}
+                    ${isDisabled ? '<span class="user-item-indicator disabled">●</span>' : ''}
                 </button>
             `;
         }).join('');
@@ -50,6 +52,13 @@ class UserManager {
             item.addEventListener('click', (e) => {
                 const userId = parseInt(e.currentTarget.dataset.userId);
                 const user = users.find(u => u.id === userId);
+                
+                // Prevent interaction with disabled users
+                if (user && (user.is_active === 0 || user.is_active === false)) {
+                    this.app.notificationManager?.showNotification('This account is disabled', 'error');
+                    return;
+                }
+                
                 if (user && user.id !== this.app.currentUser?.id) {
                     this.app.authManager.promptUserSwitch(user);
                 }

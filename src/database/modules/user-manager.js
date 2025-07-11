@@ -44,11 +44,17 @@ class UserManager {
     }
     
     verifyUserPinById(userId, pin, callback) {
-        const query = 'SELECT pin_hash, rank, full_name FROM users WHERE id = ? AND is_active = 1';
+        // First check if user exists regardless of status
+        const query = 'SELECT pin_hash, rank, full_name, is_active FROM users WHERE id = ?';
         
         this.db.get(query, [userId], (err, user) => {
             if (err) return callback(err, null);
             if (!user) return callback(null, { success: false, message: 'User not found' });
+            
+            // Check if account is disabled
+            if (!user.is_active) {
+                return callback(null, { success: false, message: 'Account Disabled' });
+            }
             
             bcrypt.compare(pin, user.pin_hash, (err, match) => {
                 if (err) return callback(err, null);

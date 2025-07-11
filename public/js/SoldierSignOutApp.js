@@ -102,5 +102,4 @@ class SoldierSignOutApp {
 
 window.addEventListener('DOMContentLoaded', () => {
     window.app = new SoldierSignOutApp();
-    // Don't show dashboard immediately - let auth manager handle the initial view
 });

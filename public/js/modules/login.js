@@ -195,7 +195,13 @@ class LoginApp {
         this.users.forEach(user => {
             const option = document.createElement('option');
             option.value = user.id;
+            
+            // Add visual indicator for disabled accounts
             option.textContent = `${user.rank} ${user.full_name}`;
+            
+            // Add data attribute to track status
+            option.dataset.isActive = user.is_active ? '1' : '0';
+            
             this.userSelect.appendChild(option);
         });
     }
