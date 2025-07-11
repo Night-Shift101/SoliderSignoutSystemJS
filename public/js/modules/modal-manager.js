@@ -832,7 +832,7 @@ class ModalManager {
             .join(' ');
         
         // Special styling for default permissions
-        const isDefault = ['view_dashboard', 'create_signout', 'sign_in_soldiers'].includes(permission.name);
+        const isDefault = ['view_dashboard', 'create_signout', 'sign_in_soldiers', 'view_logs', 'export_data'].includes(permission.name);
         const defaultNote = isDefault ? '<div class="permission-default-note">Default permission</div>' : '';
         
         // Disable checkbox if user can't grant this permission

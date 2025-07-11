@@ -193,7 +193,9 @@ class PermissionsManager {
         const basicPermissions = [
             'view_dashboard',
             'create_signout',
-            'sign_in_soldiers'
+            'sign_in_soldiers',
+            'view_logs',
+            'export_data'
         ];
 
         return new Promise((resolve, reject) => {
@@ -905,7 +907,9 @@ class PermissionsManager {
         return [
             'view_dashboard',
             'create_signout',
-            'sign_in_soldiers'
+            'sign_in_soldiers',
+            'view_logs',
+            'export_data'
         ];
     }
 
