@@ -107,6 +107,17 @@ class EventManager {
         const closeInfoModalBtn = this.app.domManager.get('closeInfoModalBtn');
         closeInfoModalBtn?.addEventListener('click', () => this.app.modalManager.closeInfoModal());
         
+        // Manual entry modal events
+        const noCacBtn = this.app.domManager.get('noCacBtn');
+        const closeManualEntryModal = this.app.domManager.get('closeManualEntryModal');
+        const cancelManualEntry = this.app.domManager.get('cancelManualEntry');
+        const manualEntryForm = this.app.domManager.get('manualEntryForm');
+        
+        noCacBtn?.addEventListener('click', () => this.app.modalManager.openManualEntryModal());
+        closeManualEntryModal?.addEventListener('click', () => this.app.modalManager.closeManualEntryModal());
+        cancelManualEntry?.addEventListener('click', () => this.app.modalManager.closeManualEntryModal());
+        manualEntryForm?.addEventListener('submit', (e) => this.app.modalManager.handleManualEntry(e));
+        
         // Global modal events
         window.addEventListener('click', (e) => {
             const signOutModal = this.app.domManager.get('signOutModal');

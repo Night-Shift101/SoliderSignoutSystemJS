@@ -159,8 +159,14 @@ class SignOutManager {
         try {
             const signOutForm = this.app.domManager.get('signOutForm');
             const formData = new FormData(signOutForm);
+            const soldiers = this.app.barcodeManager.getSoldiers().map(soldier => {
+                // Remove the isManualEntry flag as it's only for UI display
+                const { isManualEntry, ...cleanSoldier } = soldier;
+                return cleanSoldier;
+            });
+            
             const signOutData = {
-                soldiers: this.app.barcodeManager.getSoldiers(), 
+                soldiers: soldiers, 
                 location: formData.get('location'),
                 notes: formData.get('notes') || '',
                 pin: formData.get('pin') 
