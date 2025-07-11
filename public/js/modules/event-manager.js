@@ -115,6 +115,7 @@ class EventManager {
             const addUserModal = this.app.domManager.get('addUserModal');
             const changePinModal = this.app.domManager.get('changePinModal');
             const deleteUserModal = this.app.domManager.get('deleteUserModal');
+            const managePermissionsModal = this.app.domManager.get('managePermissionsModal');
             
             if (e.target === signOutModal) this.app.modalManager.closeNewSignOutModal();
             if (e.target === pinModal) this.app.modalManager.closePinModal();
@@ -122,6 +123,7 @@ class EventManager {
             if (e.target === addUserModal) this.app.modalManager.closeAddUserModal();
             if (e.target === changePinModal) this.app.modalManager.closeChangePinModal();
             if (e.target === deleteUserModal) this.app.modalManager.closeDeleteUserModal();
+            if (e.target === managePermissionsModal) this.app.modalManager.closeManagePermissionsModal();
         });
     }
 
@@ -213,6 +215,20 @@ class EventManager {
             e.preventDefault();
             this.app.userManager.handleChangeAdminCredentials();
         });
+        
+        // Manage permissions modal events
+        const closeManagePermissionsModalBtn = this.app.domManager.get('closeManagePermissionsModalBtn');
+        const cancelManagePermissions = this.app.domManager.get('cancelManagePermissions');
+        const submitManagePermissions = this.app.domManager.get('submitManagePermissions');
+        const managePermissionsForm = this.app.domManager.get('managePermissionsForm');
+        
+        closeManagePermissionsModalBtn?.addEventListener('click', () => this.app.modalManager.closeManagePermissionsModal());
+        cancelManagePermissions?.addEventListener('click', () => this.app.modalManager.closeManagePermissionsModal());
+        submitManagePermissions?.addEventListener('click', () => this.app.userManager.handleManagePermissions());
+        managePermissionsForm?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.app.userManager.handleManagePermissions();
+        });
     }
 
     attachGlobalEvents() {
@@ -247,6 +263,10 @@ class EventManager {
             if (e.target.closest('.change-admin-credentials-btn')) {
                 const button = e.target.closest('.change-admin-credentials-btn');
                 this.app.modalManager.openChangeAdminCredentialsModal(button.dataset.userId);
+            }
+            if (e.target.closest('.manage-permissions-btn')) {
+                const button = e.target.closest('.manage-permissions-btn');
+                this.app.modalManager.openManagePermissionsModal(button.dataset.userId, button.dataset.userName);
             }
         });
         

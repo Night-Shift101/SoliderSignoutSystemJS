@@ -13,6 +13,7 @@ import SettingsManager from './modules/settings-manager.js';
 import ThemeManager from './modules/theme-manager.js';
 import KeyboardManager from './modules/keyboard-manager.js';
 import ConnectionManager from './modules/connection-manager.js';
+import PermissionsManager from './modules/permissions-manager.js';
 import Utils from './modules/utils.js';
 
 class SoldierSignOutApp {
@@ -30,6 +31,7 @@ class SoldierSignOutApp {
         this.notificationManager = new NotificationManager();
         this.barcodeManager = new BarcodeManager(this.notificationManager);
         this.authManager = new AuthManager(this);
+        this.permissionsManager = new PermissionsManager(this);
         this.modalManager = new ModalManager(this);
         this.viewManager = new ViewManager(this);
         this.eventManager = new EventManager(this);

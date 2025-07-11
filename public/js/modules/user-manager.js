@@ -61,6 +61,12 @@ class UserManager {
     async handleAddUser() {
         console.log('Handling add user');
         
+        // Check permissions
+        if (!this.app.permissionsManager?.canManageUsers()) {
+            this.app.permissionsManager?.showPermissionDenied('add users');
+            return;
+        }
+        
         try {
             const addUserForm = this.app.domManager.get('addUserForm');
             const submitAddUser = this.app.domManager.get('submitAddUser');
@@ -143,6 +149,12 @@ class UserManager {
     async handleChangePin() {
         console.log('Handling change PIN');
         
+        // Check permissions
+        if (!this.app.permissionsManager?.canChangePins()) {
+            this.app.permissionsManager?.showPermissionDenied('change user PINs');
+            return;
+        }
+        
         try {
             const changePinForm = this.app.domManager.get('changePinForm');
             const submitChangePin = this.app.domManager.get('submitChangePin');
@@ -220,6 +232,12 @@ class UserManager {
 
     async handleDeleteUser() {
         console.log('Handling delete user');
+        
+        // Check permissions
+        if (!this.app.permissionsManager?.canManageUsers()) {
+            this.app.permissionsManager?.showPermissionDenied('delete users');
+            return;
+        }
         
         try {
             const deleteUserForm = this.app.domManager.get('deleteUserForm');
@@ -400,6 +418,49 @@ class UserManager {
         // This method would load the accounts table in settings
         // Implementation would depend on the existing settings structure
         console.log('Loading accounts list...');
+    }
+
+    async handleManagePermissions() {
+        console.log('Handling manage permissions');
+        
+        try {
+            const modal = this.app.domManager.get('managePermissionsModal');
+            const userId = parseInt(modal.dataset.userId);
+            const submitButton = this.app.domManager.get('submitManagePermissions');
+            
+            if (!userId) {
+                this.app.modalManager.showManagePermissionsError('Invalid user ID');
+                return;
+            }
+
+            // Get selected permissions
+            const checkboxes = modal.querySelectorAll('input[type="checkbox"]:checked');
+            const selectedPermissions = Array.from(checkboxes).map(cb => cb.value);
+
+            Utils.showLoading(true);
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.querySelector('.btn-text').textContent = 'Updating...';
+            }
+
+            // Update permissions
+            await this.app.permissionsManager.updateUserPermissions(userId, selectedPermissions);
+
+            this.app.modalManager.closeManagePermissionsModal();
+            this.app.settingsManager.reloadAccountsList();
+            this.app.notificationManager.showNotification('Permissions updated successfully', 'success');
+
+        } catch (error) {
+            console.error('Error updating permissions:', error);
+            this.app.modalManager.showManagePermissionsError(error.message || 'Failed to update permissions');
+        } finally {
+            Utils.showLoading(false);
+            const submitButton = this.app.domManager.get('submitManagePermissions');
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.querySelector('.btn-text').textContent = 'Update Permissions';
+            }
+        }
     }
 }
 

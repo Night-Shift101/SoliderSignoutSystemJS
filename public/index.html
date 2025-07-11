@@ -520,6 +520,37 @@
         </div>
     </div>
 
+    <!-- Manage Permissions Modal -->
+    <div id="managePermissionsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Manage Permissions</h2>
+                <button class="modal-close" id="closeManagePermissionsModalBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="user-info">
+                    <p><strong>User:</strong> <span id="permissionsUserName"></span></p>
+                </div>
+                <form id="managePermissionsForm" class="form">
+                    <div class="form-group">
+                        <label>Permissions</label>
+                        <div id="permissionsCheckboxes" class="permissions-list">
+                            <!-- Permissions checkboxes will be populated here -->
+                        </div>
+                    </div>
+                    <div id="managePermissionsError" class="error-message" style="display: none;"></div>
+                </form>
+            </div>
+            <div class="form-actions">
+                <button type="button" id="cancelManagePermissions" class="btn btn-secondary">Cancel</button>
+                <button type="button" id="submitManagePermissions" class="btn btn-primary">
+                    <span class="btn-text">Update Permissions</span>
+                    <div class="btn-loader" style="display: none;"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/3.5.3/jspdf.min.js"></script>
     <script type="module" src="js/SoldierSignOutApp.js"></script>
 

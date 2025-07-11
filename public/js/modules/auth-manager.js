@@ -61,6 +61,12 @@ class AuthManager {
                 currentUserName.textContent = `${result.user.rank} ${result.user.full_name}`;
             }
             
+            // Load user permissions
+            if (this.app.permissionsManager) {
+                await this.app.permissionsManager.loadUserPermissions();
+                this.app.permissionsManager.applyPermissionBasedVisibility();
+            }
+            
             // Load user theme preference
             if (this.app.themeManager) {
                 await this.app.themeManager.loadThemePreference();
@@ -161,6 +167,12 @@ class AuthManager {
                 const currentUserName = this.app.domManager.get('currentUserName');
                 if (currentUserName) {
                     currentUserName.textContent = `${targetUserInfo.rank} ${targetUserInfo.full_name}`;
+                }
+                
+                // Load user permissions
+                if (this.app.permissionsManager) {
+                    await this.app.permissionsManager.loadUserPermissions();
+                    this.app.permissionsManager.applyPermissionBasedVisibility();
                 }
                 
                 // Load user theme preference

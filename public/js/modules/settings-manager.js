@@ -49,6 +49,12 @@ class SettingsManager {
                 const statusClass = user.is_active ? 'status-active' : 'status-inactive';
                 const statusText = user.is_active ? 'Active' : 'Inactive';
                 
+                // Check permissions
+                const canChangePins = this.app.permissionsManager?.canChangePins() || false;
+                const canManageUsers = this.app.permissionsManager?.canManageUsers() || false;
+                const canManagePermissions = this.app.permissionsManager?.canManagePermissions() || false;
+                const isSystemAdmin = this.app.permissionsManager?.isAdmin() || false;
+                
                 return `
                     <tr>
                         <td>${user.id}</td>
@@ -60,37 +66,50 @@ class SettingsManager {
                         <td>
                             <div class="action-buttons">
                                 ${isAdminUser ? `
-                                    <button class="btn btn-sm btn-primary change-admin-credentials-btn" 
-                                            data-user-id="${user.id}">
-                                        Change Credentials
-                                    </button>
+                                    ${isSystemAdmin ? `
+                                        <button class="btn btn-sm btn-primary change-admin-credentials-btn" 
+                                                data-user-id="${user.id}">
+                                            Change Credentials
+                                        </button>
+                                    ` : ''}
                                 ` : `
-                                    <button class="btn btn-sm btn-secondary change-pin-btn" 
-                                            data-user-id="${user.id}" 
-                                            data-user-name="${user.rank} ${user.full_name}"
-                                            ${isCurrentUser ? 'disabled' : ''}>
-                                        Change PIN
-                                    </button>
-                                    ${user.is_active ? `
-                                        <button class="btn btn-sm btn-warning deactivate-user-btn" 
+                                    ${canChangePins ? `
+                                        <button class="btn btn-sm btn-secondary change-pin-btn" 
                                                 data-user-id="${user.id}" 
                                                 data-user-name="${user.rank} ${user.full_name}"
                                                 ${isCurrentUser ? 'disabled' : ''}>
-                                            Deactivate
+                                            Change PIN
                                         </button>
-                                    ` : `
-                                        <button class="btn btn-sm btn-success activate-user-btn" 
+                                    ` : ''}
+                                    ${canManagePermissions ? `
+                                        <button class="btn btn-sm btn-info manage-permissions-btn" 
                                                 data-user-id="${user.id}" 
                                                 data-user-name="${user.rank} ${user.full_name}">
-                                            Activate
+                                            Permissions
                                         </button>
-                                    `}
-                                    <button class="btn btn-sm btn-danger delete-user-btn" 
-                                            data-user-id="${user.id}" 
-                                            data-user-name="${user.rank} ${user.full_name}"
-                                            ${isCurrentUser ? 'disabled' : ''}>
-                                        Delete
-                                    </button>
+                                    ` : ''}
+                                    ${canManageUsers ? `
+                                        ${user.is_active ? `
+                                            <button class="btn btn-sm btn-warning deactivate-user-btn" 
+                                                    data-user-id="${user.id}" 
+                                                    data-user-name="${user.rank} ${user.full_name}"
+                                                    ${isCurrentUser ? 'disabled' : ''}>
+                                                Deactivate
+                                            </button>
+                                        ` : `
+                                            <button class="btn btn-sm btn-success activate-user-btn" 
+                                                    data-user-id="${user.id}" 
+                                                    data-user-name="${user.rank} ${user.full_name}">
+                                                Activate
+                                            </button>
+                                        `}
+                                        <button class="btn btn-sm btn-danger delete-user-btn" 
+                                                data-user-id="${user.id}" 
+                                                data-user-name="${user.rank} ${user.full_name}"
+                                                ${isCurrentUser ? 'disabled' : ''}>
+                                            Delete
+                                        </button>
+                                    ` : ''}
                                 `}
                             </div>
                         </td>

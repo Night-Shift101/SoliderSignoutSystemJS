@@ -566,79 +566,81 @@ class ModalManager {
         }
     }
 
-    // async showSignOutDetails(signoutId) {
-    //     try {
-    //         const response = await Utils.fetchWithAuth(`/api/signouts/${signoutId}`);
-    //         if (!response.ok) {
-    //             throw new Error('Failed to fetch sign-out details');
-    //         }
-    //         const signOutDetails = await response.json();
+    // Manage Permissions Modal
+    async openManagePermissionsModal(userId, userName) {
+        if (!this.app.permissionsManager?.canManagePermissions()) {
+            this.app.permissionsManager?.showPermissionDenied('manage user permissions');
+            return;
+        }
 
-    //         const modal = this.app.domManager.get('signOutDetailsModal');
-    //         const modalContent = this.app.domManager.get('signOutDetailsContent');
+        try {
+            const modal = this.app.domManager.get('managePermissionsModal');
+            const userNameElement = this.app.domManager.get('permissionsUserName');
+            const permissionsCheckboxes = this.app.domManager.get('permissionsCheckboxes');
+            
+            if (userNameElement) {
+                userNameElement.textContent = userName;
+            }
+            
+            // Store user ID for later use
+            modal.dataset.userId = userId;
+            
+            // Load all available permissions
+            const allPermissions = await this.app.permissionsManager.getAllPermissions();
+            
+            // Load user's current permissions
+            const response = await Utils.fetchWithAuth(`/api/permissions/user/${userId}`);
+            if (!response.ok) throw new Error('Failed to load user permissions');
+            
+            const result = await response.json();
+            const userPermissions = result.success ? result.permissions : [];
+            
+            // Populate permissions checkboxes
+            permissionsCheckboxes.innerHTML = allPermissions.map(permission => `
+                <div class="permission-item">
+                    <input type="checkbox" 
+                           id="perm_${permission.id}" 
+                           value="${permission.name}" 
+                           ${userPermissions.includes(permission.name) ? 'checked' : ''}>
+                    <div class="permission-info">
+                        <div class="permission-name">${permission.name}</div>
+                        <div class="permission-description">${permission.description || 'No description'}</div>
+                    </div>
+                </div>
+            `).join('');
+            
+            this.clearManagePermissionsError();
+            modal.style.display = 'flex';
+            
+        } catch (error) {
+            console.error('Error opening manage permissions modal:', error);
+            this.app.notificationManager.showNotification('Failed to load permissions data', 'error');
+        }
+    }
 
-    //         modalContent.innerHTML = `
-    //             <p><strong>Sign-Out ID:</strong> ${signOutDetails.signout_id || signOutDetails.id}</p>
-    //             <p><strong>Soldiers:</strong> ${signOutDetails.soldiers && Array.isArray(signOutDetails.soldiers) ? 
-    //                 signOutDetails.soldiers.map(s => `${s.rank} ${s.last_name}`).join(', ') : 'No soldier data'}</p>
-    //             <p><strong>Location:</strong> ${signOutDetails.location}</p>
-    //             <p><strong>Time Out:</strong> ${new Date(signOutDetails.sign_out_time).toLocaleString()}</p>
-    //             <p><strong>Time In:</strong> ${signOutDetails.sign_in_time ? new Date(signOutDetails.sign_in_time).toLocaleString() : 'N/A'}</p>
-    //             <p><strong>Signed Out By:</strong> ${signOutDetails.signed_out_by_name || signOutDetails.signed_out_by}</p>
-    //             <p><strong>Signed In By:</strong> ${signOutDetails.signed_in_by_name || signOutDetails.signed_in_by || 'N/A'}</p>
-    //             <p><strong>Notes:</strong> ${signOutDetails.notes || 'N/A'}</p>
-    //         `;
+    closeManagePermissionsModal() {
+        const modal = this.app.domManager.get('managePermissionsModal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+        this.clearManagePermissionsError();
+    }
 
-    //         modal.style.display = 'block';
+    clearManagePermissionsError() {
+        const errorElement = this.app.domManager.get('managePermissionsError');
+        if (errorElement) {
+            errorElement.style.display = 'none';
+            errorElement.textContent = '';
+        }
+    }
 
-    //         const exportPdfBtn = this.app.domManager.get('exportPdfBtn');
-    //         exportPdfBtn.onclick = () => this.exportSignOutDetailsAsPDF(signOutDetails);
-
-    //         const closeBtn = this.app.domManager.get('closeSignOutDetailsModal');
-    //         closeBtn.onclick = () => this.closeSignOutDetailsModal();
-
-    //     } catch (error) {
-    //         console.error('Error showing sign-out details:', error);
-    //         this.app.notificationManager.showNotification('Error loading sign-out details.', 'error');
-    //     }
-    // }
-
-    // closeSignOutDetailsModal() {
-    //     const modal = this.app.domManager.get('signOutDetailsModal');
-    //     modal.style.display = 'none';
-    // }
-
-    // exportSignOutDetailsAsPDF(signOutDetails) {
-    //     console.log('Window Properties: ', Object.keys(window))
-    //     const doc = new window.jspdf.jsPDF();
-
-    //     doc.setFontSize(16);
-    //     doc.text("Sign-Out Details", 20, 20);
-        
-    //     doc.setFontSize(12);
-    //     doc.text(`Sign-Out ID: ${signOutDetails.signout_id || signOutDetails.id}`, 20, 35);
-    //     doc.text(`Location: ${signOutDetails.location}`, 20, 45);
-    //     doc.text(`Time Out: ${new Date(signOutDetails.sign_out_time).toLocaleString()}`, 20, 55);
-    //     doc.text(`Time In: ${signOutDetails.sign_in_time ? new Date(signOutDetails.sign_in_time).toLocaleString() : 'N/A'}`, 20, 65);
-    //     doc.text(`Signed Out By: ${signOutDetails.signed_out_by_name || signOutDetails.signed_out_by}`, 20, 75);
-    //     doc.text(`Signed In By: ${signOutDetails.signed_in_by_name || signOutDetails.signed_in_by || 'N/A'}`, 20, 85);
-    //     doc.text(`Notes: ${signOutDetails.notes || 'N/A'}`, 20, 95);
-
-    //     doc.text("Soldiers:", 20, 110);
-    //     let y = 120;
-    //     if (signOutDetails.soldiers && Array.isArray(signOutDetails.soldiers)) {
-    //         signOutDetails.soldiers.forEach(soldier => {
-    //             const soldierText = `- ${soldier.rank} ${soldier.last_name}, ${soldier.first_name} (DOD ID: ${soldier.dod_id})`;
-    //             doc.text(soldierText, 30, y);
-    //             y += 10;
-    //         });
-    //     } else {
-    //         doc.text("- No soldier data available", 30, y);
-    //     }
-
-    //     doc.save(`SignOut-Details-${signOutDetails.signout_id || signOutDetails.id}.pdf`);
-    //     this.app.notificationManager.showNotification('Sign-out details exported as PDF', 'success');
-    // }
+    showManagePermissionsError(message) {
+        const errorElement = this.app.domManager.get('managePermissionsError');
+        if (errorElement) {
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+    }
 }
 
 export default ModalManager;
