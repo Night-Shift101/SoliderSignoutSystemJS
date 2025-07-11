@@ -14,12 +14,13 @@ const settingsRoutes = require('./src/routes/settings');
 const preferencesRoutes = require('./src/routes/preferences');
 const permissionsRoutes = require('./src/routes/permissions');
 const Database = require('./src/database/database');
+const PermissionsMiddleware = require('./src/middleware/permissions');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-
 const db = new Database();
+const permissionsMiddleware = new PermissionsMiddleware(db.db);
 
 
 app.use(session({
@@ -67,6 +68,7 @@ app.use((req, res, next) => {
 // Database middleware
 app.use((req, res, next) => {
     req.db = db;
+    req.permissionsMiddleware = permissionsMiddleware;
     next();
 });
 

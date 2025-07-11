@@ -29,6 +29,12 @@ class ModalManager {
     }
 
     async promptSignIn(signoutId, soldierNames) {
+        // Check permissions
+        if (!this.app.permissionsManager?.hasPermission('sign_in_soldiers')) {
+            this.app.permissionsManager?.showPermissionDenied('sign soldiers back in');
+            return;
+        }
+        
         this.app.currentSignOutId = signoutId;
         
         const pinModal = this.app.domManager.get('pinModal');

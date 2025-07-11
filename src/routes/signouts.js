@@ -3,6 +3,55 @@ const { body, validationResult } = require('express-validator');
 const { requireAuth, requireBothAuth, verifyPin, handleValidationErrors, requireSystemAuth } = require('../middleware/auth');
 const router = express.Router();
 
+// Permission middleware helpers
+const requirePermission = (permission) => {
+    return async (req, res, next) => {
+        try {
+            const userId = req.session?.user?.id;
+            if (!userId) {
+                return res.status(401).json({ error: 'Authentication required' });
+            }
+
+            const hasPermission = await req.permissionsMiddleware.hasPermission(userId, permission);
+            if (!hasPermission) {
+                return res.status(403).json({ 
+                    error: `Insufficient permissions: ${permission} required`,
+                    code: 'INSUFFICIENT_PERMISSIONS'
+                });
+            }
+
+            next();
+        } catch (error) {
+            console.error('Permission check error:', error);
+            res.status(500).json({ error: 'Permission check failed' });
+        }
+    };
+};
+
+const requireAnyPermission = (permissions) => {
+    return async (req, res, next) => {
+        try {
+            const userId = req.session?.user?.id;
+            if (!userId) {
+                return res.status(401).json({ error: 'Authentication required' });
+            }
+
+            const hasAnyPermission = await req.permissionsMiddleware.hasAnyPermission(userId, permissions);
+            if (!hasAnyPermission) {
+                return res.status(403).json({ 
+                    error: `Insufficient permissions: one of [${permissions.join(', ')}] required`,
+                    code: 'INSUFFICIENT_PERMISSIONS'
+                });
+            }
+
+            next();
+        } catch (error) {
+            console.error('Permission check error:', error);
+            res.status(500).json({ error: 'Permission check failed' });
+        }
+    };
+};
+
 // Validation middleware for sign-out creation
 const validateSignOut = [
     body('soldiers').isArray({ min: 1 }).withMessage('At least one soldier is required'),
@@ -20,7 +69,7 @@ const validateSignOut = [
 ];
 
 // Get all signouts
-router.get('/', requireAuth, requireSystemAuth, (req, res) => {
+router.get('/', requireAuth, requireSystemAuth, requirePermission('view_dashboard'), (req, res) => {
     const { status, startDate, endDate, soldierName, location } = req.query;
     
     const filters = {
@@ -51,7 +100,7 @@ router.get('/', requireAuth, requireSystemAuth, (req, res) => {
 });
 
 // Get all group members for specific sign-out IDs
-router.post('/groups', requireAuth, requireSystemAuth, (req, res) => {
+router.post('/groups', requireAuth, requireSystemAuth, requirePermission('view_dashboard'), (req, res) => {
     const { signOutIds } = req.body;
     
     if (!signOutIds || !Array.isArray(signOutIds) || signOutIds.length === 0) {
@@ -86,7 +135,7 @@ router.get('/:id', requireBothAuth, (req, res) => {
 });
 
 // Create new signout
-router.post('/', [requireBothAuth, ...validateSignOut], (req, res) => {
+router.post('/', [requireBothAuth, requirePermission('create_signout'), ...validateSignOut], (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         console.error('Validation errors:', errors.array());
@@ -148,6 +197,7 @@ router.post('/', [requireBothAuth, ...validateSignOut], (req, res) => {
 // Sign in soldiers
 router.patch('/:id/signin', [
     requireBothAuth,
+    requirePermission('sign_in_soldiers'),
     body('pin').isLength({ min: 4 }).withMessage('PIN is required'),
     body('notes').optional().trim()
 ], (req, res) => {

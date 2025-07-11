@@ -1,14 +1,37 @@
 const express = require('express');
 const router = express.Router();
+const { requireAuth, requireBothAuth } = require('../middleware/auth');
 
-// Note: This file provides the permissions API endpoints but does not implement
-// route-level permission checking yet. The middleware exists but is not applied.
+// Permission middleware helper
+const requirePermission = (permission) => {
+    return async (req, res, next) => {
+        try {
+            const userId = req.session?.user?.id;
+            if (!userId) {
+                return res.status(401).json({ error: 'Authentication required' });
+            }
+
+            const hasPermission = await req.permissionsMiddleware.hasPermission(userId, permission);
+            if (!hasPermission) {
+                return res.status(403).json({ 
+                    error: `Insufficient permissions: ${permission} required`,
+                    code: 'INSUFFICIENT_PERMISSIONS'
+                });
+            }
+
+            next();
+        } catch (error) {
+            console.error('Permission check error:', error);
+            res.status(500).json({ error: 'Permission check failed' });
+        }
+    };
+};
 
 /**
  * Get all available permissions
  * GET /api/permissions
  */
-router.get('/', async (req, res) => {
+router.get('/', requireAuth, requirePermission('manage_permissions'), async (req, res) => {
     try {
         const permissions = await req.db.getAllPermissions();
         res.json({
@@ -28,7 +51,7 @@ router.get('/', async (req, res) => {
  * Get permissions for a specific user
  * GET /api/permissions/user/:userId
  */
-router.get('/user/:userId', async (req, res) => {
+router.get('/user/:userId', requireAuth, async (req, res) => {
     try {
         const { userId } = req.params;
         const { detailed } = req.query;
@@ -58,7 +81,7 @@ router.get('/user/:userId', async (req, res) => {
  * Get all users with their permissions
  * GET /api/permissions/users
  */
-router.get('/users', async (req, res) => {
+router.get('/users', requireAuth, requirePermission('manage_permissions'), async (req, res) => {
     try {
         const usersWithPermissions = await req.db.getAllUsersWithPermissions();
         res.json({
@@ -211,7 +234,7 @@ router.post('/revoke', async (req, res) => {
  * Set user permissions (replace all existing)
  * PUT /api/permissions/user/:userId
  */
-router.put('/user/:userId', async (req, res) => {
+router.put('/user/:userId', requireBothAuth, requirePermission('manage_permissions'), async (req, res) => {
     try {
         const { userId } = req.params;
         const { permissions, grantedBy } = req.body;

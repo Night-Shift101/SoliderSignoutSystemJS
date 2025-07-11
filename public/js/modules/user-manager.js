@@ -299,6 +299,12 @@ class UserManager {
     }
 
     async handleActivateUser(userId, userName) {
+        // Check permissions
+        if (!this.app.permissionsManager?.canManageUsers()) {
+            this.app.permissionsManager?.showPermissionDenied('activate users');
+            return;
+        }
+        
         try {
             const response = await Utils.fetchWithAuth(`/api/users/${userId}/activate`, {
                 method: 'PATCH'
@@ -317,6 +323,12 @@ class UserManager {
     }
 
     async handleDeactivateUser(userId, userName) {
+        // Check permissions
+        if (!this.app.permissionsManager?.canManageUsers()) {
+            this.app.permissionsManager?.showPermissionDenied('deactivate users');
+            return;
+        }
+        
         try {
             const response = await Utils.fetchWithAuth(`/api/users/${userId}/deactivate`, {
                 method: 'PATCH'

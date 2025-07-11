@@ -124,6 +124,12 @@ class LogsManager {
     }
 
     async exportLogs() {
+        // Check permissions
+        if (!this.app.permissionsManager?.hasPermission('export_data')) {
+            this.app.permissionsManager?.showPermissionDenied('export data');
+            return;
+        }
+        
         try {
             Utils.showLoading(true);            
             const startDate = this.app.domManager.get('startDate');
@@ -206,6 +212,12 @@ class LogsManager {
     }
 
     async exportLogsPDF() {
+        // Check permissions
+        if (!this.app.permissionsManager?.hasPermission('export_data')) {
+            this.app.permissionsManager?.showPermissionDenied('export data');
+            return;
+        }
+        
         try {
             Utils.showLoading(true);
             

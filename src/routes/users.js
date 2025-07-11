@@ -2,7 +2,33 @@ const express = require('express');
 const { body, param, validationResult } = require('express-validator');
 const { requireAuth, requireBothAuth, verifyPin,requireSystemAuth, handleValidationErrors } = require('../middleware/auth');
 const router = express.Router();
-router.get('/', requireSystemAuth, async (req, res) => {
+
+// Permission middleware helpers
+const requirePermission = (permission) => {
+    return async (req, res, next) => {
+        try {
+            const userId = req.session?.user?.id;
+            if (!userId) {
+                return res.status(401).json({ error: 'Authentication required' });
+            }
+
+            const hasPermission = await req.permissionsMiddleware.hasPermission(userId, permission);
+            if (!hasPermission) {
+                return res.status(403).json({ 
+                    error: `Insufficient permissions: ${permission} required`,
+                    code: 'INSUFFICIENT_PERMISSIONS'
+                });
+            }
+
+            next();
+        } catch (error) {
+            console.error('Permission check error:', error);
+            res.status(500).json({ error: 'Permission check failed' });
+        }
+    };
+};
+
+router.get('/', requireSystemAuth, requirePermission('manage_users'), async (req, res) => {
     try {
         req.db.getAllUsersExtended((err, users) => {
             if (err) {
@@ -40,6 +66,7 @@ router.get('/:id',
 // Add new user
 router.post('/',
     requireBothAuth,
+    requirePermission('manage_users'),
     [
         body('rank').isLength({ min: 1 }).withMessage('Rank is required'),
         body('lastName').isLength({ min: 1 }).withMessage('Last name is required'),
@@ -85,6 +112,7 @@ router.post('/',
 // Update user PIN
 router.patch('/:id/pin',
     requireBothAuth,
+    requirePermission('change_user_pins'),
     [
         param('id').isInt({ min: 1 }),
         body('systemPassword').isLength({ min: 1 }).withMessage('System password is required'),
@@ -136,6 +164,7 @@ router.patch('/:id/pin',
 // Delete user
 router.delete('/:id',
     requireBothAuth,
+    requirePermission('manage_users'),
     [
         param('id').isInt({ min: 1 }),
     ],
@@ -178,6 +207,7 @@ router.delete('/:id',
 
 router.patch('/:id/activate',
     requireBothAuth,
+    requirePermission('manage_users'),
     param('id').isInt({ min: 1 }),
     handleValidationErrors,
     async (req, res) => {
@@ -215,6 +245,7 @@ router.patch('/:id/activate',
 
 router.patch('/:id/deactivate',
     requireBothAuth,
+    requirePermission('manage_users'),
     param('id').isInt({ min: 1 }),
     handleValidationErrors,
     async (req, res) => {

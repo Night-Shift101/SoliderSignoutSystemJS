@@ -12,6 +12,11 @@ class SettingsManager {
             
             await this.loadAccountsList();
             
+            // Reapply permission-based visibility after settings load
+            if (this.app.permissionsManager) {
+                this.app.permissionsManager.applyPermissionBasedVisibility();
+            }
+            
         } catch (error) {
             console.error('Error loading settings:', error);
             this.app.notificationManager.showNotification('Failed to load settings', 'error');
@@ -116,6 +121,13 @@ class SettingsManager {
                     </tr>
                 `;
             }).join('');
+            
+            // Reapply permission-based visibility after loading accounts
+            setTimeout(() => {
+                if (this.app.permissionsManager) {
+                    this.app.permissionsManager.applyPermissionBasedVisibility();
+                }
+            }, 100);
             
         } catch (error) {
             console.error('Error loading user accounts:', error);

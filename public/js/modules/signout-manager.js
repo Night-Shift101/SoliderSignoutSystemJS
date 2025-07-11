@@ -156,6 +156,12 @@ class SignOutManager {
     async handleSignOut(event) {
         event.preventDefault();
         
+        // Check permissions
+        if (!this.app.permissionsManager?.hasPermission('create_signout')) {
+            this.app.permissionsManager?.showPermissionDenied('create sign-outs');
+            return;
+        }
+        
         try {
             const signOutForm = this.app.domManager.get('signOutForm');
             const formData = new FormData(signOutForm);

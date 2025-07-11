@@ -17,6 +17,12 @@ class ViewManager {
     }
 
     showLogsView() {
+        // Check permissions
+        if (!this.app.permissionsManager?.hasPermission('view_logs')) {
+            this.app.permissionsManager?.showPermissionDenied('view logs');
+            return;
+        }
+        
         const dashboardView = this.app.domManager.get('dashboardView');
         const logsView = this.app.domManager.get('logsView');
         const settingsView = this.app.domManager.get('settingsView');
@@ -36,6 +42,12 @@ class ViewManager {
 
     showSettingsView() {
         console.log('showSettingsView called');
+        
+        // Check permissions
+        if (!this.app.permissionsManager?.canViewSettings()) {
+            this.app.permissionsManager?.showPermissionDenied('view settings');
+            return;
+        }
         
         const dashboardView = this.app.domManager.get('dashboardView');
         const logsView = this.app.domManager.get('logsView');

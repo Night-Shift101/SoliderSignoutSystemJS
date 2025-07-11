@@ -182,6 +182,7 @@ class PermissionsManager {
             { selector: '.delete-user-btn', permission: 'manage_users' },
             { selector: '.activate-user-btn', permission: 'manage_users' },
             { selector: '.deactivate-user-btn', permission: 'manage_users' },
+            { selector: '.manage-permissions-btn', permission: 'manage_permissions' },
             { selector: '#newSignOutBtn', permission: 'create_signout' },
             { selector: '#settingsBtn', permission: 'view_settings' },
             { selector: '#logsBtn', permission: 'view_logs' },
@@ -200,6 +201,15 @@ class PermissionsManager {
                     element.style.display = 'none';
                 }
             });
+        });
+
+        // Special handling for sign-in buttons
+        const signInButtons = document.querySelectorAll('.sign-in-btn');
+        signInButtons.forEach(button => {
+            const hasAccess = this.hasPermission('sign_in_soldiers') || this.isAdmin();
+            if (!hasAccess) {
+                button.style.display = 'none';
+            }
         });
 
         // Special cases for admin-only elements
