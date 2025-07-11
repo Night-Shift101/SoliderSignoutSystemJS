@@ -571,8 +571,12 @@ class ModalManager {
             changeAdminCredentialsError.style.display = 'none';
         }
     }
+<<<<<<< HEAD
 
     openManualEntryModal() {
+=======
+        openManualEntryModal() {
+>>>>>>> 7253e38 (Fixed Merge conflicts)
         const manualEntryModal = this.app.domManager.get('manualEntryModal');
         if (manualEntryModal) {
             manualEntryModal.style.display = 'flex';
@@ -653,7 +657,10 @@ class ModalManager {
             this.app.notificationManager.showNotification('Failed to add soldier', 'error');
         }
     }
+<<<<<<< HEAD
 // Manage Permissions Modal
+=======
+>>>>>>> 7253e38 (Fixed Merge conflicts)
     async openManagePermissionsModal(userId, userName) {
         if (!this.app.permissionsManager?.canManagePermissions()) {
             this.app.permissionsManager?.showPermissionDenied('manage user permissions');
