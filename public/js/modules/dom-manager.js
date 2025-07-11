@@ -135,7 +135,17 @@ class DOMManager {
             adminCredentialsUserId: document.getElementById('adminCredentialsUserId'),
             cancelChangeAdminCredentials: document.getElementById('cancelChangeAdminCredentials'),
             submitChangeAdminCredentials: document.getElementById('submitChangeAdminCredentials'),
-            changeAdminCredentialsError: document.getElementById('changeAdminCredentialsError')
+            changeAdminCredentialsError: document.getElementById('changeAdminCredentialsError'),
+            
+            // Manage permissions modal elements
+            managePermissionsModal: document.getElementById('managePermissionsModal'),
+            closeManagePermissionsModalBtn: document.getElementById('closeManagePermissionsModalBtn'),
+            managePermissionsForm: document.getElementById('managePermissionsForm'),
+            permissionsUserName: document.getElementById('permissionsUserName'),
+            permissionsCheckboxes: document.getElementById('permissionsCheckboxes'),
+            cancelManagePermissions: document.getElementById('cancelManagePermissions'),
+            submitManagePermissions: document.getElementById('submitManagePermissions'),
+            managePermissionsError: document.getElementById('managePermissionsError')
         };
     }
 
@@ -148,6 +158,28 @@ class DOMManager {
     }
 
     refresh() {
+        this.initializeElements();
+    }
+
+    /**
+     * Refresh specific DOM element references (useful when elements are recreated)
+     */
+    refreshElement(elementName) {
+        switch(elementName) {
+            case 'searchInput':
+                this.elements.searchInput = document.getElementById('searchInput');
+                break;
+            case 'currentSignOutsTableBody':
+                this.elements.currentSignOutsTableBody = document.getElementById('currentSignOutsTableBody');
+                break;
+            // Add more cases as needed
+        }
+    }
+
+    /**
+     * Refresh all DOM element references
+     */
+    refreshAllElements() {
         this.initializeElements();
     }
 }

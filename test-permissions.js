@@ -59,7 +59,7 @@ async function testPermissionsSystem() {
             console.log(`  - Has ALL basic permissions: ${hasAllBasic}`);
             
             // Test OR logic
-            const hasAnyAdmin = await permissions.hasAnyPermission(testUserId, ['system_admin', 'manage_users']);
+            const hasAnyAdmin = await permissions.hasAnyPermission(testUserId, ['system_admin', 'create_users', 'delete_users']);
             console.log(`  - Has ANY admin permissions: ${hasAnyAdmin}`);
             console.log();
         }

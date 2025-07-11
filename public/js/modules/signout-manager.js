@@ -15,6 +15,11 @@ class SignOutManager {
             this.filteredSignouts = [...this.signouts];
             this.renderCurrentSignOuts();
             this.updateCounts();
+            
+            // Reapply permission-based visibility after loading data
+            if (this.app.permissionsManager) {
+                this.app.permissionsManager.applyPermissionBasedVisibility();
+            }
         } catch (error) {
             console.error('Error loading current sign-outs:', error);
             this.app.notificationManager.showNotification('Failed to load current sign-outs', 'error');
@@ -143,8 +148,8 @@ class SignOutManager {
                             <button class="btn btn-secondary btn-sm sign-in-btn" data-signout-id="${signout.signout_id}" data-soldier-names="${signout.soldier_names || 'Unknown'}">
                                 Sign In
                             </button>
-                            <button class="btn btn-secondary btn-small info-btn" data-signout-id="${signout.signout_id}" title="View Details">
-                                <span class="icon">ℹ️</span>
+                            <button class="btn btn-secondary btn-sm info-btn" data-signout-id="${signout.signout_id}" title="View Details">
+                                Signout Details
                             </button>
                         </div>
                     </td>

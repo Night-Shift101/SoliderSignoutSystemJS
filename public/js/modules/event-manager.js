@@ -62,7 +62,15 @@ class EventManager {
         const darkModeToggle = this.app.domManager.get('darkModeToggle');
         
         refreshBtn?.addEventListener('click', () => this.app.signOutManager.loadCurrentSignOuts());
-        newSignOutBtn?.addEventListener('click', () => this.app.modalManager.openNewSignOutModal());
+        newSignOutBtn?.addEventListener('click', (e) => {
+            // Prevent action if button is disabled due to permissions
+            if (newSignOutBtn.disabled || newSignOutBtn.classList.contains('disabled-no-permission')) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+            this.app.modalManager.openNewSignOutModal();
+        });
         logsBtn?.addEventListener('click', () => this.app.viewManager.showLogsView());
         settingsBtn?.addEventListener('click', () => this.app.viewManager.showSettingsWithAuth());
         logoutBtn?.addEventListener('click', () => this.app.authManager.logout());

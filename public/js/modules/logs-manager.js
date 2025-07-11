@@ -32,6 +32,11 @@ class LogsManager {
             
             this.currentLogs = logs;
             this.renderLogsTable(logs);
+            
+            // Reapply permission-based visibility after loading data
+            if (this.app.permissionsManager) {
+                this.app.permissionsManager.applyPermissionBasedVisibility();
+            }
         } catch (error) {
             console.error('Error loading logs:', error);
             this.app.notificationManager.showNotification('Failed to load logs', 'error');

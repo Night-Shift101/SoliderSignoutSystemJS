@@ -42,11 +42,11 @@ class Database {
     }
 
     initializeManagers() {
-        this.userManager = new UserManager(this.db);
+        this.permissionsManager = new PermissionsManager(this.db);
+        this.userManager = new UserManager(this.db, this.permissionsManager);
         this.signoutManager = new SignoutManager(this.db);
         this.preferencesManager = new PreferencesManager(this.db);
         this.utilitiesManager = new UtilitiesManager(this.db);
-        this.permissionsManager = new PermissionsManager(this.db);
         
         // Initialize permissions system after managers are created
         this.initializePermissionsSystem();
@@ -336,6 +336,14 @@ class Database {
 
     async getAllPermissions() {
         return this.permissionsManager ? await this.permissionsManager.getAllPermissions() : [];
+    }
+
+    async getAllPermissionsWithDependencies() {
+        return this.permissionsManager ? await this.permissionsManager.getAllPermissionsWithDependencies() : [];
+    }
+
+    async getAllPermissionsWithChildren() {
+        return this.permissionsManager ? await this.permissionsManager.getAllPermissionsWithChildren() : [];
     }
 
     async getUserPermissionsDetailed(userId) {

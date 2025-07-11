@@ -69,7 +69,7 @@ const validateSignOut = [
 ];
 
 // Get all signouts
-router.get('/', requireAuth, requireSystemAuth, requirePermission('view_dashboard'), (req, res) => {
+router.get('/', requireAuth, requireSystemAuth, requireAnyPermission(['view_dashboard', 'view_logs']), (req, res) => {
     const { status, startDate, endDate, soldierName, location } = req.query;
     
     const filters = {
@@ -369,7 +369,7 @@ router.get('/reports/current', requireBothAuth, (req, res) => {
 
 
 // Fetch filtered logs
-router.get('/logs', requireBothAuth, (req, res) => {
+router.get('/logs', requireBothAuth, requirePermission('view_logs'), (req, res) => {
     const { startDate, endDate, soldierName, location, status } = req.query;
 
     const filters = {
@@ -390,7 +390,7 @@ router.get('/logs', requireBothAuth, (req, res) => {
 });
 
 // Export logs to CSV
-router.get('/export/logs', requireBothAuth, (req, res) => {
+router.get('/export/logs', requireBothAuth, requirePermission('view_logs'), (req, res) => {
     const { startDate, endDate, soldierName, location, status } = req.query;
 
     const filters = {

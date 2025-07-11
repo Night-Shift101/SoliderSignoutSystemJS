@@ -72,6 +72,9 @@ class AuthManager {
                 await this.app.themeManager.loadThemePreference();
             }
             
+            // Show dashboard view now that permissions are loaded
+            this.app.viewManager.showDashboardView();
+            
             console.log('About to load current signouts...');
             try {
                 await this.app.signOutManager.loadCurrentSignOuts();
@@ -182,15 +185,9 @@ class AuthManager {
                 
                 this.app.notificationManager.showNotification(`Switched to ${targetUserInfo.rank} ${targetUserInfo.full_name}`, 'success');
                 
-                // Refresh current sign-outs for the new user
-                if (dashboardView && window.getComputedStyle(dashboardView).display !== 'none') {
-                    await this.app.signOutManager.loadCurrentSignOuts();
-                } else if (logsView && window.getComputedStyle(logsView).display !== 'none') {
-                    await this.app.logsManager.loadFilteredLogs();
-                } else if (settingsView && window.getComputedStyle(settingsView).display !== 'none') {
-                    await this.app.settingsManager.loadSettingsData();
-                } else {
-                    await this.app.signOutManager.loadCurrentSignOuts();
+                // Validate current view permissions and refresh appropriate data
+                if (this.app.viewManager) {
+                    this.app.viewManager.validateCurrentViewPermissions();
                 }
             } else {
                 this.app.modalManager.showPinError('Invalid PIN');

@@ -3,6 +3,7 @@ class PermissionsManager {
         this.app = app;
         this.userPermissions = [];
         this.permissionsLoaded = false;
+        this.initializeTooltipPositioning();
     }
 
     /**
@@ -24,7 +25,7 @@ class PermissionsManager {
             if (result.success) {
                 this.userPermissions = result.permissions || [];
                 this.permissionsLoaded = true;
-                console.log('User permissions loaded:', this.userPermissions);
+                console.log('User permissions loaded:', this.userPermissions.length, 'permissions');
                 return this.userPermissions;
             } else {
                 throw new Error(result.error || 'Failed to load permissions');
@@ -44,7 +45,7 @@ class PermissionsManager {
      */
     hasPermission(permission) {
         if (!this.permissionsLoaded) {
-            console.warn('Permissions not loaded yet');
+            console.warn('Permissions not loaded yet for permission check:', permission);
             return false;
         }
         return this.userPermissions.includes(permission);
@@ -81,15 +82,42 @@ class PermissionsManager {
      * @returns {boolean}
      */
     isAdmin() {
-        return this.hasPermission('system_admin');
+        if (!this.permissionsLoaded) {
+            return false;
+        }
+        return this.userPermissions.includes('system_admin');
     }
 
     /**
-     * Check if user can manage users
+     * Check if user can create users
+     * @returns {boolean}
+     */
+    canCreateUsers() {
+        return this.hasPermission('create_users') || this.isAdmin();
+    }
+
+    /**
+     * Check if user can delete users
+     * @returns {boolean}
+     */
+    canDeleteUsers() {
+        return this.hasPermission('delete_users') || this.isAdmin();
+    }
+
+    /**
+     * Check if user can deactivate/reactivate users
+     * @returns {boolean}
+     */
+    canDeactivateUsers() {
+        return this.hasPermission('deactivate_users') || this.isAdmin();
+    }
+
+    /**
+     * Check if user can perform any user management actions
      * @returns {boolean}
      */
     canManageUsers() {
-        return this.hasPermission('manage_users') || this.isAdmin();
+        return this.canCreateUsers() || this.canDeleteUsers() || this.canDeactivateUsers() || this.isAdmin();
     }
 
     /**
@@ -145,11 +173,10 @@ class PermissionsManager {
      */
     async updateUserPermissions(userId, permissions) {
         try {
-            const response = await Utils.fetchWithAuth('/api/permissions/user', {
+            const response = await Utils.fetchWithAuth(`/api/permissions/user/${userId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    userId: userId,
                     permissions: permissions,
                     grantedBy: this.app.currentUser.id
                 })
@@ -175,22 +202,79 @@ class PermissionsManager {
      * Apply permission-based visibility to elements
      */
     applyPermissionBasedVisibility() {
-        // Hide/show elements based on permissions
-        const elementsToCheck = [
-            { selector: '#addUserBtn', permission: 'manage_users' },
-            { selector: '.change-pin-btn', permission: 'change_user_pins' },
-            { selector: '.delete-user-btn', permission: 'manage_users' },
-            { selector: '.activate-user-btn', permission: 'manage_users' },
-            { selector: '.deactivate-user-btn', permission: 'manage_users' },
+        // Don't apply restrictions if permissions aren't loaded yet
+        if (!this.permissionsLoaded) {
+            console.log('Permissions not loaded yet, skipping visibility application');
+            return;
+        }
+
+        // Elements that should be disabled instead of hidden
+        const elementsToDisable = [
+            { 
+                selector: '#newSignOutBtn', 
+                permission: 'create_signout',
+                reason: 'You do not have permission to create new sign-outs'
+            },
+            {
+                selector: '.sign-in-btn',
+                permission: 'sign_in_soldiers',
+                reason: 'You do not have permission to sign soldiers back in'
+            }
+        ];
+
+        // Elements that should be hidden when no permission
+        const elementsToHide = [
+            { selector: '#addUserBtn', permission: 'create_users' },
+            { selector: '.activate-user-btn', permission: 'deactivate_users' },
             { selector: '.manage-permissions-btn', permission: 'manage_permissions' },
-            { selector: '#newSignOutBtn', permission: 'create_signout' },
             { selector: '#settingsBtn', permission: 'view_settings' },
             { selector: '#logsBtn', permission: 'view_logs' },
             { selector: '#exportCsvBtn', permission: 'export_data' },
             { selector: '#exportLogsPdfBtn', permission: 'export_data' }
         ];
 
-        elementsToCheck.forEach(({ selector, permission }) => {
+        // Elements that should be disabled for current user (even with permission)
+        const elementsToDisableForCurrentUser = [
+            { 
+                selector: '.delete-user-btn', 
+                permission: 'delete_users',
+                reason: 'You cannot delete your own account'
+            },
+            { 
+                selector: '.deactivate-user-btn', 
+                permission: 'deactivate_users',
+                reason: 'You cannot deactivate your own account'
+            },
+            { 
+                selector: '.change-pin-btn', 
+                permission: 'change_user_pins',
+                reason: 'You cannot change your own PIN through this interface'
+            }
+        ];
+
+        // Handle elements that should be disabled
+        elementsToDisable.forEach(({ selector, permission, reason }) => {
+            const elements = document.querySelectorAll(selector);
+            elements.forEach(element => {
+                const hasAccess = this.hasPermission(permission) || this.isAdmin();
+                if (hasAccess) {
+                    element.style.display = '';
+                    element.disabled = false;
+                    element.classList.remove('disabled-no-permission', 'permission-disabled');
+                    element.removeAttribute('data-disabled-reason');
+                    element.style.cursor = '';
+                } else {
+                    element.style.display = '';
+                    element.disabled = true;
+                    element.classList.add('disabled-no-permission', 'permission-disabled');
+                    element.setAttribute('data-disabled-reason', reason);
+                    element.style.cursor = 'not-allowed';
+                }
+            });
+        });
+
+        // Handle elements that should be hidden
+        elementsToHide.forEach(({ selector, permission }) => {
             const elements = document.querySelectorAll(selector);
             elements.forEach(element => {
                 const hasAccess = this.hasPermission(permission) || this.isAdmin();
@@ -203,13 +287,38 @@ class PermissionsManager {
             });
         });
 
-        // Special handling for sign-in buttons
-        const signInButtons = document.querySelectorAll('.sign-in-btn');
-        signInButtons.forEach(button => {
-            const hasAccess = this.hasPermission('sign_in_soldiers') || this.isAdmin();
-            if (!hasAccess) {
-                button.style.display = 'none';
-            }
+        // Handle elements that should be disabled for current user
+        elementsToDisableForCurrentUser.forEach(({ selector, permission, reason }) => {
+            const elements = document.querySelectorAll(selector);
+            elements.forEach(element => {
+                const hasPermission = this.hasPermission(permission) || this.isAdmin();
+                
+                if (!hasPermission) {
+                    // Hide if no permission at all
+                    element.style.display = 'none';
+                    return;
+                }
+                
+                // Check if this is the current user's button
+                const userId = element.getAttribute('data-user-id');
+                const isCurrentUser = userId && parseInt(userId) === this.app.currentUser?.id;
+                
+                if (isCurrentUser) {
+                    // Show but disable for current user
+                    element.style.display = '';
+                    element.disabled = true;
+                    element.classList.add('disabled-no-permission', 'permission-disabled');
+                    element.setAttribute('data-disabled-reason', reason);
+                    element.style.cursor = 'not-allowed';
+                } else {
+                    // Enable for other users
+                    element.style.display = '';
+                    element.disabled = false;
+                    element.classList.remove('disabled-no-permission', 'permission-disabled');
+                    element.removeAttribute('data-disabled-reason');
+                    element.style.cursor = '';
+                }
+            });
         });
 
         // Special cases for admin-only elements
@@ -232,6 +341,149 @@ class PermissionsManager {
             `You don't have permission to ${action}`, 
             'error'
         );
+    }
+
+    /**
+     * Fetch all available permissions from server (with dependencies)
+     */
+    async fetchAllPermissions() {
+        try {
+            const response = await Utils.fetchWithAuth('/api/permissions');
+            if (!response.ok) {
+                throw new Error('Failed to fetch permissions');
+            }
+
+            const result = await response.json();
+            if (result.success) {
+                return result.permissions || [];
+            } else {
+                throw new Error(result.error || 'Failed to load permissions');
+            }
+        } catch (error) {
+            console.error('Error fetching permissions:', error);
+            return [];
+        }
+    }
+
+    /**
+     * Get permission children
+     */
+    getPermissionChildren(permissionName) {
+        // Children are defined on the backend and included in permission objects
+        // This is a fallback if they're not included
+        const children = {
+            'view_dashboard': ['create_signout', 'sign_in_soldiers'],
+            'view_logs': ['export_data'],
+            'view_settings': ['create_users', 'delete_users', 'deactivate_users', 'change_user_pins', 'manage_permissions']
+        };
+        return children[permissionName] || [];
+    }
+
+    /**
+     * Get permission parent
+     */
+    getPermissionParent(permissionName) {
+        const dependencies = {
+            'create_signout': 'view_dashboard',
+            'sign_in_soldiers': 'view_dashboard',
+            'export_data': 'view_logs',
+            'create_users': 'view_settings',
+            'delete_users': 'view_settings',
+            'deactivate_users': 'view_settings',
+            'change_user_pins': 'view_settings',
+            'manage_permissions': 'view_settings'
+        };
+        return dependencies[permissionName] || null;
+    }
+
+    /**
+     * Get all permissions that are children of a given permission
+     */
+    getPermissionAllChildren(permissionName, allPermissions) {
+        const children = [];
+        for (const permission of allPermissions) {
+            const permChildren = permission.children || this.getPermissionChildren(permission.name);
+            if (permChildren.includes(permissionName)) {
+                children.push(permission.name);
+            }
+        }
+        return children;
+    }
+
+    /**
+     * Check if enabling a permission would require enabling parents
+     */
+    getRequiredParents(permissionName, currentPermissions, allPermissions) {
+        const permission = allPermissions.find(p => p.name === permissionName);
+        const parent = permission?.parent || this.getPermissionParent(permissionName);
+        
+        if (!parent) return [];
+        
+        const required = [];
+        if (!currentPermissions.includes(parent)) {
+            required.push(parent);
+            // Recursively check parent's parent
+            const grandParents = this.getRequiredParents(parent, currentPermissions, allPermissions);
+            required.unshift(...grandParents);
+        }
+        
+        return required;
+    }
+
+    /**
+     * Check if disabling a permission would break children
+     */
+    getBreakingChildren(permissionName, currentPermissions, allPermissions) {
+        const children = this.getPermissionChildren(permissionName);
+        const breaking = [];
+        
+        for (const child of children) {
+            if (currentPermissions.includes(child)) {
+                breaking.push(child);
+                // Recursively check grandchildren
+                const grandChildren = this.getBreakingChildren(child, currentPermissions, allPermissions);
+                breaking.push(...grandChildren);
+            }
+        }
+        
+        return breaking;
+    }
+
+    /**
+     * Initialize tooltip positioning for disabled buttons
+     */
+    initializeTooltipPositioning() {
+        // Add event listeners for dynamic tooltip positioning
+        document.addEventListener('mouseenter', (e) => {
+            if (e.target.classList.contains('disabled-no-permission')) {
+                this.positionTooltip(e.target);
+            }
+        }, true);
+        
+        document.addEventListener('mouseleave', (e) => {
+            if (e.target.classList.contains('disabled-no-permission')) {
+                this.hideTooltip(e.target);
+            }
+        }, true);
+    }
+    
+    /**
+     * Position tooltip dynamically based on button position
+     */
+    positionTooltip(button) {
+        const rect = button.getBoundingClientRect();
+        const tooltip = button.querySelector('::after');
+        
+        // Use CSS custom properties to position the tooltip
+        button.style.setProperty('--tooltip-left', `${rect.left + rect.width / 2}px`);
+        button.style.setProperty('--tooltip-top', `${rect.top - 40}px`);
+    }
+    
+    /**
+     * Hide tooltip
+     */
+    hideTooltip(button) {
+        // Tooltip hiding is handled by CSS :hover state
     }
 }
 

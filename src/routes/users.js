@@ -28,7 +28,7 @@ const requirePermission = (permission) => {
     };
 };
 
-router.get('/', requireSystemAuth, requirePermission('manage_users'), async (req, res) => {
+router.get('/', requireSystemAuth, async (req, res) => {
     try {
         req.db.getAllUsersExtended((err, users) => {
             if (err) {
@@ -66,7 +66,7 @@ router.get('/:id',
 // Add new user
 router.post('/',
     requireBothAuth,
-    requirePermission('manage_users'),
+    requirePermission('create_users'),
     [
         body('rank').isLength({ min: 1 }).withMessage('Rank is required'),
         body('lastName').isLength({ min: 1 }).withMessage('Last name is required'),
@@ -164,7 +164,7 @@ router.patch('/:id/pin',
 // Delete user
 router.delete('/:id',
     requireBothAuth,
-    requirePermission('manage_users'),
+    requirePermission('delete_users'),
     [
         param('id').isInt({ min: 1 }),
     ],
@@ -207,7 +207,7 @@ router.delete('/:id',
 
 router.patch('/:id/activate',
     requireBothAuth,
-    requirePermission('manage_users'),
+    requirePermission('deactivate_users'),
     param('id').isInt({ min: 1 }),
     handleValidationErrors,
     async (req, res) => {
@@ -245,7 +245,7 @@ router.patch('/:id/activate',
 
 router.patch('/:id/deactivate',
     requireBothAuth,
-    requirePermission('manage_users'),
+    requirePermission('deactivate_users'),
     param('id').isInt({ min: 1 }),
     handleValidationErrors,
     async (req, res) => {

@@ -33,7 +33,7 @@ const requirePermission = (permission) => {
  */
 router.get('/', requireAuth, requirePermission('manage_permissions'), async (req, res) => {
     try {
-        const permissions = await req.db.getAllPermissions();
+        const permissions = await req.db.getAllPermissionsWithChildren();
         res.json({
             success: true,
             permissions: permissions

@@ -1,8 +1,9 @@
 const bcrypt = require('bcrypt');
 
 class UserManager {
-    constructor(db) {
+    constructor(db, permissionsManager = null) {
         this.db = db;
+        this.permissionsManager = permissionsManager;
     }
 
     createDefaultAdmin() {
@@ -34,7 +35,7 @@ class UserManager {
     }
     
     getAllUsers(callback) {
-        const query = 'SELECT id, username, rank, full_name FROM users WHERE is_active = 1 ORDER BY rank, full_name';
+        const query = 'SELECT id, username, rank, full_name FROM users WHERE is_active = 1 ORDER BY id ASC';
         
         this.db.all(query, [], (err, users) => {
             if (err) return callback(err, null);
@@ -118,17 +119,34 @@ class UserManager {
                 VALUES (?, ?, ?, ?, ?)
             `;
             
+            const self = this; // Store reference to this for use in callback
+            
             this.db.run(insertQuery, [username, passwordHash, pinHash, rank, fullName], function(err) {
                 if (err) {
                     return callback(err);
                 }
                 
-                callback(null, {
-                    id: this.lastID,
+                const newUserId = this.lastID;
+                const userResult = {
+                    id: newUserId,
                     username,
                     rank,
                     full_name: fullName
-                });
+                };
+                
+                // Assign default permissions to the new user asynchronously
+                if (self.permissionsManager) {
+                    self.permissionsManager.assignDefaultPermissions(newUserId, 1) // Granted by admin (ID 1)
+                        .then(() => {
+                            console.log(`Default permissions assigned to new user: ${username}`);
+                        })
+                        .catch(permError => {
+                            console.error('Error assigning default permissions to new user:', permError);
+                            // Continue with user creation even if permission assignment fails
+                        });
+                }
+                
+                callback(null, userResult);
             });
         });
     }
@@ -314,7 +332,7 @@ class UserManager {
     }
 
     getAllUsersExtended(callback) {
-        const query = `SELECT id, username, rank, full_name, is_active, created_at, last_login FROM users ORDER BY username`;
+        const query = `SELECT id, username, rank, full_name, is_active, created_at, last_login FROM users ORDER BY id ASC`;
         this.db.all(query, [], (err, rows) => {
             if (err) {
                 return callback(err);

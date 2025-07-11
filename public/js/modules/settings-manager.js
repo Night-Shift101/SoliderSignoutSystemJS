@@ -56,7 +56,9 @@ class SettingsManager {
                 
                 // Check permissions
                 const canChangePins = this.app.permissionsManager?.canChangePins() || false;
-                const canManageUsers = this.app.permissionsManager?.canManageUsers() || false;
+                const canCreateUsers = this.app.permissionsManager?.canCreateUsers() || false;
+                const canDeleteUsers = this.app.permissionsManager?.canDeleteUsers() || false;
+                const canDeactivateUsers = this.app.permissionsManager?.canDeactivateUsers() || false;
                 const canManagePermissions = this.app.permissionsManager?.canManagePermissions() || false;
                 const isSystemAdmin = this.app.permissionsManager?.isAdmin() || false;
                 
@@ -81,24 +83,22 @@ class SettingsManager {
                                     ${canChangePins ? `
                                         <button class="btn btn-sm btn-secondary change-pin-btn" 
                                                 data-user-id="${user.id}" 
-                                                data-user-name="${user.rank} ${user.full_name}"
-                                                ${isCurrentUser ? 'disabled' : ''}>
+                                                data-user-name="${user.rank} ${user.full_name}">
                                             Change PIN
                                         </button>
                                     ` : ''}
-                                    ${canManagePermissions ? `
+                                    ${canManagePermissions && !isCurrentUser ? `
                                         <button class="btn btn-sm btn-info manage-permissions-btn" 
                                                 data-user-id="${user.id}" 
                                                 data-user-name="${user.rank} ${user.full_name}">
                                             Permissions
                                         </button>
                                     ` : ''}
-                                    ${canManageUsers ? `
+                                    ${canDeactivateUsers ? `
                                         ${user.is_active ? `
                                             <button class="btn btn-sm btn-warning deactivate-user-btn" 
                                                     data-user-id="${user.id}" 
-                                                    data-user-name="${user.rank} ${user.full_name}"
-                                                    ${isCurrentUser ? 'disabled' : ''}>
+                                                    data-user-name="${user.rank} ${user.full_name}">
                                                 Deactivate
                                             </button>
                                         ` : `
@@ -108,10 +108,11 @@ class SettingsManager {
                                                 Activate
                                             </button>
                                         `}
+                                    ` : ''}
+                                    ${canDeleteUsers ? `
                                         <button class="btn btn-sm btn-danger delete-user-btn" 
                                                 data-user-id="${user.id}" 
-                                                data-user-name="${user.rank} ${user.full_name}"
-                                                ${isCurrentUser ? 'disabled' : ''}>
+                                                data-user-name="${user.rank} ${user.full_name}">
                                             Delete
                                         </button>
                                     ` : ''}

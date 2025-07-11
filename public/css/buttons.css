@@ -87,6 +87,19 @@
     box-shadow: var(--shadow-md);
 }
 
+.btn-info {
+    background: var(--background-secondary);
+    color: var(--accent-blue);
+    border-color: var(--accent-blue);
+}
+
+.btn-info:hover:not(:disabled) {
+    background: var(--accent-blue);
+    color: var(--color-white);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
 .btn-small {
     padding: 6px 12px;
     font-size: 12px;
@@ -95,6 +108,8 @@
 .btn-sm {
     padding: 8px 12px;
     font-size: 13px;
+    min-width: 80px;
+    text-align: center;
 }
 
 .btn .icon {
@@ -111,10 +126,57 @@
     animation: spin 1s ease-in-out infinite;
 }
 
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
+/* Action buttons in tables */
+.action-buttons .btn {
+    flex-shrink: 0;
+    margin: 2px;
+}
+
+.action-buttons .btn-sm {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+/* Ensure consistent button widths for similar actions */
+.action-buttons .btn-sm {
+    min-width: 95px;
+    flex: 0 0 auto;
+}
+
+.action-buttons .change-pin-btn {
+    min-width: 95px;
+}
+
+.action-buttons .manage-permissions-btn {
+    min-width: 110px;
+}
+
+.action-buttons .deactivate-user-btn,
+.action-buttons .activate-user-btn {
+    min-width: 95px;
+}
+
+.action-buttons .delete-user-btn {
+    min-width: 75px;
+}
+
+/* Better button layout in table cells using CSS Grid */
+td .action-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    margin-bottom: 0;
+    width: 100%;
+    min-width: 280px;
+    align-items: center;
+}
+
+/* Single button (admin credentials) spans full width */
+.action-buttons .change-admin-credentials-btn {
+    grid-column: 1 / -1;
+    min-width: 150px;
+    justify-self: stretch;
 }
 
 @keyframes pulse {
@@ -123,5 +185,47 @@
     }
     50% {
         box-shadow: var(--shadow-lg);
+    }
+}
+
+/* Responsive button layout improvements */
+@media (max-width: 1400px) {
+    td .action-buttons {
+        min-width: 260px;
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .action-buttons .btn-sm {
+        min-width: auto;
+        font-size: 12px;
+        padding: 6px 8px;
+    }
+}
+
+@media (max-width: 1200px) {
+    td .action-buttons {
+        min-width: 240px;
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .action-buttons .btn-sm {
+        min-width: auto;
+        font-size: 11px;
+        padding: 5px 6px;
+    }
+}
+
+@media (max-width: 768px) {
+    td .action-buttons {
+        grid-template-columns: 1fr;
+        gap: 4px;
+        min-width: auto;
+    }
+    
+    .action-buttons .btn-sm {
+        min-width: auto;
+        width: 100%;
+        justify-content: center;
+        text-align: center;
     }
 }

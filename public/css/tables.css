@@ -72,9 +72,9 @@
     background: var(--background-secondary);
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    overflow: hidden;
-    box-shadow: var(--shadow-sm);
     overflow-x: auto;
+    overflow-y: visible;
+    box-shadow: var(--shadow-sm);
 }
 
 .signouts-table {

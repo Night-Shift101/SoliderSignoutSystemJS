@@ -579,10 +579,39 @@ class ModalManager {
             return;
         }
 
+        // Check if trying to edit own permissions
+        if (this.app.currentUser && this.app.currentUser.id == userId) {
+            this.app.notificationManager.showNotification(
+                'You cannot edit your own permissions', 
+                'error'
+            );
+            return;
+        }
+
         try {
+            // Refresh DOM manager to ensure we have the latest elements
+            this.app.domManager.refresh();
+            
             const modal = this.app.domManager.get('managePermissionsModal');
             const userNameElement = this.app.domManager.get('permissionsUserName');
             const permissionsCheckboxes = this.app.domManager.get('permissionsCheckboxes');
+            
+            console.log('Modal element:', modal);
+            console.log('UserName element:', userNameElement);
+            console.log('Checkboxes element:', permissionsCheckboxes);
+            
+            if (!modal) {
+                // Try direct DOM query as fallback
+                const modalDirect = document.getElementById('managePermissionsModal');
+                console.log('Direct modal query:', modalDirect);
+                
+                if (!modalDirect) {
+                    throw new Error('Manage permissions modal not found in DOM - modal does not exist');
+                } else {
+                    // Use direct query result
+                    throw new Error('Manage permissions modal found via direct query but not through DOM manager');
+                }
+            }
             
             if (userNameElement) {
                 userNameElement.textContent = userName;
@@ -591,8 +620,8 @@ class ModalManager {
             // Store user ID for later use
             modal.dataset.userId = userId;
             
-            // Load all available permissions
-            const allPermissions = await this.app.permissionsManager.getAllPermissions();
+            // Load all available permissions with dependencies
+            const allPermissions = await this.app.permissionsManager.fetchAllPermissions();
             
             // Load user's current permissions
             const response = await Utils.fetchWithAuth(`/api/permissions/user/${userId}`);
@@ -601,19 +630,14 @@ class ModalManager {
             const result = await response.json();
             const userPermissions = result.success ? result.permissions : [];
             
-            // Populate permissions checkboxes
-            permissionsCheckboxes.innerHTML = allPermissions.map(permission => `
-                <div class="permission-item">
-                    <input type="checkbox" 
-                           id="perm_${permission.id}" 
-                           value="${permission.name}" 
-                           ${userPermissions.includes(permission.name) ? 'checked' : ''}>
-                    <div class="permission-info">
-                        <div class="permission-name">${permission.name}</div>
-                        <div class="permission-description">${permission.description || 'No description'}</div>
-                    </div>
-                </div>
-            `).join('');
+            // Load current user's permissions to check what they can grant
+            const currentUserPermissions = this.app.permissionsManager.userPermissions || [];
+            
+            // Populate permissions checkboxes with hierarchy
+            this.populatePermissionsWithHierarchy(permissionsCheckboxes, allPermissions, userPermissions, currentUserPermissions);
+            
+            // Add event listeners for dependency checking
+            this.setupPermissionDependencyListeners(permissionsCheckboxes, allPermissions, userPermissions, currentUserPermissions);
             
             this.clearManagePermissionsError();
             modal.style.display = 'flex';
@@ -622,6 +646,232 @@ class ModalManager {
             console.error('Error opening manage permissions modal:', error);
             this.app.notificationManager.showNotification('Failed to load permissions data', 'error');
         }
+    }
+
+    populatePermissionsWithHierarchy(container, allPermissions, userPermissions, currentUserPermissions) {
+        // Define permission categories for better organization
+        const permissionCategories = {
+            'Basic Dashboard Access': ['view_dashboard'],
+            'Logging & Reports': ['view_logs'],
+            'System Settings': ['view_settings'],
+            'System Administration': ['system_admin']
+        };
+        
+        // Create a map of permissions
+        const permissionMap = new Map();
+        const processedPermissions = new Set();
+        
+        // First pass: create permission objects
+        allPermissions.forEach(permission => {
+            permissionMap.set(permission.name, {
+                ...permission,
+                children: permission.children || [],
+                parent: permission.parent || null
+            });
+        });
+        
+        // Third pass: build hierarchical HTML by categories
+        const permissionHtml = [];
+        
+        // Process each category
+        Object.entries(permissionCategories).forEach(([categoryName, rootPermissions]) => {
+            const categoryPerms = rootPermissions.filter(permName => permissionMap.has(permName));
+            if (categoryPerms.length === 0) return;
+            
+            // Add category header
+            permissionHtml.push(`
+                <div class="permission-group ${categoryName.includes('Administration') ? 'admin-group' : ''}">
+                    <div class="permission-group-header">${categoryName}</div>
+                    <div class="permission-group-content">
+            `);
+            
+            // Process root permissions and their hierarchy
+            categoryPerms.forEach(rootPermName => {
+                if (processedPermissions.has(rootPermName)) return;
+                
+                this.addPermissionWithChildren(
+                    permissionHtml, 
+                    permissionMap, 
+                    rootPermName, 
+                    userPermissions, 
+                    currentUserPermissions,
+                    processedPermissions, 
+                    0
+                );
+            });
+            
+            permissionHtml.push(`
+                    </div>
+                </div>
+            `);
+        });
+
+        container.innerHTML = permissionHtml.join('');
+    }
+
+    addPermissionWithChildren(htmlArray, permissionMap, permissionName, userPermissions, currentUserPermissions, processedPermissions, depth) {
+        if (processedPermissions.has(permissionName)) return;
+        
+        const permission = permissionMap.get(permissionName);
+        if (!permission) return;
+        
+        processedPermissions.add(permissionName);
+        
+        const isChecked = userPermissions.includes(permissionName);
+        const isSystemAdmin = permissionName === 'system_admin';
+        const canGrant = currentUserPermissions.includes(permissionName) || currentUserPermissions.includes('system_admin');
+        
+        // Add the permission
+        htmlArray.push(this.createPermissionHtml(permission, isChecked, depth, isSystemAdmin, canGrant));
+        
+        // Add children recursively
+        if (permission.children && permission.children.length > 0) {
+            permission.children.forEach(childName => {
+                this.addPermissionWithChildren(
+                    htmlArray, 
+                    permissionMap, 
+                    childName, 
+                    userPermissions, 
+                    currentUserPermissions,
+                    processedPermissions, 
+                    depth + 1
+                );
+            });
+        }
+    }
+
+    createPermissionHtml(permission, isChecked, depth, isSystemAdmin = false, canGrant = true) {
+        const indentClass = depth > 0 ? ` permission-child depth-${depth}` : '';
+        const adminClass = isSystemAdmin ? ' system-admin-permission' : '';
+        
+        // Format permission name for display
+        const displayName = permission.name.replace(/_/g, ' ').toLowerCase()
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+        
+        // Special styling for default permissions
+        const isDefault = ['view_dashboard', 'create_signout', 'sign_in_soldiers'].includes(permission.name);
+        const defaultNote = isDefault ? '<div class="permission-default-note">Default permission</div>' : '';
+        
+        // Disable checkbox if user can't grant this permission
+        const disabled = !canGrant ? 'disabled' : '';
+        const disabledNote = !canGrant ? '<div class="permission-disabled-note">You don\'t have permission to grant this</div>' : '';
+        
+        return `
+            <div class="permission-item${indentClass}${adminClass}" data-permission="${permission.name}" data-depth="${depth}">
+                <input type="checkbox" 
+                       id="perm_${permission.id}" 
+                       value="${permission.name}" 
+                       ${isChecked ? 'checked' : ''}
+                       ${disabled}
+                       data-depth="${depth}"
+                       data-is-system-admin="${isSystemAdmin}"
+                       data-can-grant="${canGrant}">
+                <div class="permission-info">
+                    <div class="permission-name">${displayName}</div>
+                    <div class="permission-description">${permission.description || 'No description available'}</div>
+                    ${defaultNote}
+                    ${disabledNote}
+                </div>
+            </div>
+        `;
+    }
+
+    setupPermissionDependencyListeners(container, allPermissions, userPermissions, currentUserPermissions) {
+        const checkboxes = container.querySelectorAll('input[type="checkbox"]:not([disabled])');
+        
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                const permissionName = e.target.value;
+                const isChecked = e.target.checked;
+                const isSystemAdmin = e.target.dataset.isSystemAdmin === 'true';
+                const canGrant = e.target.dataset.canGrant === 'true';
+                
+                if (!canGrant) {
+                    // Prevent changes if user doesn't have permission to grant this
+                    e.target.checked = !isChecked;
+                    this.app.notificationManager.showNotification(
+                        `You don't have permission to modify ${permissionName.replace(/_/g, ' ')}`, 
+                        'error'
+                    );
+                    return;
+                }
+                
+                if (isSystemAdmin && isChecked) {
+                    // System admin permission - check all other permissions
+                    this.autoCheckAllPermissions(container);
+                } else if (isChecked) {
+                    // Auto-check parent permissions
+                    this.autoCheckParentPermissions(permissionName, allPermissions, container);
+                } else {
+                    // Remove children automatically when parent is unchecked
+                    this.autoRemoveChildren(permissionName, allPermissions, container);
+                }
+            });
+        });
+    }
+
+    autoCheckAllPermissions(container) {
+        const checkboxes = container.querySelectorAll('input[type="checkbox"]:not([disabled])');
+        checkboxes.forEach(checkbox => {
+            if (!checkbox.checked) {
+                checkbox.checked = true;
+            }
+        });
+        this.app.notificationManager.showNotification(
+            'System Admin: All permissions automatically enabled', 
+            'info'
+        );
+    }
+
+    autoCheckParentPermissions(permissionName, allPermissions, container) {
+        const permission = allPermissions.find(p => p.name === permissionName);
+        const parent = permission?.parent;
+        
+        if (parent) {
+            const parentCheckbox = container.querySelector(`input[value="${parent}"]`);
+            if (parentCheckbox && !parentCheckbox.checked) {
+                parentCheckbox.checked = true;
+                this.app.notificationManager.showNotification(
+                    `Auto-enabled parent permission: ${parent.replace(/_/g, ' ')}`, 
+                    'info'
+                );
+                
+                // Recursively check parent's parent
+                this.autoCheckParentPermissions(parent, allPermissions, container);
+            }
+        }
+    }
+
+    autoRemoveChildren(permissionName, allPermissions, container) {
+        // Find and uncheck all children of this permission
+        const children = this.getPermissionChildren(permissionName, allPermissions);
+        
+        children.forEach(childName => {
+            const childCheckbox = container.querySelector(`input[value="${childName}"]`);
+            if (childCheckbox && childCheckbox.checked) {
+                childCheckbox.checked = false;
+                this.app.notificationManager.showNotification(
+                    `Auto-removed child permission: ${childName.replace(/_/g, ' ')}`, 
+                    'info'
+                );
+                
+                // Recursively remove grandchildren
+                this.autoRemoveChildren(childName, allPermissions, container);
+            }
+        });
+    }
+
+    handlePermissionRemoval(permissionName, allPermissions, container) {
+        // This method is no longer needed since we auto-remove children
+        // But keeping it for compatibility
+        this.autoRemoveChildren(permissionName, allPermissions, container);
+    }
+
+    getPermissionChildren(permissionName, allPermissions) {
+        const permission = allPermissions.find(p => p.name === permissionName);
+        return permission?.children || [];
     }
 
     closeManagePermissionsModal() {
