@@ -49,6 +49,18 @@ class DOMManager {
             pinError: document.getElementById('pinError'),
             signInDetails: document.getElementById('signInDetails'),
             
+            // Manual entry modal elements
+            noCacBtn: document.getElementById('noCacBtn'),
+            manualEntryModal: document.getElementById('manualEntryModal'),
+            closeManualEntryModal: document.getElementById('closeManualEntryModal'),
+            cancelManualEntry: document.getElementById('cancelManualEntry'),
+            manualEntryForm: document.getElementById('manualEntryForm'),
+            manualRank: document.getElementById('manualRank'),
+            manualFirstName: document.getElementById('manualFirstName'),
+            manualMiddleInitial: document.getElementById('manualMiddleInitial'),
+            manualLastName: document.getElementById('manualLastName'),
+            manualDodId: document.getElementById('manualDodId'),
+            
             // Info modal elements
             infoModal: document.getElementById('infoModal'),
             closeInfoModalBtn: document.getElementById('closeInfoModal'),
