@@ -95,8 +95,9 @@ class BarcodeManager {
         }
 
         this.soldiersChips.innerHTML = this.addedSoldiers.map((soldier, index) => `
-            <div class="soldier-chip" data-index="${index}">
+            <div class="soldier-chip${soldier.isManualEntry ? ' manual-entry' : ''}" data-index="${index}">
                 <span class="soldier-chip-name">${soldier.rank} ${soldier.lastName}, ${soldier.firstName}${soldier.middleInitial ? ' ' + soldier.middleInitial + '.' : ''}</span>
+                ${soldier.isManualEntry ? '<span class="manual-tag">Manual</span>' : ''}
                 <button type="button" class="soldier-chip-remove" data-index="${index}" title="Remove soldier" tabindex="-1">×</button>
                 <div class="soldier-chip-tooltip">DOD ID: ${soldier.dodId || 'N/A'}</div>
             </div>

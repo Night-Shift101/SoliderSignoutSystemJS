@@ -572,7 +572,88 @@ class ModalManager {
         }
     }
 
-    // Manage Permissions Modal
+    openManualEntryModal() {
+        const manualEntryModal = this.app.domManager.get('manualEntryModal');
+        if (manualEntryModal) {
+            manualEntryModal.style.display = 'flex';
+            
+            const manualEntryForm = this.app.domManager.get('manualEntryForm');
+            if (manualEntryForm) {
+                manualEntryForm.reset();
+            }
+            
+            const firstInput = manualEntryForm?.querySelector('input');
+            if (firstInput) {
+                firstInput.focus();
+            }
+        }
+    }
+
+    closeManualEntryModal() {
+        const manualEntryModal = this.app.domManager.get('manualEntryModal');
+        if (manualEntryModal) {
+            manualEntryModal.style.display = 'none';
+        }
+        
+        const manualEntryForm = this.app.domManager.get('manualEntryForm');
+        if (manualEntryForm) {
+            manualEntryForm.reset();
+        }
+    }
+
+    async handleManualEntry(event) {
+        event.preventDefault();
+        
+        try {
+            const manualEntryForm = this.app.domManager.get('manualEntryForm');
+            const formData = new FormData(manualEntryForm);
+            
+            const soldierData = {
+                rank: formData.get('rank').trim(),
+                firstName: formData.get('firstName').trim(),
+                middleInitial: formData.get('middleInitial')?.trim() || '',
+                lastName: formData.get('lastName').trim(),
+                dodId: formData.get('dodId')?.trim() || '',
+                isManualEntry: true
+            };
+            
+            // Validate required fields
+            if (!soldierData.rank || !soldierData.firstName || !soldierData.lastName) {
+                this.app.notificationManager.showNotification('Please fill in all required fields', 'warning');
+                return;
+            }
+            
+            // Check for duplicates
+            const isDuplicate = this.app.barcodeManager.addedSoldiers.some(soldier => 
+                soldier.firstName === soldierData.firstName && 
+                soldier.lastName === soldierData.lastName &&
+                (soldier.dodId === soldierData.dodId || (!soldier.dodId && !soldierData.dodId))
+            );
+            
+            if (isDuplicate) {
+                this.app.notificationManager.showNotification('This soldier has already been added.', 'warning');
+                return;
+            }
+            
+            // Add the full name property for consistency
+            soldierData.fullName = `${soldierData.firstName} ${soldierData.middleInitial ? soldierData.middleInitial + ' ' : ''}${soldierData.lastName}`;
+            
+            // Add to the soldiers list
+            this.app.barcodeManager.addedSoldiers.push(soldierData);
+            this.app.barcodeManager.renderSoldierChips();
+            
+            this.closeManualEntryModal();
+            this.app.notificationManager.showNotification(
+                `Successfully added: ${soldierData.rank} ${soldierData.fullName} (Manual Entry)`, 
+                'success'
+            );
+            
+        } catch (error) {
+            console.error('Error adding manual entry:', error);
+            this.app.notificationManager.showNotification('Failed to add soldier', 'error');
+        }
+    }
+// Manage Permissions Modal
     async openManagePermissionsModal(userId, userName) {
         if (!this.app.permissionsManager?.canManagePermissions()) {
             this.app.permissionsManager?.showPermissionDenied('manage user permissions');

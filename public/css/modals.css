@@ -712,8 +712,125 @@
         gap: 8px;
     }
 }
+/* No CAC Button Styling */
+.no-cac-link {
+    background: none;
+    border: none;
+    color: var(--accent-blue);
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 2px 4px;
+    margin-left: 8px;
+    transition: all 0.2s ease;
+}
 
-/* Permissions management styles */
+.no-cac-link:hover {
+    color: var(--accent-blue-dark);
+    transform: scale(1.02);
+}
+
+.no-cac-link:active {
+    transform: scale(0.98);
+}
+
+/* Manual Entry Modal Styling */
+.modal#manualEntryModal .modal-content {
+    max-width: 500px;
+    width: 90%;
+}
+
+.modal#manualEntryModal .form-section {
+    background: linear-gradient(135deg, var(--blue-alpha-light) 0%, var(--green-alpha-light) 100%);
+    border: 1px solid var(--blue-alpha-medium);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+.modal#manualEntryModal .form-section::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent-blue) 0%, var(--accent-green) 100%);
+}
+
+.modal#manualEntryModal .form-section h3 {
+    color: var(--primary-color);
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.modal#manualEntryModal .form-section h3::before {
+    content: "👤";
+    font-size: 1rem;
+}
+
+.modal#manualEntryModal .form-group {
+    margin-bottom: 16px;
+}
+
+.modal#manualEntryModal .form-group label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.modal#manualEntryModal input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--background-secondary);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.modal#manualEntryModal input:focus {
+    border-color: var(--accent-blue);
+    box-shadow: var(--shadow-focus-blue);
+    background: var(--color-white);
+    outline: none;
+}
+
+.modal#manualEntryModal input:required {
+    border-left: 3px solid var(--accent-orange);
+}
+
+.modal#manualEntryModal input:required:valid {
+    border-left: 3px solid var(--accent-green);
+}
+
+/* Manual Entry Tag Styling */
+.soldier-chip.manual-entry {
+    border-left: 4px solid var(--accent-orange);
+    background: linear-gradient(135deg, var(--orange-alpha-light) 0%, var(--background-secondary) 100%);
+}
+
+.soldier-chip.manual-entry .manual-tag {
+    background: var(--accent-orange);
+    color: var(--color-white);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 8px;
+    margin-left: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
 .permissions-list {
     max-height: 500px;
     overflow-y: auto;
