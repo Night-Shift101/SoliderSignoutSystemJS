@@ -12,6 +12,7 @@ const usersRoutes = require('./src/routes/users');
 const signoutsRoutes = require('./src/routes/signouts');
 const settingsRoutes = require('./src/routes/settings');
 const preferencesRoutes = require('./src/routes/preferences');
+const permissionsRoutes = require('./src/routes/permissions');
 const Database = require('./src/database/database');
 
 const app = express();
@@ -76,6 +77,7 @@ app.use('/api/users', usersRoutes);
 app.use('/api/signouts', signoutsRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/preferences', preferencesRoutes(db));
+app.use('/api/permissions', permissionsRoutes);
 
 // Health check endpoint for connection monitoring
 app.get('/api/health', (req, res) => {

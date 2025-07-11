@@ -6,6 +6,7 @@ const UserManager = require('./modules/user-manager');
 const SignoutManager = require('./modules/signout-manager');
 const PreferencesManager = require('./modules/preferences-manager');
 const UtilitiesManager = require('./modules/utilities-manager');
+const PermissionsManager = require('./modules/permissions-manager');
 
 class Database {
     constructor() {
@@ -16,6 +17,7 @@ class Database {
         this.signoutManager = null;
         this.preferencesManager = null;
         this.utilitiesManager = null;
+        this.permissionsManager = null;
         
         this.init();
     }
@@ -44,6 +46,10 @@ class Database {
         this.signoutManager = new SignoutManager(this.db);
         this.preferencesManager = new PreferencesManager(this.db);
         this.utilitiesManager = new UtilitiesManager(this.db);
+        this.permissionsManager = new PermissionsManager(this.db);
+        
+        // Initialize permissions system after managers are created
+        this.initializePermissionsSystem();
     }
 
     createTables() {
@@ -123,6 +129,16 @@ class Database {
                 console.log('User preferences table ready');
             }
         });
+    }
+
+    async initializePermissionsSystem() {
+        try {
+            if (this.permissionsManager) {
+                await this.permissionsManager.updateDatabaseSchema();
+            }
+        } catch (error) {
+            console.error('Error initializing permissions system:', error);
+        }
     }
 
     createDefaultAdmin() {
@@ -279,6 +295,83 @@ class Database {
 
     updateAdminCredentials(userId, updates, callback) {
         return this.userManager.updateAdminCredentials(userId, updates, callback);
+    }
+
+    // Permissions methods
+    async getUserPermissions(userId) {
+        return this.permissionsManager ? await this.permissionsManager.getUserPermissions(userId) : [];
+    }
+
+    async hasPermission(userId, permission) {
+        return this.permissionsManager ? await this.permissionsManager.hasPermission(userId, permission) : false;
+    }
+
+    async hasAllPermissions(userId, permissions) {
+        return this.permissionsManager ? await this.permissionsManager.hasAllPermissions(userId, permissions) : false;
+    }
+
+    async hasAnyPermission(userId, permissions) {
+        return this.permissionsManager ? await this.permissionsManager.hasAnyPermission(userId, permissions) : false;
+    }
+
+    async grantPermission(userId, permissionName, grantedBy) {
+        return this.permissionsManager ? await this.permissionsManager.grantPermission(userId, permissionName, grantedBy) : false;
+    }
+
+    async grantMultiplePermissions(userId, permissionNames, grantedBy) {
+        return this.permissionsManager ? await this.permissionsManager.grantMultiplePermissions(userId, permissionNames, grantedBy) : false;
+    }
+
+    async revokePermission(userId, permissionName) {
+        return this.permissionsManager ? await this.permissionsManager.revokePermission(userId, permissionName) : false;
+    }
+
+    async revokeMultiplePermissions(userId, permissionNames) {
+        return this.permissionsManager ? await this.permissionsManager.revokeMultiplePermissions(userId, permissionNames) : false;
+    }
+
+    async setUserPermissions(userId, permissionNames, grantedBy) {
+        return this.permissionsManager ? await this.permissionsManager.setUserPermissions(userId, permissionNames, grantedBy) : false;
+    }
+
+    async getAllPermissions() {
+        return this.permissionsManager ? await this.permissionsManager.getAllPermissions() : [];
+    }
+
+    async getUserPermissionsDetailed(userId) {
+        return this.permissionsManager ? await this.permissionsManager.getUserPermissionsDetailed(userId) : [];
+    }
+
+    async getAllUsersWithPermissions() {
+        return this.permissionsManager ? await this.permissionsManager.getAllUsersWithPermissions() : [];
+    }
+
+    async grantAllPermissions(userId, grantedBy) {
+        return this.permissionsManager ? await this.permissionsManager.grantAllPermissions(userId, grantedBy) : false;
+    }
+
+    async grantBasicPermissions(userId, grantedBy) {
+        return this.permissionsManager ? await this.permissionsManager.grantBasicPermissions(userId, grantedBy) : false;
+    }
+
+    async createPermission(name, description) {
+        return this.permissionsManager ? await this.permissionsManager.createPermission(name, description) : null;
+    }
+
+    async updatePermission(permissionId, name, description) {
+        return this.permissionsManager ? await this.permissionsManager.updatePermission(permissionId, name, description) : false;
+    }
+
+    async deletePermission(permissionId) {
+        return this.permissionsManager ? await this.permissionsManager.deletePermission(permissionId) : false;
+    }
+
+    async getPermissionStats() {
+        return this.permissionsManager ? await this.permissionsManager.getPermissionStats() : null;
+    }
+
+    async checkPermissionsSetup() {
+        return this.permissionsManager ? await this.permissionsManager.checkPermissionsSetup() : { isSetup: false };
     }
 }
 
