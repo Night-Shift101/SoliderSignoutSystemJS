@@ -1,6 +1,7 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { requireAuth, requireBothAuth, verifyPin, handleValidationErrors } = require('../middleware/auth');
+const { ErrorCategory, ErrorSeverity } = require('../utils/error-handler');
 const router = express.Router();
 
 
@@ -11,7 +12,10 @@ router.post('/auth/system', [
 ], (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+        const errorResponse = req.errorHandler.validationError('Validation failed', {
+            details: errors.array()
+        });
+        return res.status(400).json(errorResponse);
     }
 
     const { password } = req.body;
@@ -19,16 +23,25 @@ router.post('/auth/system', [
     req.db.verifySystemPassword(password, (err, result) => {
         if (err) {
             console.error('System authentication error:', err);
-            return res.status(500).json({ error: 'System authentication failed' });
+            const errorResponse = req.errorHandler.failure('System authentication failed', {
+                category: ErrorCategory.AUTHENTICATION,
+                severity: ErrorSeverity.HIGH
+            });
+            return res.status(500).json(errorResponse);
         }
         
         if (!result.success) {
-            return res.status(401).json({ error: result.message });
+            const errorResponse = req.errorHandler.failure(result.message, {
+                category: ErrorCategory.AUTHENTICATION,
+                severity: ErrorSeverity.MEDIUM
+            });
+            return res.status(401).json(errorResponse);
         }
         
         
         req.session.systemAuthenticated = true;
-        res.json({ success: true, message: 'System authenticated' });
+        const successResponse = req.errorHandler.success(null, 'System authenticated');
+        res.json(successResponse);
     });
 });
 
@@ -36,15 +49,22 @@ router.post('/auth/system', [
 router.get('/auth/users', (req, res) => {
     
     if (!req.session.systemAuthenticated) {
-        return res.status(401).json({ error: 'System authentication required' });
+        const errorResponse = req.errorHandler.failure('System authentication required', {
+            category: ErrorCategory.AUTHENTICATION,
+            severity: ErrorSeverity.MEDIUM
+        });
+        return res.status(401).json(errorResponse);
     }
 
     req.db.getAllUsers((err, users) => {
         if (err) {
             console.error('Error fetching users:', err);
-            return res.status(500).json({ error: 'Failed to fetch users' });
+            const errorResponse = req.errorHandler.databaseError(err, 'Fetch all users');
+            return res.status(500).json(errorResponse);
         }
-        res.json(users);
+        
+        const successResponse = req.errorHandler.success(users, 'Users retrieved successfully');
+        res.json(successResponse);
     });
 });
 

@@ -1,6 +1,10 @@
+import Utils from './utils.js';
+import { globalFrontendErrorHandler, ErrorCategory, ErrorSeverity } from './frontend-error-handler.js';
+
 class UserManager {
     constructor(app) {
         this.app = app;
+        this.errorHandler = globalFrontendErrorHandler.createContextHandler('UserManager');
     }
 
     async loadUsers() {
@@ -10,17 +14,30 @@ class UserManager {
                 usersList.innerHTML = '<div class="users-loading">Loading users...</div>';
             }
             
-            const response = await Utils.fetchWithAuth('/api/users');
-            if (!response.ok) throw new Error('Failed to fetch users');
+            const result = await Utils.safeApiCall('/api/users', {}, 'Load users');
             
-            const users = await response.json();
-            this.renderUsersList(users);
+            if (!result.success) {
+                const usersList = this.app.domManager.get('usersList');
+                if (usersList) {
+                    usersList.innerHTML = '<div class="users-error">Failed to load users</div>';
+                }
+                return result;
+            }
+            
+            this.renderUsersList(result.data);
+            return this.errorHandler.success(result.data, 'Users loaded successfully');
+            
         } catch (error) {
             console.error('Error loading users:', error);
             const usersList = this.app.domManager.get('usersList');
             if (usersList) {
                 usersList.innerHTML = '<div class="users-error">Failed to load users</div>';
             }
+            return this.errorHandler.failure('Failed to load users', {
+                category: ErrorCategory.SYSTEM,
+                severity: ErrorSeverity.MEDIUM,
+                originalError: error
+            });
         }
     }
 
@@ -70,10 +87,10 @@ class UserManager {
     async handleAddUser() {
         console.log('Handling add user');
         
-        // Check permissions
+        // Check permissions using error handler
         if (!this.app.permissionsManager?.canManageUsers()) {
             this.app.permissionsManager?.showPermissionDenied('add users');
-            return;
+            return this.errorHandler.permissionError('Insufficient permissions to add users', 'user.create');
         }
         
         try {
@@ -88,22 +105,28 @@ class UserManager {
                 confirmPin: formData.get('confirmPin')
             };
 
+            // Validate required fields
             const requiredFields = ['rank', 'lastName', 'pin', 'confirmPin'];
             const missingFields = requiredFields.filter(field => !userData[field] || userData[field].trim() === '');
             
             if (missingFields.length > 0) {
-                this.showAddUserError(`Please fill in all required fields: ${missingFields.join(', ')}`);
-                return;
+                const errorMessage = `Please fill in all required fields: ${missingFields.join(', ')}`;
+                this.showAddUserError(errorMessage);
+                return this.errorHandler.validationError(errorMessage, false);
             }
 
+            // Validate PIN format
             if (!/^\d{4,}$/.test(userData.pin)) {
-                this.showAddUserError('PIN must be at least 4 digits');
-                return;
+                const errorMessage = 'PIN must be at least 4 digits';
+                this.showAddUserError(errorMessage);
+                return this.errorHandler.validationError(errorMessage, false);
             }
 
+            // Validate PIN confirmation
             if (userData.pin !== userData.confirmPin) {
-                this.showAddUserError('PINs do not match');
-                return;
+                const errorMessage = 'PINs do not match';
+                this.showAddUserError(errorMessage);
+                return this.errorHandler.validationError(errorMessage, false);
             }
 
             Utils.showLoading(true);
@@ -112,7 +135,7 @@ class UserManager {
                 submitAddUser.textContent = 'Creating...';
             }
 
-            const response = await Utils.fetchWithAuth('/api/users', {
+            const result = await Utils.safeApiCall('/api/users', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -120,23 +143,27 @@ class UserManager {
                     lastName: userData.lastName,
                     pin: userData.pin
                 })
-            });
+            }, 'Create user');
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Failed to create user');
+            if (!result.success) {
+                this.showAddUserError(result.error || 'Failed to create user');
+                return result;
             }
 
-            const result = await response.json();
-            
+            // Success - close modal and update UI
             this.app.modalManager.closeAddUserModal();
             this.app.settingsManager.reloadAccountsList();
-            this.app.notificationManager.showNotification('User created successfully', 'success');
-            console.log('User created:', result);
+            
+            return this.errorHandler.success(result.data, 'User created successfully', true);
 
         } catch (error) {
             console.error('Error creating user:', error);
-            this.showAddUserError(error.message || 'Failed to create user');
+            this.showAddUserError('An unexpected error occurred');
+            return this.errorHandler.failure('Failed to create user', {
+                category: ErrorCategory.SYSTEM,
+                severity: ErrorSeverity.MEDIUM,
+                originalError: error
+            });
         } finally {
             Utils.showLoading(false);
             const submitAddUser = this.app.domManager.get('submitAddUser');

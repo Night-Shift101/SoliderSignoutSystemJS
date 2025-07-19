@@ -1,6 +1,7 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { requireAuth, requireBothAuth, verifyPin, handleValidationErrors, requireSystemAuth } = require('../middleware/auth');
+const { ErrorCategory, ErrorSeverity } = require('../utils/error-handler');
 const router = express.Router();
 
 // Permission middleware helpers
@@ -9,21 +10,32 @@ const requirePermission = (permission) => {
         try {
             const userId = req.session?.user?.id;
             if (!userId) {
-                return res.status(401).json({ error: 'Authentication required' });
+                const errorResponse = req.errorHandler.failure('Authentication required', {
+                    category: ErrorCategory.AUTHENTICATION,
+                    severity: ErrorSeverity.MEDIUM
+                });
+                return res.status(401).json(errorResponse);
             }
 
             const hasPermission = await req.permissionsMiddleware.hasPermission(userId, permission);
             if (!hasPermission) {
-                return res.status(403).json({ 
-                    error: `Insufficient permissions: ${permission} required`,
-                    code: 'INSUFFICIENT_PERMISSIONS'
+                const errorResponse = req.errorHandler.failure(`Insufficient permissions: ${permission} required`, {
+                    category: ErrorCategory.AUTHORIZATION,
+                    severity: ErrorSeverity.MEDIUM,
+                    context: { code: 'INSUFFICIENT_PERMISSIONS' }
                 });
+                return res.status(403).json(errorResponse);
             }
 
             next();
         } catch (error) {
             console.error('Permission check error:', error);
-            res.status(500).json({ error: 'Permission check failed' });
+            const errorResponse = req.errorHandler.failure('Permission check failed', {
+                category: ErrorCategory.SYSTEM,
+                severity: ErrorSeverity.HIGH,
+                originalError: error
+            });
+            res.status(500).json(errorResponse);
         }
     };
 };
@@ -33,21 +45,32 @@ const requireAnyPermission = (permissions) => {
         try {
             const userId = req.session?.user?.id;
             if (!userId) {
-                return res.status(401).json({ error: 'Authentication required' });
+                const errorResponse = req.errorHandler.failure('Authentication required', {
+                    category: ErrorCategory.AUTHENTICATION,
+                    severity: ErrorSeverity.MEDIUM
+                });
+                return res.status(401).json(errorResponse);
             }
 
             const hasAnyPermission = await req.permissionsMiddleware.hasAnyPermission(userId, permissions);
             if (!hasAnyPermission) {
-                return res.status(403).json({ 
-                    error: `Insufficient permissions: one of [${permissions.join(', ')}] required`,
-                    code: 'INSUFFICIENT_PERMISSIONS'
+                const errorResponse = req.errorHandler.failure(`Insufficient permissions: one of [${permissions.join(', ')}] required`, {
+                    category: ErrorCategory.AUTHORIZATION,
+                    severity: ErrorSeverity.MEDIUM,
+                    context: { code: 'INSUFFICIENT_PERMISSIONS' }
                 });
+                return res.status(403).json(errorResponse);
             }
 
             next();
         } catch (error) {
             console.error('Permission check error:', error);
-            res.status(500).json({ error: 'Permission check failed' });
+            const errorResponse = req.errorHandler.failure('Permission check failed', {
+                category: ErrorCategory.SYSTEM,
+                severity: ErrorSeverity.HIGH,
+                originalError: error
+            });
+            res.status(500).json(errorResponse);
         }
     };
 };
@@ -83,17 +106,23 @@ router.get('/', requireAuth, requireSystemAuth, requireAnyPermission(['view_dash
         req.db.getAllSignOuts((err, signouts) => {
             if (err) {
                 console.error('Error fetching signouts:', err);
-                return res.status(500).json({ error: 'Failed to fetch signouts' });
+                const errorResponse = req.errorHandler.databaseError(err, 'Fetch all signouts');
+                return res.status(500).json(errorResponse);
             }
-            res.json(signouts);
+            
+            const successResponse = req.errorHandler.success(signouts, 'Signouts retrieved successfully');
+            res.json(successResponse);
         });
     } else {
         req.db.getFilteredSignOuts(filters, (err, signouts) => {
             if (err) {
                 console.error('Error fetching filtered signouts:', err);
-                return res.status(500).json({ error: 'Failed to fetch filtered signouts' });
+                const errorResponse = req.errorHandler.databaseError(err, 'Fetch filtered signouts');
+                return res.status(500).json(errorResponse);
             }
-            res.json(signouts);
+            
+            const successResponse = req.errorHandler.success(signouts, 'Filtered signouts retrieved successfully');
+            res.json(successResponse);
         });
     }
     
@@ -104,15 +133,19 @@ router.post('/groups', requireAuth, requireSystemAuth, requirePermission('view_d
     const { signOutIds } = req.body;
     
     if (!signOutIds || !Array.isArray(signOutIds) || signOutIds.length === 0) {
-        return res.status(400).json({ error: 'Sign-out IDs array is required' });
+        const errorResponse = req.errorHandler.validationError('Sign-out IDs array is required');
+        return res.status(400).json(errorResponse);
     }
     
     req.db.getSignOutsByIds(signOutIds, (err, signouts) => {
         if (err) {
             console.error('Error fetching signouts by IDs:', err);
-            return res.status(500).json({ error: 'Failed to fetch group members' });
+            const errorResponse = req.errorHandler.databaseError(err, 'Fetch group members');
+            return res.status(500).json(errorResponse);
         }
-        res.json(signouts);
+        
+        const successResponse = req.errorHandler.success(signouts, 'Group members retrieved successfully');
+        res.json(successResponse);
     });
 });
 
@@ -123,14 +156,20 @@ router.get('/:id', requireBothAuth, (req, res) => {
     req.db.getSignOutById(signoutId, (err, signout) => {
         if (err) {
             console.error('Error fetching signout:', err);
-            return res.status(500).json({ error: 'Failed to fetch signout' });
+            const errorResponse = req.errorHandler.databaseError(err, 'Fetch signout by ID');
+            return res.status(500).json(errorResponse);
         }
         
         if (!signout) {
-            return res.status(404).json({ error: 'Sign-out not found' });
+            const errorResponse = req.errorHandler.failure('Sign-out not found', {
+                category: ErrorCategory.BUSINESS,
+                severity: ErrorSeverity.LOW
+            });
+            return res.status(404).json(errorResponse);
         }
         
-        res.json(signout);
+        const successResponse = req.errorHandler.success(signout, 'Signout retrieved successfully');
+        res.json(successResponse);
     });
 });
 
@@ -140,10 +179,10 @@ router.post('/', [requireBothAuth, requirePermission('create_signout'), ...valid
     if (!errors.isEmpty()) {
         console.error('Validation errors:', errors.array());
         console.error('Request body:', JSON.stringify(req.body, null, 2));
-        return res.status(400).json({ 
-            error: 'Validation failed',
-            details: errors.array() 
+        const errorResponse = req.errorHandler.validationError('Validation failed', {
+            details: errors.array()
         });
+        return res.status(400).json(errorResponse);
     }
 
     const { soldiers, location, estimatedReturn, notes, emergencyContact, vehicleInfo, pin } = req.body;
@@ -152,11 +191,19 @@ router.post('/', [requireBothAuth, requirePermission('create_signout'), ...valid
     req.db.verifyUserPin(req.session.user.id, pin, (err, isValid) => {
         if (err) {
             console.error('PIN verification error:', err);
-            return res.status(500).json({ error: 'PIN verification failed' });
+            const errorResponse = req.errorHandler.failure('PIN verification failed', {
+                category: ErrorCategory.AUTHENTICATION,
+                severity: ErrorSeverity.HIGH
+            });
+            return res.status(500).json(errorResponse);
         }
         
         if (!isValid) {
-            return res.status(401).json({ error: 'Invalid PIN' });
+            const errorResponse = req.errorHandler.failure('Invalid PIN', {
+                category: ErrorCategory.AUTHENTICATION,
+                severity: ErrorSeverity.MEDIUM
+            });
+            return res.status(401).json(errorResponse);
         }
 
         requester = req.session.user.rank + " " + req.session.user.full_name
@@ -182,14 +229,14 @@ router.post('/', [requireBothAuth, requirePermission('create_signout'), ...valid
         req.db.addSignOut(signoutData, (err, signoutId) => {
             if (err) {
                 console.error('Error creating signout:', err);
-                return res.status(500).json({ error: 'Failed to create sign-out' });
+                const errorResponse = req.errorHandler.databaseError(err, 'Create signout');
+                return res.status(500).json(errorResponse);
             }
 
-            res.status(201).json({ 
-                success: true, 
-                message: 'Sign-out created successfully',
+            const successResponse = req.errorHandler.success({
                 signoutId: signoutId
-            });
+            }, 'Sign-out created successfully');
+            res.status(201).json(successResponse);
         });
     });
 });
@@ -203,11 +250,10 @@ router.patch('/:id/signin', [
 ], (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ 
-            error: 'Validation failed', 
-            details: errors.array(),
-            errors: errors.array() 
+        const errorResponse = req.errorHandler.validationError('Validation failed', {
+            details: errors.array()
         });
+        return res.status(400).json(errorResponse);
     }
 
     const signoutId = req.params.id;
@@ -217,11 +263,19 @@ router.patch('/:id/signin', [
     req.db.verifyUserPin(req.session.user.id, pin, (err, isValid) => {
         if (err) {
             console.error('PIN verification error:', err);
-            return res.status(500).json({ error: 'PIN verification failed' });
+            const errorResponse = req.errorHandler.failure('PIN verification failed', {
+                category: ErrorCategory.AUTHENTICATION,
+                severity: ErrorSeverity.HIGH
+            });
+            return res.status(500).json(errorResponse);
         }
         
         if (!isValid) {
-            return res.status(401).json({ error: 'Invalid PIN' });
+            const errorResponse = req.errorHandler.failure('Invalid PIN', {
+                category: ErrorCategory.AUTHENTICATION,
+                severity: ErrorSeverity.MEDIUM
+            });
+            return res.status(401).json(errorResponse);
         }
 
         
@@ -233,18 +287,22 @@ router.patch('/:id/signin', [
         req.db.signInSoldiers(signoutId, signedInBy, signedInByName, (err, result) => {
             if (err) {
                 console.error('Error signing in soldiers:', err);
-                return res.status(500).json({ error: 'Failed to sign in soldiers' });
+                const errorResponse = req.errorHandler.databaseError(err, 'Sign in soldiers');
+                return res.status(500).json(errorResponse);
             }
 
             if (!result.success) {
-                return res.status(400).json({ error: result.message });
+                const errorResponse = req.errorHandler.failure(result.message, {
+                    category: ErrorCategory.BUSINESS,
+                    severity: ErrorSeverity.MEDIUM
+                });
+                return res.status(400).json(errorResponse);
             }
 
-            res.json({ 
-                success: true, 
-                message: 'Soldiers signed in successfully',
+            const successResponse = req.errorHandler.success({
                 duration: result.duration
-            });
+            }, 'Soldiers signed in successfully');
+            res.json(successResponse);
         });
     });
 });
@@ -261,7 +319,10 @@ router.patch('/:id', [
 ], (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+        const errorResponse = req.errorHandler.validationError('Validation failed', {
+            details: errors.array()
+        });
+        return res.status(400).json(errorResponse);
     }
 
     const signoutId = req.params.id;
@@ -271,11 +332,19 @@ router.patch('/:id', [
     req.db.verifyUserPin(req.session.user.id, pin, (err, isValid) => {
         if (err) {
             console.error('PIN verification error:', err);
-            return res.status(500).json({ error: 'PIN verification failed' });
+            const errorResponse = req.errorHandler.failure('PIN verification failed', {
+                category: ErrorCategory.AUTHENTICATION,
+                severity: ErrorSeverity.HIGH
+            });
+            return res.status(500).json(errorResponse);
         }
         
         if (!isValid) {
-            return res.status(401).json({ error: 'Invalid PIN' });
+            const errorResponse = req.errorHandler.failure('Invalid PIN', {
+                category: ErrorCategory.AUTHENTICATION,
+                severity: ErrorSeverity.MEDIUM
+            });
+            return res.status(401).json(errorResponse);
         }
 
         const updateData = {};
@@ -288,17 +357,20 @@ router.patch('/:id', [
         req.db.updateSignout(signoutId, updateData, (err, result) => {
             if (err) {
                 console.error('Error updating signout:', err);
-                return res.status(500).json({ error: 'Failed to update sign-out' });
+                const errorResponse = req.errorHandler.databaseError(err, 'Update signout');
+                return res.status(500).json(errorResponse);
             }
 
             if (!result.success) {
-                return res.status(400).json({ error: result.message });
+                const errorResponse = req.errorHandler.failure(result.message, {
+                    category: ErrorCategory.BUSINESS,
+                    severity: ErrorSeverity.MEDIUM
+                });
+                return res.status(400).json(errorResponse);
             }
 
-            res.json({ 
-                success: true, 
-                message: 'Sign-out updated successfully'
-            });
+            const successResponse = req.errorHandler.success(null, 'Sign-out updated successfully');
+            res.json(successResponse);
         });
     });
 });
@@ -310,7 +382,10 @@ router.delete('/:id', [
 ], (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+        const errorResponse = req.errorHandler.validationError('Validation failed', {
+            details: errors.array()
+        });
+        return res.status(400).json(errorResponse);
     }
 
     const signoutId = req.params.id;
@@ -320,27 +395,38 @@ router.delete('/:id', [
     req.db.verifyUserPin(req.session.user.id, pin, (err, isValid) => {
         if (err) {
             console.error('PIN verification error:', err);
-            return res.status(500).json({ error: 'PIN verification failed' });
+            const errorResponse = req.errorHandler.failure('PIN verification failed', {
+                category: ErrorCategory.AUTHENTICATION,
+                severity: ErrorSeverity.HIGH
+            });
+            return res.status(500).json(errorResponse);
         }
         
         if (!isValid) {
-            return res.status(401).json({ error: 'Invalid PIN' });
+            const errorResponse = req.errorHandler.failure('Invalid PIN', {
+                category: ErrorCategory.AUTHENTICATION,
+                severity: ErrorSeverity.MEDIUM
+            });
+            return res.status(401).json(errorResponse);
         }
 
         req.db.deleteSignout(signoutId, (err, result) => {
             if (err) {
                 console.error('Error deleting signout:', err);
-                return res.status(500).json({ error: 'Failed to delete sign-out' });
+                const errorResponse = req.errorHandler.databaseError(err, 'Delete signout');
+                return res.status(500).json(errorResponse);
             }
 
             if (!result.success) {
-                return res.status(400).json({ error: result.message });
+                const errorResponse = req.errorHandler.failure(result.message, {
+                    category: ErrorCategory.BUSINESS,
+                    severity: ErrorSeverity.MEDIUM
+                });
+                return res.status(400).json(errorResponse);
             }
 
-            res.json({ 
-                success: true, 
-                message: 'Sign-out deleted successfully'
-            });
+            const successResponse = req.errorHandler.success(null, 'Sign-out deleted successfully');
+            res.json(successResponse);
         });
     });
 });

@@ -1,3 +1,5 @@
+import { globalFrontendErrorHandler, ErrorCategory, ErrorSeverity } from './frontend-error-handler.js';
+
 class Utils {
     static calculateDuration(startTime, endTime = null) {
         const start = new Date(startTime);
@@ -131,6 +133,12 @@ class Utils {
         return result;
     }
 
+    /**
+     * Enhanced fetch utility with standardized error handling
+     * @param {string} url - The URL to fetch
+     * @param {Object} options - Fetch options
+     * @returns {Promise<Response>} Enhanced fetch response
+     */
     static async fetchWithAuth(url, options = {}) {
         const defaultOptions = {
             credentials: 'same-origin',
@@ -140,7 +148,43 @@ class Utils {
             }
         };
         
-        return fetch(url, { ...defaultOptions, ...options });
+        try {
+            const response = await fetch(url, { ...defaultOptions, ...options });
+            return response;
+        } catch (error) {
+            console.error('Fetch error:', error);
+            throw error; // Let calling code handle with error handler
+        }
+    }
+
+    /**
+     * Safe API call wrapper that returns StandardResponse format
+     * @param {string} url - The URL to fetch
+     * @param {Object} options - Fetch options  
+     * @param {string} operation - Description of the operation
+     * @returns {Promise<StandardResponse>} Standardized response
+     */
+    static async safeApiCall(url, options = {}, operation = 'API request') {
+        const errorHandler = globalFrontendErrorHandler.createContextHandler('Utils');
+        
+        try {
+            const response = await Utils.fetchWithAuth(url, options);
+            
+            if (!response.ok) {
+                return await errorHandler.apiError(response, operation);
+            }
+
+            const data = await response.json();
+            
+            // If API already returns StandardResponse format, return as-is
+            if (data && typeof data === 'object' && 'success' in data) {
+                return data;
+            }
+            
+            return errorHandler.success(data);
+        } catch (error) {
+            return errorHandler.networkError(error, url);
+        }
     }
 
     static showLoading(show = true) {

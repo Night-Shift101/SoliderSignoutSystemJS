@@ -63,25 +63,7 @@ class SystemSetup {
         return null;
     }
 
-    generateRandomPassword() {
-        const length = 12;
-        const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
-        let password = '';
-        
-        // Ensure at least one of each required character type
-        password += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random() * 26)]; // Uppercase
-        password += 'abcdefghijklmnopqrstuvwxyz'[Math.floor(Math.random() * 26)]; // Lowercase
-        password += '0123456789'[Math.floor(Math.random() * 10)]; // Number
-        password += '!@#$%^&*'[Math.floor(Math.random() * 8)]; // Special char
-        
-        // Fill the rest randomly
-        for (let i = password.length; i < length; i++) {
-            password += charset[Math.floor(Math.random() * charset.length)];
-        }
-        
-        // Shuffle the password
-        return password.split('').sort(() => Math.random() - 0.5).join('');
-    }
+    
 
     async wipeDatabase() {
         console.log('\n🗑️  Database Wipe');
@@ -219,8 +201,6 @@ class SystemSetup {
         }
 
         // Generate random password for admin account
-        adminData.password = this.generateRandomPassword();
-        console.log(`✅ Generated secure admin account password: ${adminData.password}`);
         console.log('⚠️  Please save this password securely - you\'ll need it for admin account login!');
 
         // Get admin PIN
@@ -266,7 +246,6 @@ class SystemSetup {
                             console.log(`✅ Admin user created successfully: ${adminData.rank} ${adminData.fullName}`);
                             console.log('ℹ️  Username: admin');
                             // Store admin password for summary
-                            adminData.generatedPassword = adminData.password;
                             resolve(adminData);
                         }
                     }

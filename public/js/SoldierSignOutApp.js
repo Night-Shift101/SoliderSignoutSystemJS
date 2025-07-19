@@ -15,11 +15,16 @@ import KeyboardManager from './modules/keyboard-manager.js';
 import ConnectionManager from './modules/connection-manager.js';
 import PermissionsManager from './modules/permissions-manager.js';
 import Utils from './modules/utils.js';
+import { globalFrontendErrorHandler } from './modules/frontend-error-handler.js';
 
 class SoldierSignOutApp {
     constructor() {
         this.currentUser = null;
         this.currentSignOutId = null;
+        
+        // Initialize error handler first
+        this.errorHandler = globalFrontendErrorHandler.createContextHandler('SoldierSignOutApp');
+        
         this.initializeManagers();
         this.initializeElements();
         this.attachEventListeners();
@@ -29,6 +34,10 @@ class SoldierSignOutApp {
     initializeManagers() {
         this.domManager = new DOMManager();
         this.notificationManager = new NotificationManager();
+        
+        // Configure global error handler with notification manager
+        globalFrontendErrorHandler.notificationManager = this.notificationManager;
+        
         this.barcodeManager = new BarcodeManager(this.notificationManager);
         this.authManager = new AuthManager(this);
         this.permissionsManager = new PermissionsManager(this);
