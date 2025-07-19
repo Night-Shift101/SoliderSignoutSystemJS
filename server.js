@@ -3,6 +3,7 @@ const path = require('path');
 const cors = require('cors');
 const helmet = require('helmet');
 const session = require('express-session');
+const { globalErrorHandler } = require('./src/utils/error-handler');
 require('dotenv').config();
 
 // Import routes
@@ -69,6 +70,7 @@ app.use((req, res, next) => {
 app.use((req, res, next) => {
     req.db = db;
     req.permissionsMiddleware = permissionsMiddleware;
+    req.errorHandler = globalErrorHandler.createContextHandler('Server');
     next();
 });
 
@@ -83,21 +85,20 @@ app.use('/api/permissions', permissionsRoutes);
 
 // Health check endpoint for connection monitoring
 app.get('/api/health', (req, res) => {
-    res.status(200).json({ 
-        status: 'ok', 
+    const healthResponse = req.errorHandler.success({
+        status: 'ok',
         timestamp: new Date().toISOString(),
         uptime: process.uptime()
-    });
+    }, 'System is healthy');
+    
+    res.status(200).json(healthResponse);
 });
 
 // Static files
 app.use(express.static(path.join(__dirname, 'public')));
 
-
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({ error: 'Something went wrong!' });
-});
+// Standardized error handling middleware (must be after routes)
+app.use(globalErrorHandler.expressErrorHandler.bind(globalErrorHandler));
 
 
 app.use((req, res) => {

@@ -1,4 +1,5 @@
 import Utils from './utils.js';
+import { globalFrontendErrorHandler, ErrorCategory, ErrorSeverity } from './frontend-error-handler.js';
 
 class AuthManager {
     constructor(app) {
@@ -6,35 +7,45 @@ class AuthManager {
         this.authCheckInProgress = false;
         this.currentUser = null;
         this.targetUser = null;
+        this.errorHandler = globalFrontendErrorHandler.createContextHandler('AuthManager');
     }
 
     async checkAuthentication() {
         try {
             if (window.location.pathname === '/login' || window.location.pathname === '/login.html') {
                 console.log('Already on login page, skipping auth check');
-                return;
+                return this.errorHandler.success(null, 'Already on login page');
             }
             
             if (this.authCheckInProgress) {
                 console.log('Auth check already in progress, skipping');
-                return;
+                return this.errorHandler.success(null, 'Auth check in progress');
             }
             this.authCheckInProgress = true;
             
             console.log('Checking authentication...');
-            const response = await Utils.fetchWithAuth('/api/auth/status');
+            const result = await Utils.safeApiCall('/api/auth/status', {}, 'Authentication check');
             
-            console.log('Auth check response status:', response.status);
-            console.log('Auth check response ok:', response.ok);
-            
-            if (!response.ok) {
-                console.log('Auth check failed - response not ok, status:', response.status);
-                throw new Error(`Auth check failed with status: ${response.status}`);
+            if (!result.success) {
+                // Handle API error using standardized response
+                console.log('Auth check failed:', result.error);
+                
+                if (this.app.durationInterval) {
+                    clearInterval(this.app.durationInterval);
+                }
+                
+                if (!window.location.href.includes('/login')) {
+                    setTimeout(() => {
+                        console.log('EXECUTING REDIRECT TO LOGIN - API ERROR');
+                        window.location.href = '/login';
+                    }, 100);
+                }
+                return result;
             }
-            const result = await response.json();
-            console.log('Auth response:', result);
             
-            if (!result.userAuthenticated || !result.user) {
+            const authData = result.data;
+            
+            if (!authData.userAuthenticated || !authData.user) {
                 console.log('Not authenticated, redirecting to login...');
                 
                 if (this.app.durationInterval) {
@@ -47,18 +58,19 @@ class AuthManager {
                         window.location.href = '/login';
                     }, 100);
                 }
-                return;
+                
+                return this.errorHandler.authError('User not authenticated', true);
             }
             
             console.log('Authentication successful - NO REDIRECT NEEDED');
-            console.log('User data:', result.user);
+            console.log('User data:', authData.user);
             console.log('About to set currentUser and start normal app flow...');
-            this.currentUser = result.user;
-            this.app.currentUser = result.user;
+            this.currentUser = authData.user;
+            this.app.currentUser = authData.user;
             
             const currentUserName = this.app.domManager.get('currentUserName');
             if (currentUserName) {
-                currentUserName.textContent = `${result.user.rank} ${result.user.full_name}`;
+                currentUserName.textContent = `${authData.user.rank} ${authData.user.full_name}`;
             }
             
             // Load user permissions
@@ -79,11 +91,17 @@ class AuthManager {
             try {
                 await this.app.signOutManager.loadCurrentSignOuts();
             } catch (e) {
-                this.app.notificationManager.showNotification('Failed to load current sign-outs', 'error');
+                return this.errorHandler.failure('Failed to load current sign-outs', {
+                    category: ErrorCategory.SYSTEM,
+                    severity: ErrorSeverity.MEDIUM,
+                    originalError: e
+                });
             }
             console.log('About to start duration updates...');
             this.app.signOutManager.startDurationUpdates();
             console.log('Authentication setup complete - no redirects should happen now');
+            
+            return this.errorHandler.success(authData.user, 'Authentication successful');
             
         } catch (error) {
             console.error('Authentication check failed with error:', error);
@@ -96,6 +114,12 @@ class AuthManager {
                     }, 100);
                 }
             }
+            
+            return this.errorHandler.failure('Authentication check failed', {
+                category: ErrorCategory.AUTHENTICATION,
+                severity: ErrorSeverity.HIGH,
+                originalError: error
+            });
         } finally {
             this.authCheckInProgress = false;
         }
@@ -103,31 +127,41 @@ class AuthManager {
 
     async authenticateForSettings(pin) {
         try {
-            const response = await Utils.fetchWithAuth('/api/auth/user', {
+            const result = await Utils.safeApiCall('/api/auth/user', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     userId: this.currentUser.id, 
                     pin: pin 
                 })
-            });
+            }, 'Settings authentication');
             
-            if (!response.ok) {
-                throw new Error('Invalid PIN');
+            if (!result.success) {
+                this.app.modalManager.showPinError(result.error || 'Invalid PIN');
+                return result;
             }
             
-            const result = await response.json();
+            const authResult = result.data;
             
-            if (result.success) {
+            if (authResult.success) {
                 this.app.modalManager.closePinModal();
                 this.app.viewManager.showSettingsView();
-                this.app.notificationManager.showNotification('Settings access granted', 'success');
+                return this.errorHandler.success(authResult, 'Settings access granted', true);
             } else {
                 this.app.modalManager.showPinError('Invalid PIN');
+                return this.errorHandler.failure('Invalid PIN', {
+                    category: ErrorCategory.AUTHENTICATION,
+                    severity: ErrorSeverity.MEDIUM
+                });
             }
         } catch (error) {
             console.error('Settings authentication error:', error);
-            this.app.modalManager.showPinError('Invalid PIN');
+            this.app.modalManager.showPinError('Authentication failed');
+            return this.errorHandler.failure('Settings authentication failed', {
+                category: ErrorCategory.AUTHENTICATION,
+                severity: ErrorSeverity.MEDIUM,
+                originalError: error
+            });
         }
     }
 

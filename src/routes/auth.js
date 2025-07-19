@@ -1,5 +1,6 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
+const { ErrorCategory, ErrorSeverity } = require('../utils/error-handler');
 const router = express.Router();
 
 // System password authentication
@@ -8,7 +9,8 @@ router.post('/system', [
 ], (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+        const errorResponse = req.errorHandler.validationError(errors.array());
+        return res.status(400).json(errorResponse);
     }
 
     const { password } = req.body;
@@ -16,7 +18,12 @@ router.post('/system', [
     req.db.verifySystemPassword(password, (err, result) => {
         if (err) {
             console.error('System authentication error:', err);
-            return res.status(500).json({ error: 'System authentication failed' });
+            const errorResponse = req.errorHandler.failure('System authentication failed', {
+                category: ErrorCategory.AUTHENTICATION,
+                severity: ErrorSeverity.HIGH,
+                originalError: err
+            });
+            return res.status(500).json(errorResponse);
         }
         
         if (result.success) {
@@ -26,17 +33,23 @@ router.post('/system', [
             req.db.getAllUsers((err, users) => {
                 if (err) {
                     console.error('Failed to fetch users:', err);
-                    return res.status(500).json({ error: 'Authentication succeeded but failed to load users' });
+                    const errorResponse = req.errorHandler.failure('Authentication succeeded but failed to load users', {
+                        category: ErrorCategory.DATABASE,
+                        severity: ErrorSeverity.HIGH,
+                        originalError: err
+                    });
+                    return res.status(500).json(errorResponse);
                 }
                 
-                res.json({ 
-                    success: true, 
-                    message: 'System authenticated successfully',
-                    users: users 
-                });
+                const successResponse = req.errorHandler.success({
+                    users: users
+                }, 'System authenticated successfully');
+                
+                res.json(successResponse);
             });
         } else {
-            res.status(401).json({ error: 'Invalid system password' });
+            const errorResponse = req.errorHandler.authError('Invalid system password');
+            res.status(401).json(errorResponse);
         }
     });
 });
@@ -46,14 +59,15 @@ router.post('/user', [
     body('userId').isInt().withMessage('Valid user ID is required'),
     body('pin').isLength({ min: 1 }).withMessage('PIN is required')
 ], (req, res) => {
+    const validationErrors = validationResult(req);
+    if (!validationErrors.isEmpty()) {
+        const errorResponse = req.errorHandler.validationError(validationErrors.array());
+        return res.status(400).json(errorResponse);
+    }
     
     if (!req.session.systemAuthenticated) {
-        return res.status(401).json({ error: 'System authentication required first' });
-    }
-
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+        const errorResponse = req.errorHandler.authError('System authentication required first');
+        return res.status(401).json(errorResponse);
     }
 
     const { userId, pin } = req.body;
@@ -61,14 +75,20 @@ router.post('/user', [
     req.db.verifyUserPinById(userId, pin, (err, result) => {
         if (err) {
             console.error('User PIN verification error:', err);
-            return res.status(500).json({ error: 'PIN verification failed' });
+            const errorResponse = req.errorHandler.failure('PIN verification failed', {
+                category: ErrorCategory.AUTHENTICATION,
+                severity: ErrorSeverity.HIGH,
+                originalError: err
+            });
+            return res.status(500).json(errorResponse);
         }
         
         if (!result.success) {
-            return res.status(401).json({ error: result.message });
+            const errorResponse = req.errorHandler.authError(result.message || 'Invalid PIN');
+            return res.status(401).json(errorResponse);
         }
         
-        
+        // Store user session
         req.session.user = {
             id: userId,
             rank: result.user.rank,
@@ -76,7 +96,11 @@ router.post('/user', [
             username: `user_${userId}` 
         };
         
-        res.json({ success: true, user: req.session.user });
+        const successResponse = req.errorHandler.success(
+            { user: req.session.user }, 
+            'User authenticated successfully'
+        );
+        res.json(successResponse);
     });
 });
 
@@ -85,19 +109,29 @@ router.post('/logout', (req, res) => {
     req.session.destroy((err) => {
         if (err) {
             console.error('Session destruction error:', err);
-            return res.status(500).json({ error: 'Logout failed' });
+            const errorResponse = req.errorHandler.failure('Logout failed', {
+                category: ErrorCategory.SYSTEM,
+                severity: ErrorSeverity.MEDIUM,
+                originalError: err
+            });
+            return res.status(500).json(errorResponse);
         }
-        res.json({ success: true, message: 'Logged out successfully' });
+        
+        const successResponse = req.errorHandler.success(null, 'Logged out successfully');
+        res.json(successResponse);
     });
 });
 
 // Check authentication status
 router.get('/status', (req, res) => {
-    res.json({
+    const statusData = {
         systemAuthenticated: !!req.session.systemAuthenticated,
         userAuthenticated: !!req.session.user,
         user: req.session.user || null
-    });
+    };
+    
+    const successResponse = req.errorHandler.success(statusData, 'Authentication status retrieved');
+    res.json(successResponse);
 });
 
 module.exports = router;
